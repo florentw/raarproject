@@ -1,0 +1,288 @@
+1	Implementation limitation : it is impossible to open more than 5 sessions.
+2	The service menu for $$ formalism do have problems. Please contact your platform administrator.
+3	You are an H-Tagada platform administrator but the reference file for do have problems.
+4	Low level protocol error, please check trace file and contact Fabrice.Kordon@lip6.fr.
+5	Internal error, please check trace file and contact Fabrice.Kordon@lip6.fr.
+6	Internal or protocol error, please check trace file and contact Fabrice.Kordon@lip6.fr.
+7	User unknown
+8	Erroneous password
+9	Obsolete Macao version, please contact Jean-Luc.Mounier@lip6.fr.
+10	The active session server is out... Please check traces files and contact Fabrice.Kordon@lip6.fr.
+11	Unknown formalism
+12	It seems that Macao strike again ;-), please contact Fabrice.Kordon@lip6.fr.
+13	y close the $$ model you just openned.
+14	Cannot find executable file $$, please check with the environment administrator.
+15	Cannot find the user workspace, please check with the platform administrator.
+16	Unexpected end of tool.
+17	Unrecoverable problem during the elaboration of the $$ menu. Please check with your Tangerine administrator.
+18	Administration
+19	Service
+20	Ending...
+21	W the tool has been compiled with version $$.
+22	Please report this to your Framekit admistrator.
+23	E compiled with a lower version ($$).
+24	E version $$.
+25	Cannot execute the service.
+26	data management
+27	environment & communication
+28	user interface
+29	A Verifier tries to create a session variable ($$). This is not supported.
+30	Execution duration for this service : 
+31	It appear that the communication protocol with Tangerine was not respected. This tool may have a problem.
+32	Downloading model from the Macao User Interface.
+33	Launching verificator for formalism $$.
+34	Last verification has failed and the model has not been changed since. The service you asked for is cancelled.
+35	Description for menu $$ contains at least one semantic error.
+36	Description for menu $$ contains at least one syntactic error.
+37	You have no acess to any service in formalism $$.
+38	Problem
+39	Semantic error(s)
+40	Syntactic error(s)
+41	Launching service Ò$$Ó.
+42	No problem has been outlined by the tool.
+43	A problem has been outlined by the tool.
+44	Updating menu from service conditions.
+45	get the latest version.
+46	No service available
+47	Warning: cannot set log message for $$. You should check his/her working space.
+48	Character $$ is forbbiden.
+49	environment variable.
+50	Inexpected end of the application $$.
+51	not yet implemented Tangerine function.
+52	Date : $$
+53	Two identical entries have been found in the service menu ($$).
+54	File $$ not found.
+55	Syntax error in a menu description (file $$, line$$, column$$). Diagnostic should follow.
+56	Unreachable description file(s)
+57	d model first.
+58	Administration
+59	Somebody is currently running an administration tool. You cannot perform this operation now.
+60	The application was unable to continue its execution because there was a dialog in disconnected mode.
+61	de).
+62	
+63	$$ ($$) by $$ ($$-$$-$$)
+64	You cannot open a session for model $$ Because the remote execution of Ò$$Ó is currently running.
+65	Execution of service Ò$$Ó for model $$ has been terminated in disconnected mode. You may display results now.
+66	the end of your last connection.
+67	:
+68	There are messages for you. Please have a glance on the historic window.
+69	Formalism not installed
+70	Remote execution of Ò$$Ó
+71	Display
+72	Element "$$" already exist. Do you want to override it?
+73	Message
+74	continuing a service after the end of the corresponding session implies a deconnexion. So, you are disconnected.
+75	Time-out reached since the last message from the application (COMM_STD_OUT mode). End of waiting...
+76	for all.
+77	Action on $$
+78	Action menu
+79	Detail
+80	Add
+81	Suppress
+82	Update
+83	Display
+84	Selection node/operation
+85	Operation not implemented
+86	Editting $$
+87	edition
+88	selection
+89	password
+90	Adding $$ 
+91	Users
+92	Password
+93	Workspace : $$
+94	Subscribed group list
+95	User administration
+96	Groups
+97	User group administration
+98	Sending a log message
+99	Get the message
+100	Composition of the message
+101	Please compose your message
+102	Date $$ :
+103	your_message
+104	Sending message to all...
+105	Sending message to group $$.
+106	Sending message to user $$.
+107	Please select target groups.
+108	Group selection
+109	Pleas select target users.
+110	User selection
+111	Please select the type of kit you want to build
+112	a platform kit
+113	a formalism kit
+114	a non registered tool kit
+115	a custom kit (patch or special upgrade)
+116	SELECT
+117	CANCEL
+118	Kit type selection
+119	Please select the class of the element
+120	executable file or assimilated
+121	global data
+122	service reference file
+123	service description file
+124	file
+125	Formalism description file
+126	phase 3
+127	Sorry, the kit name "$$" is reserved
+128	Sorry, impossible to give an empty name to a Kit
+129	Please provide the full path of the selected file without the language extention
+130	menu description language
+131	Please provide the full path of the selected file
+132	Please provide the related formalism name (default = all formalisms)
+133	Please provide the target architecture of this element
+134	Please provide the element version
+135	What does admin_kit do when instaling a file that is already there
+136	replace the existing file (delete when uninstalling)
+137	preserve the existing file (keep when uninstaling)
+138	ask the administrator (keep when uninstaling)
+139	OK
+140	Target architecture
+141	Platform: 
+142	.
+143	ion.
+144	tool programs.
+145	
+146	Shell$$.
+147	invocation of a shell script
+154	the command to set the execution status of the tool
+155	Administration tool: $$.
+156	group management
+157	user management
+158	log message management
+159	Platform messages ($$).
+160	Formalism: 
+161	Administration services root reference file.
+162	french
+163	english
+164	Administration service description file.
+165	Formalism $$: 
+166	Verifier for $$/$$
+167	The $$ verifier for $$ architecture.
+168	Tool $$: 
+169	Executable file (or driver)
+170	There must be at least one executable file per tool. It can be also the tool driver (if it is an integrated tool).
+171	If the tool is composed with more than one executable file, you have to import those complementary executable in phase 3.
+172	main service description file.
+173	main service menu
+174	There must be at least one service file to describe the piece of service menu associated to the tool.
+175	If there are more than one service menu file for french, you have to import those complementary files in phase 3.
+176	admin_kit: $$.
+177	preparation of the installation, phase 1
+178	Do you confirm instalation in $$?
+179	YES
+180	NO
+181	Confirmation
+182	Please select the target architecture
+183	----------------------------------------------------------
+184	-- admin_kit : preparation of the installation, phase 2 --
+185	Now, any operation (installation, uninstallation, start, stop)
+186	should be performed (if done under unix) from the following directory:
+187	preparation of the installation, phase 2 terminated
+190	preparation of the installation, phase 1 terminated
+191	to run phase 2, please type "sh $$"
+197	Sorry, the required kit element has not been properly defined.
+198	complementary element
+199	do you have to import another complementary element?
+200	continue
+201	There is already a kit beeing constructed, overwrite?
+208	Please select the target architecture for this kit
+209	Kit construction - phase 2 (acquisition of required kit elements)
+212	Is the $$ formalism hierarchical?
+213	Please provide the formalism version
+214	Please give the file path of the verifier for "$$" (no path means no verifier)
+215	Please select the communication behavior of the verifier tool
+216	Please give the parameters of the "$$" verifier (empty string means no parameters)
+217	You made a mistake. Go again
+218	standard output
+219	FIFO
+220	Communication mode
+221	Please provide name of the Related formalism
+222	Related formalism
+223	Sorry, the formalism "$$" cannot exist
+228	Note
+234	override
+236	      element NOT moved (original preserved)
+237	   working on element "$$" for $$ ($$)
+238	   installation completed
+239	      formalism installed
+240	      root reference file created
+241	Sorry, somebody is currently performing some installation. You cannot do it at the same time.
+242	Kit installation
+243	Please give the name of the kit you have imported
+244	kit selection
+249	You cannot install anything if you have no platform installed.
+253	For some reason, the installation was not completed. However, some data may have been installed
+254	To come back to a coherent instalation state, please uninstal the kit you tried to install unsuccessfully (see documentation for more details).
+262	Operation cancelled
+265	$$'s password
+266	Sorry, you cannot cancel at this stage.
+267	Please enter the workspace directory path for $$.
+268	$$'s workspace path
+269	Sorry, a password must contain at least 6 characters.
+270	It appear that path $$ does not correspond to a directory. Is it valid?
+271	OK, be sure that directory $$ will be created with rwx rights to anybody for $$'s next connection.
+272	Please register $$ in some group(s).
+274	Do you want to destroy the group $$ that contains users of formalism $$?
+276	Uninstallation of kit $$ for architecture $$.
+278	Uninstallation done.
+282	   Element preserved.
+284	Special demand
+286	Verifier for $$/$$
+287	not architecture dependant
+288	Sorry but there are only platform kit left. They must be uninstalled under Unix.
+289	description only
+290	Please select one relative position
+291	Absolute (as is)
+292	$$ environment variable
+293	position selection
+294	 1 => OK
+295	 0 => CANCEL
+296	 0 => CANCEL (leave and cancel)
+297	 1 => OK (leave and validate)
+298	Select your entries (one by one) before leaving
+299	default = "$$"
+300	End text with a line "." (OK) or "0" (CANCEL)
+301	Default value (directly type  "." and you enter this value)
+302	Please type one line
+303	Please type one text (end with ".")
+304	Please select the desired value
+305	You must type a value between 0 and$$
+306	Problem, start again
+310	Installer:
+311	The installer itself
+312	The instaler upgrade will be effective when You will have stopped and restarted Tangerine.
+313	display of the installed set of kits
+314	Tangerine platform:
+315	List of installed formalisms and associated toolkits:
+321	Managing Menu caches
+322	te
+341	Warning, tool $$ has been interupted by the user while no handler was defined
+342	Directory located with executable files
+343	Cannot tar directory, see explanations in file $$
+344	Cannot untar a directory, see explanations in file $$
+345	Cannot find the catalog. Are you sure this is not the instaler kit?
+346	      Warning: cannot acces workspace for user $$ (menu $$)
+347	Number of service invocation per user:
+348	Number of invocation per service:
+349	Usage over time
+350	 (users $$)
+351	 (service $$)
+352	Total
+353	Analyzing accounting file
+354	User selection
+355	User choice
+356	Please select a user
+357	displaying result
+358	display of usage statistics of the platform
+359	$$'s preferences...
+360	A registered tool kit
+361	Please select a registered tool
+362	Choice of a registered tool
+363	Error in fk_invoke_script parameters (service menu)
+364	Missing parameter(s) in fk_invoke_script parameters (service menu)
+365	an installer kit (bootstrap)
+366	Disk appears to be full!!!
+367	Disk space consumed for this model : $$ Blocks
+368	spanish
+369	German

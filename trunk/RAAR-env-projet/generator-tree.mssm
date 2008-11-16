@@ -1,0 +1,47 @@
+annex_file
+
+//The process tree
+semantic_tree ONE_PROCESS (NAME : string, INSTANCES : syntactic_tree) is
+    semantic_leaf ([OBJECT_NAME #$str (NAME) # ])
+end;
+
+//The local places tree
+semantic_tree ONE_STT_PLACE (NAME : string) is
+    semantic_leaf ([OBJECT_NAME #$str (NAME) # ])
+end;
+
+//The communication places tree
+semantic_tree ONE_COMM_PLACE (NAME : string, NB_IN_TOKENS : integer) is
+    semantic_leaf ([OBJECT_NAME #$str (NAME) # ])
+end;
+
+//The local transitions tree
+semantic_tree ONE_LOC_TRANS (NAME : string) is
+    semantic_leaf ([OBJECT_NAME #$str (NAME) # ])
+end;
+
+//The synchronisation transitions tree
+semantic_tree ONE_SYNC_TRANS (NAME : string) is
+    semantic_leaf ([OBJECT_NAME #$str (NAME) # ])
+end;
+
+//The belongs tree
+semantic_tree ONE_BELONG (PIN : string, POUT : string) is
+    semantic_node ([ONE_BELONG # # ]:
+            semantic_leaf ([OBJECT_NAME #$str (PIN) # ]),
+            semantic_leaf ([OBJECT_NAME #$str (POUT) # ]))
+end;
+
+//The local arcs tree
+semantic_tree ONE_ARC (PIN : string, POUT : string) is
+    semantic_node ([ONE_ARC # # ]:
+            semantic_leaf ([OBJECT_NAME #$str (PIN) # ]),
+            semantic_leaf ([OBJECT_NAME #$str (POUT) # ]))
+end;
+
+//The communication arcs tree
+semantic_tree ONE_COMM_ARC (VALUE : integer, PIN : string, POUT : string) is
+    semantic_node ([ONE_COMM_ARC # #$int (VALUE) ]:
+            semantic_leaf ([OBJECT_NAME #$str (PIN) # ]),
+            semantic_leaf ([OBJECT_NAME #$str (POUT) # ]))
+end;

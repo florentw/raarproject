@@ -1,0 +1,46 @@
+main_file (GENERATOR for 'ANLZED_PN')
+
+//The list of all semantic rules
+semantic_rule_list is
+    main DO_THE_WORK (none) return void,
+    WORK_ON_PROCESS (none) return semantic_tree,
+    WORK_ON_SYNC_TRANS (none) return semantic_tree,
+    WORK_ON_COMM_PLACE (none) return semantic_tree
+end;
+
+//The list of all semantic trees
+semantic_tree_list is
+    ONE_PROCESS (NAME : string, INSTANCES : syntactic_tree),
+    ONE_STT_PLACE (NAME : string),
+    ONE_COMM_PLACE (NAME : string, NB_IN_TOKENS : integer),
+    ONE_LOC_TRANS (NAME : string),
+    ONE_SYNC_TRANS (NAME : string),
+    ONE_BELONG (PIN : string, POUT : string),
+    ONE_ARC (PIN : string, POUT : string),
+    ONE_COMM_ARC (VALUE : integer, PIN : string, POUT : string)
+end;
+
+//The list of all syntactic rules
+constructor_list is C_MPI,
+                    OBJECT_NAME,
+                    LIST_PROCESS,
+                    INTERNAL_LIST_PROCESS,
+                    HEAD_LIST_PROCESS,
+                    LIST_STT_PLACE,
+                    LIST_COMM_PLACE,
+                    INTERNAL_LIST_COMM_PLACE,
+                    LIST_LOC_TRANS,
+                    LIST_SYNC_TRANS,
+                    INTERNAL_LIST_SYNC_TRANS,
+                    LIST_BELONG,
+                    ONE_BELONG,
+                    LIST_ARC,
+                    ONE_ARC,
+                    LIST_COMM_ARC,
+                    ONE_COMM_ARC;
+
+//The list of all global variables
+global_variables none end;
+
+include_file ('generator-rule.mssm');
+include_file ('generator-tree.mssm');

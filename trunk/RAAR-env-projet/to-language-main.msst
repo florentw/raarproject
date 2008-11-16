@@ -1,0 +1,4 @@
+main_file
+syntactic_pattern_name TO_LANGUAGE related_to GENERATOR
+
+include_file ('to-language-annex.msst');

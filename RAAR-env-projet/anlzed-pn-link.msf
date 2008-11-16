@@ -1,0 +1,22 @@
+annex_file
+
+// =======================================================
+link (BELONG) is
+   attribute_list
+      none
+   end;
+end BELONG;
+
+// =======================================================
+link (ARC) is
+   attribute_list
+      none
+   end;
+end ARC;
+
+// =======================================================
+link (COMM_ARC) is
+   attribute_list
+      attribute integer : VALUE;
+   end;
+end COMM_ARC;

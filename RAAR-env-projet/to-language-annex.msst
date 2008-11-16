@@ -1,0 +1,234 @@
+annex_file
+
+//The main syntactic rule
+syntactic_rule C_MPI is
+begin
+    put_line ('/*');
+    put_line ('##=======================================================================');
+    put_line ('##Copyright (C) 2007-2008 C_MPI Generator');
+    put_line ('##This program is free software; you can redistribute it and/or modify');
+    put_line ('##it under the terms of the GNU General Public License (GPL) as published');
+    put_line ('##of the License, or (at your option) any later version.');
+    put_line ('##');
+    put_line ('##This program is distributed in the hope that it will be useful,');
+    put_line ('##but WITHOUT ANY WARRANTY; without even the implied warranty of');
+    put_line ('##MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the');
+    put_line ('##GNU General Public License for more details.');
+    put_line ('##');
+    put_line ('##To read the license please visit http://www.gnu.org/copyleft/gpl.html');
+    put_line ('##=======================================================================');
+    put_line ('##');
+    put_line ('## File          : hello.c');
+    put_line ('## Authors       : Leonardo BAUTISTA GOMEZ <leobago@gmail.com>');
+    put_line ('##               : Florent WEBER <florent.weber@gmail.com>');
+    put_line ('##               : Julien CLEMENT <julien.jclement@gmail.com>');
+    put_line ('##               : Felix MACH <felix.mach@gmail.com>');
+    put_line ('##               : Henry LAY <lay.henri83@gmail.com>');
+    put_line ('##               : Remi FOUCARD <raymooz@gmail.com>');
+    put_line ('##               : Shi-Hon CHAN <syone7@gmail.com>');
+    put_line ('##');
+    put_line ('##');
+    put_line ('*/');
+    new_line(1);
+    put_line ('#include <math.h>');
+    put_line ('#include <stdio.h>');
+    put_line ('#include <string.h>');
+    put_line ('#include <mpi.h>');
+    new_line (1);
+    new_line (1);
+    put_line ('int main (int argc, char** argv) {');
+    new_line (1);
+    increase_marging;
+    put_line ('int my_rank, nb_proc;');
+    new_line (1);
+    put_line ('MPI_Init(&argc, &argv);');
+    put_line ('MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);');
+    put_line ('MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);');
+    new_line (1);
+    put_line ('//The prototype manager');
+    put_line ('if (my_rank == 0) {');
+    increase_marging;
+    put_line ('printf(" My rank is %d and I am the prototype manager\n",my_rank);');
+    decrease_marging;
+    put_line ('}');
+    new_line (2);
+
+    //Calling the LIST_SYNC_TRANS syntactic rule
+    apply($2);
+
+    //Calling the LIST_COMM_PLACE syntactic rule
+    apply($3);
+
+    //Calling the LIST_PROCESS syntactic rule
+    apply($1);
+
+    new_line (1);
+    put_line ('MPI_Finalize();');
+    put_line ('return 0;');
+    decrease_marging;
+    put_line ('}');
+end;
+
+//External syntactic rule for Petri Net processes (PT-processes)
+syntactic_rule LIST_PROCESS is
+begin
+    put ('//There are ');
+    put ($STR (0));
+    put (' processes');
+    new_line(1);
+
+    //If more than zero PT-process
+    if $# > 0 then
+
+        //Creation of a string array to distribute the PN-process
+        put ('char *process[');
+        put ($STR (0));
+        put ('] = {');
+        apply HEAD_LIST_PROCESS ($0);
+        put ('};');
+        new_line(2);
+
+        //The MPI processes with rank from 3 to number of processes + 2 will be the PN-processes
+        put ('if(my_rank > 2 && my_rank < ');
+        put ($STR (0));
+        put_line(' + 3) {');
+        increase_marging;
+        apply INTERNAL_LIST_PROCESS ($0);
+        decrease_marging;
+        put_line('}');
+    end if;
+end;
+
+//Internal header syntactic rule for PT-processes
+syntactic_rule HEAD_LIST_PROCESS is
+    begin
+
+    //Creation of a string array with the name of each process
+    put ('"');
+    apply ($1);
+    put ('"');
+    if $# > 1 then
+        put (',');
+        apply HEAD_LIST_PROCESS ($2*);
+    end if;
+
+end;
+
+//Internal body syntactic rule for PT-processes
+syntactic_rule INTERNAL_LIST_PROCESS is
+    begin
+    put ('//Process ');
+    apply ($1);
+    new_line(1);
+    put ('if (!strcmp(process[my_rank - 3],"');
+    apply ($1);
+    put_line('")) {');
+    increase_marging;
+    put ('printf(" My rank is %d and I am ');
+    apply ($1);
+    put_line ('\n",my_rank);');
+    decrease_marging;
+    put_line('}');
+    new_line(1);
+    if $# > 1 then
+        apply INTERNAL_LIST_PROCESS ($2*);
+    end if;
+end;
+
+syntactic_rule LIST_STT_PLACE is
+begin
+   new_line (1);
+end;
+
+syntactic_rule LIST_COMM_PLACE is
+begin
+    put ('//There are ');
+    put ($STR (0));
+    put_line (' communication places');
+    if $# > 0 then
+        put_line('//Communication places manager');
+        put_line('if (my_rank == 1) {');
+        increase_marging;
+        put_line('printf(" My rank is %d and I am the communication places manager\n",my_rank);');
+        new_line(1);
+        apply INTERNAL_LIST_COMM_PLACE ($0);
+        decrease_marging;
+        put_line('}');
+    end if;
+    new_line(2);
+end;
+
+syntactic_rule INTERNAL_LIST_COMM_PLACE is
+    begin
+    put ('//Communication place ');
+    apply ($1);
+    put ('!');
+    new_line(1);
+    if $# > 1 then
+        apply INTERNAL_LIST_COMM_PLACE ($2*);
+    end if;
+end;
+
+syntactic_rule LIST_LOC_TRANS is
+begin
+   new_line (1);
+end;
+
+syntactic_rule LIST_SYNC_TRANS is
+begin
+    put ('//There are ');
+    put ($STR (0));
+    put_line (' synchronisation transitions');
+    new_line(1);
+    if $# > 0 then
+        apply INTERNAL_LIST_SYNC_TRANS ($0);
+    end if;
+end;
+
+syntactic_rule INTERNAL_LIST_SYNC_TRANS is
+    begin
+    put ('//Synchronisation transition ');
+    apply ($1);
+    put ('!');
+    new_line(1);
+    if $# > 1 then
+        apply INTERNAL_LIST_SYNC_TRANS ($2*);
+    end if;
+end;
+
+syntactic_rule LIST_BELONG is
+begin
+   new_line (1);
+end;
+
+syntactic_rule LIST_ARC is
+begin
+   new_line (1);
+end;
+
+syntactic_rule LIST_COMM_ARC is
+begin
+   new_line (1);
+end;
+
+syntactic_rule ONE_BELONG is
+begin
+   new_line (1);
+end;
+
+syntactic_rule ONE_ARC is
+begin
+   new_line (1);
+end;
+
+syntactic_rule ONE_COMM_ARC is
+begin
+   new_line (1);
+end;
+
+syntactic_rule OBJECT_NAME is
+begin
+   put ($STR(0));
+end;
+
+

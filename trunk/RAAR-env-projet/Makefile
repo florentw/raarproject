@@ -46,17 +46,17 @@ tengine-generator: generator_to_language.ads
 # On lance les tests
 test-generator:
 	./generator_to_language anlzed-pn-main.msf anlzed-pn-1.msm
-	echo "\n\nThis is the code generated:"
+	@echo -e "\n\nThis is the code generated:"
 	cat hello.c
-	echo "\n\nLaunching LAM..."
+	@echo -e "\n\nLaunching LAM..."
 	lamboot -v bhost
-	echo "\n\nCompiling the code..."
+	@echo -e "\n\nCompiling the code..."
 	mpicc -Wall -o hello hello.c
-	echo "\n\nExecuting the program..."
+	@echo -e "\n\nExecuting the program..."
 	mpirun -v -c 10 hello
-	echo "\n\nClosing LAM..."
+	@echo -e "\n\nClosing LAM..."
 	lamwipe -v bhost
-	echo "\n\nDone!"
+	@echo -e "\n\nDone!"
 
 # Le rapport que vous devez fournir
 rapport.pdf: *.tex *.eps

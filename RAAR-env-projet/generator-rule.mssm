@@ -5,45 +5,43 @@ semantic_rule DO_THE_WORK (none) return void is
 THE_TREE : semantic_tree;
 begin
 
-	//Creating the main tree
-	THE_TREE := create_sm_tree ([C_MPI # # ]);
+    //Creating the main tree
+    THE_TREE := create_sm_tree ([C_MPI # # ]);
 
-	//Creating the subtrees
-	message ('Working on process...');
-	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_PROCESSES ());
-	message ('Working on synchronisation transitions...');
-	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_SYNC_TRANS ());
-	message ('Working on communication places...');
-	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_COMM_PLACE ());
+    //Creating the subtrees
+    message ('Working on process...');
+    THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_PROCESS ());
+    message ('Working on synchronisation transitions...');
+    THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_SYNC_TRANS ());
+    message ('Working on communication places...');
+    THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_COMM_PLACE ());
 
-	//Generating the tree
-	generate $smt (THE_TREE) in 'hello.c';
-	message ('Done...');
-	return;
+    //Generating the tree
+    generate $smt (THE_TREE) in 'hello.c';
+    message ('Done...');
+    return;
 end;
 
 //The process semantic rule
-semantic_rule WORK_ON_PROCESSES (none) return semantic_tree is
+semantic_rule WORK_ON_PROCESS (none) return semantic_tree is
 RETV : semantic_tree;
 begin
-	
-	//Creating the subtree
-	RETV := create_sm_tree ([LIST_PROCESS # to_string (nb_node_instance (PROCESS))#3]);
-	
-	if nb_node_instance (PROCESS) > 0 then
-		for PROCESS in 1 .. nb_node_instance (PROCESS) do
-	
-			// Getting the name, instances, places and transitions of each process
-			RETV := add_sm_son ($smt (RETV),
-			sm_tree ONE_PROCESS (NAME => $atrv_str (attribute NAME from get_node_reference (PROCESS , $int (PROCESS))),
-								INSTANCES => $atrv_syt (attribute INSTANCES from get_node_reference (PROCESS , $int (PROCESS))),
-								PLACES => $atrv_syt (attribute INSTANCES from get_node_reference (PROCESS , $int (PROCESS))),
-								TRANSITIONS => $atrv_syt (attribute INSTANCES from get_node_reference (PROCESS , $int (PROCESS))));
-		end for;
-	
-	end if;
-	
-	return $smt (RETV);
+
+    //Creating the subtree
+    RETV := create_sm_tree ([LIST_PROCESS # to_string (nb_node_instance (PROCESS))#3]);
+
+    if nb_node_instance (PROCESS) > 0 then
+        for PROCESS in 1 .. nb_node_instance (PROCESS) do
+
+            //Getting the name and instance of each process
+            RETV := add_sm_son ($smt (RETV),
+            sm_tree ONE_PROCESS (NAME => $atrv_str (attribute NAME from get_node_reference (PROCESS , $int (PROCESS))),
+                                INSTANCES => $atrv_syt (attribute INSTANCES from get_node_reference (PROCESS , $int (PROCESS)))));
+        end for;
+
+    end if;
+
+    return $smt (RETV);
 end;
 
 //The synchronisation transitions rule
@@ -51,20 +49,20 @@ semantic_rule WORK_ON_SYNC_TRANS (none) return semantic_tree is
 RETV : semantic_tree;
 begin
 
-	//Creating the subtree
-	RETV := create_sm_tree ([LIST_SYNC_TRANS # to_string (nb_node_instance (SYNC_TRANS))#]);
+    //Creating the subtree
+    RETV := create_sm_tree ([LIST_SYNC_TRANS # to_string (nb_node_instance (SYNC_TRANS))#]);
 
-	if nb_node_instance (SYNC_TRANS) > 0 then
-		for SYNC_TRANS in 1 .. nb_node_instance (SYNC_TRANS) do
+    if nb_node_instance (SYNC_TRANS) > 0 then
+        for SYNC_TRANS in 1 .. nb_node_instance (SYNC_TRANS) do
 
-			//Getting the name of each synchronisation transition
-			RETV := add_sm_son ($smt (RETV),
-			sm_tree ONE_SYNC_TRANS (NAME => $atrv_str (attribute NAME from get_node_reference (SYNC_TRANS , $int (SYNC_TRANS)))));
-		end for;
+            //Getting the name of each synchronisation transition
+            RETV := add_sm_son ($smt (RETV),
+            sm_tree ONE_SYNC_TRANS (NAME => $atrv_str (attribute NAME from get_node_reference (SYNC_TRANS , $int (SYNC_TRANS)))));
+        end for;
 
-	end if;
+    end if;
 
-	return $smt (RETV);
+    return $smt (RETV);
 end;
 
 //The communication places rule
@@ -72,21 +70,21 @@ semantic_rule WORK_ON_COMM_PLACE (none) return semantic_tree is
 RETV : semantic_tree;
 begin
 
-	//Creating the subtree
-	RETV := create_sm_tree ([LIST_COMM_PLACE # to_string (nb_node_instance (COMM_PLACE))#]);
+    //Creating the subtree
+    RETV := create_sm_tree ([LIST_COMM_PLACE # to_string (nb_node_instance (COMM_PLACE))#]);
 
-	if nb_node_instance (COMM_PLACE) > 0 then
-		for COMM_PLACE in 1 .. nb_node_instance (COMM_PLACE) do
+    if nb_node_instance (COMM_PLACE) > 0 then
+        for COMM_PLACE in 1 .. nb_node_instance (COMM_PLACE) do
 
-			//Getting the name and number of tokens of each communication place
-			RETV := add_sm_son ($smt (RETV),
-			sm_tree ONE_COMM_PLACE (NAME => $atrv_str (attribute NAME from get_node_reference (COMM_PLACE , $int (COMM_PLACE))),
-								NB_IN_TOKENS => $atrv_int (attribute NB_IN_TOKENS from get_node_reference (COMM_PLACE , $int (COMM_PLACE)))));
-		end for;
+            //Getting the name and number of tokens of each communication place
+            RETV := add_sm_son ($smt (RETV),
+            sm_tree ONE_COMM_PLACE (NAME => $atrv_str (attribute NAME from get_node_reference (COMM_PLACE , $int (COMM_PLACE))),
+                                NB_IN_TOKENS => $atrv_int (attribute NB_IN_TOKENS from get_node_reference (COMM_PLACE , $int (COMM_PLACE)))));
+        end for;
 
-	end if;
+    end if;
 
-return $smt (RETV);
+  return $smt (RETV);
 end;
 
 

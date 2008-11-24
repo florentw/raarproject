@@ -231,4 +231,43 @@ begin
    put ($STR(0));
 end;
 
+syntactic_rule COMM_PLACES is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule PROC_OUT is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule PROC_IN is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule ONE_COMM_PLACE_PROC_OUT is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule ONE_COMM_PLACE_PROC_IN is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule ONE_SYNC_TRANS_PROC_OUT is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule ONE_SYNC_TRANS_PROC_IN is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule SYNC_TRANSITIONS is
+begin
+	put ($STR(0));
+end;
 

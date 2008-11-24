@@ -5,43 +5,26 @@ semantic_tree ONE_PROCESS (NAME : string, INSTANCES : syntactic_tree) is
     semantic_leaf ([OBJECT_NAME #$str (NAME) # ])
 end;
 
-//The local places tree
-semantic_tree ONE_STT_PLACE (NAME : string) is
-    semantic_leaf ([OBJECT_NAME #$str (NAME) # ])
+semantic_tree ONE_COMM_PLACE_PROC_IN (NAME : string, SOURCE_TRANS : string) is
+    semantic_node ([ONE_COMM_PLACE_PROC_IN # # ]:
+            semantic_leaf ([OBJECT_NAME #$str (NAME) # ]),
+            semantic_leaf ([OBJECT_NAME #$str (SOURCE_TRANS) # ]))
 end;
 
-//The communication places tree
-semantic_tree ONE_COMM_PLACE (NAME : string, NB_IN_TOKENS : integer) is
-    semantic_leaf ([OBJECT_NAME #$str (NAME) # ])
+semantic_tree ONE_COMM_PLACE_PROC_OUT (NAME : string, TARGET_TRANS : string) is
+    semantic_node ([ONE_COMM_PLACE_PROC_OUT # # ]:
+            semantic_leaf ([OBJECT_NAME #$str (NAME) # ]),
+            semantic_leaf ([OBJECT_NAME #$str (TARGET_TRANS) # ]))
 end;
 
-//The local transitions tree
-semantic_tree ONE_LOC_TRANS (NAME : string) is
-    semantic_leaf ([OBJECT_NAME #$str (NAME) # ])
+semantic_tree ONE_SYNC_TRANS_PROC_IN (NAME : string, SOURCE_PLACE : string) is
+    semantic_node ([ONE_SYNC_TRANS_PROC_IN # # ]:
+            semantic_leaf ([OBJECT_NAME #$str (NAME) # ]),
+            semantic_leaf ([OBJECT_NAME #$str (SOURCE_PLACE) # ]))
 end;
 
-//The synchronisation transitions tree
-semantic_tree ONE_SYNC_TRANS (NAME : string) is
-    semantic_leaf ([OBJECT_NAME #$str (NAME) # ])
-end;
-
-//The belongs tree
-semantic_tree ONE_BELONG (PIN : string, POUT : string) is
-    semantic_node ([ONE_BELONG # # ]:
-            semantic_leaf ([OBJECT_NAME #$str (PIN) # ]),
-            semantic_leaf ([OBJECT_NAME #$str (POUT) # ]))
-end;
-
-//The local arcs tree
-semantic_tree ONE_ARC (PIN : string, POUT : string) is
-    semantic_node ([ONE_ARC # # ]:
-            semantic_leaf ([OBJECT_NAME #$str (PIN) # ]),
-            semantic_leaf ([OBJECT_NAME #$str (POUT) # ]))
-end;
-
-//The communication arcs tree
-semantic_tree ONE_COMM_ARC (VALUE : integer, PIN : string, POUT : string) is
-    semantic_node ([ONE_COMM_ARC # #$int (VALUE) ]:
-            semantic_leaf ([OBJECT_NAME #$str (PIN) # ]),
-            semantic_leaf ([OBJECT_NAME #$str (POUT) # ]))
+semantic_tree ONE_SYNC_TRANS_PROC_OUT (NAME : string, TARGET_PLACE : string) is
+    semantic_node ([ONE_SYNC_TRANS_PROC_OUT # # ]:
+            semantic_leaf ([OBJECT_NAME #$str (NAME) # ]),
+            semantic_leaf ([OBJECT_NAME #$str (TARGET_PLACE) # ]))
 end;

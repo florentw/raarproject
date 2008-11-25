@@ -281,5 +281,53 @@ begin
 	put ($STR(0));
 end;
 
+syntactic_rule LOCAL_PLACES is
+begin
+	put ($STR(0));
+end;
 
+syntactic_rule LOCAL_PLACE is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule SYNC_TRANS_IN is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule SYNC_TRANS_OUT is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule LOC_TRANS_OUT is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule LOC_PLACE_OUT is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule COMM_PLACE_IN is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule COMM_PLACE_OUT is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule LOCAL_TRANS is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule LOCAL_TRANSITIONS is
+begin
+	put ($STR(0));
+end;
 

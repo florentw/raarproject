@@ -7,12 +7,15 @@ semantic_rule_list is
     WORK_ON_SYNC_TRANS (none) return semantic_tree,
     WORK_ON_COMM_PLACE (none) return semantic_tree,
     CREATE_COMM_PLACE (nodeID : integer) return semantic_tree,
-    CREATE_SYNC_TRANS (nodeID : integer) return semantic_tree
+    CREATE_SYNC_TRANS (nodeID : integer) return semantic_tree,
+    CREATE_PROCESS (nodeID : integer) return semantic_tree,
+    CREATE_INSTANCES (nodeID : integer) return semantic_tree
 end;
 
 //The list of all semantic trees
 semantic_tree_list is
     ONE_PROCESS (NAME : string, INSTANCES : syntactic_tree),
+    ONE_INSTANCE (START_PLACE : string),
 	ONE_COMM_PLACE_PROC_IN (NAME : string, SOURCE_TRANS : string),
 	ONE_COMM_PLACE_PROC_OUT (NAME : string, TARGET_TRANS : string),
 	ONE_SYNC_TRANS_PROC_IN (NAME : string, SOURCE_PLACE : string),
@@ -44,7 +47,9 @@ constructor_list is C_MPI,
                     SYNC_TRANSITIONS,
                     ONE_COMM_PLACE_PROC_IN,
                     ONE_COMM_PLACE_PROC_OUT,
-					COMM_PLACES;
+					COMM_PLACES,
+					INSTANCES,
+					PNPROCESS;
 
 //The list of all global variables
 global_variables none end;

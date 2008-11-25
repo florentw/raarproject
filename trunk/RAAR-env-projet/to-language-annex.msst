@@ -36,18 +36,21 @@ begin
     put_line ('#include <string.h>');
     put_line ('#include <mpi.h>');
     new_line (1);
-    new_line (1);
     put_line ('#define TAG_END 0');
     new_line (1);
-    new_line (1);
     put_line ('#define EXEC_DURATION 5');
+    put_line ('#define EXEC_STEP 0.1');
     new_line (1);
+    put_line ('#define PROTO_MANAGER 0');
+    put_line ('#define SYNCT_MANAGER 1');
+    put_line ('#define COMMP_MANAGER 2');
     new_line (1);
     put_line ('int main (int argc, char** argv) {');
     new_line (1);
     increase_marging;
     put_line ('int i, my_rank, nb_proc;');
     put_line ('MPI_Request request;');
+    put_line ('MPI_Status status;');
     new_line (1);
     put_line ('MPI_Init(&argc, &argv);');
     put_line ('MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);');
@@ -62,9 +65,10 @@ begin
     put_line ('sleep(EXEC_DURATION);');
     new_line (1);
     put_line ('//Killing all the process');
-    put_line ('for(i = 1; i < nb_proc; i++) {');
+    put_line ('for(i = 3; i < nb_proc; i++) {');
     increase_marging;
-    put_line ('//MPI_Isend(0,1,MPI_INT,i,TAG_END,MPI_COMM_WORLD,&request);');
+    put_line('int buf = 0;');
+    put_line ('MPI_Isend(&buf,1,MPI_INT,i,TAG_END,MPI_COMM_WORLD,&request);');
     put_line ('printf(" My rank is %d and I am sending END to %d\n",my_rank,i);');
     decrease_marging;
     put_line ('}');
@@ -98,7 +102,7 @@ end;
 syntactic_rule LIST_PROCESS is
 begin
     put ('//There are ');
-    put ($STR (0));
+    put ($STR_INT (0));
     put (' processes');
     new_line(1);
 
@@ -107,20 +111,36 @@ begin
 
         //Creation of a string array to distribute the PN-process
         put ('char *process[');
-        put ($STR (0));
+        put ($STR_INT (0));
         put ('] = {');
         apply HEAD_LIST_PROCESS ($0);
         put ('};');
         new_line(2);
 
-        //The MPI processes with rank from 3 to number of processes + 2 will be the PN-processes
+        put_line('//The MPI processes with rank from 3 to number of processes + 2 will be the PN-processes');
         put ('if(my_rank > 2 && my_rank < ');
-        put ($STR (0));
+        put ($STR_INT (0));
         put_line(' + 3) {');
         increase_marging;
-        apply INTERNAL_LIST_PROCESS ($0);
+
+        //Apply sub-tree rule
+        apply PNPROCESS ($0);
+
         decrease_marging;
         put_line('}');
+        new_line(1);
+
+        put_line('//The MPI processes without work');
+        put ('if(my_rank >= ');
+        put ($STR_INT (0));
+        put_line(' + 3) {');
+        increase_marging;
+        put_line('//Waiting for END request from Prototype manager');
+        put_line('int buf;');
+        put_line('MPI_Recv(&buf,1,MPI_INT,PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&status);');
+        decrease_marging;
+        put_line('}');
+
     end if;
 end;
 
@@ -130,7 +150,7 @@ syntactic_rule HEAD_LIST_PROCESS is
 
     //Creation of a string array with the name of each process
     put ('"');
-    apply ($1);
+    put ($STR(1));
     put ('"');
     if $# > 1 then
         put (',');
@@ -168,7 +188,7 @@ end;
 syntactic_rule LIST_COMM_PLACE is
 begin
     put ('//There are ');
-    put ($STR (0));
+    put ($STR_INT (0));
     put_line (' communication places');
     if $# > 0 then
         put_line('//Communication places manager');
@@ -202,7 +222,7 @@ end;
 syntactic_rule LIST_SYNC_TRANS is
 begin
     put ('//There are ');
-    put ($STR (0));
+    put ($STR_INT (0));
     put_line (' synchronisation transitions');
     new_line(1);
     if $# > 0 then
@@ -298,7 +318,56 @@ end;
 
 syntactic_rule PNPROCESS is
 begin
-	put ($STR(0));
+    put ('//Process ');
+    put ($STR(1));
+    new_line(1);
+    put ('if (!strcmp(process[my_rank - 3],"');
+    put ($STR(1));
+    put_line('")) {');
+    increase_marging;
+
+    //Printing process information
+    put ('printf(" My rank is %d and I am ');
+    put ($STR(1));
+    put_line ('\n",my_rank);');
+    new_line(1);
+
+    //Main loop
+    put_line ('int state, flag;');
+    put_line ('while (1) {');
+    increase_marging;
+
+    put_line('//Sleeping EXEC_STEP seconds');
+    put_line('sleep(EXEC_STEP);');
+    new_line(1);
+
+    put_line('//Checking if Prototype manager request END');
+    put_line('MPI_Iprobe(PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&flag,&status);');
+    put_line('if (flag) {');
+    increase_marging;
+    put_line('int buf;');
+    put_line('MPI_Recv(&buf,1,MPI_INT,PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&status);');
+    put_line('break;');
+    decrease_marging;
+    put_line('}');
+    new_line(1);
+
+    put_line('//Main switch');
+    put_line ('switch(state) {');
+    increase_marging;
+    put_line ('default: break;');
+    decrease_marging;
+    put_line ('}');
+
+    decrease_marging;
+    put_line ('}');
+
+    decrease_marging;
+    put_line('}');
+    new_line(1);
+    if $# > 1 then
+        apply PNPROCESS ($2*);
+    end if;
 end;
 
 syntactic_rule INSTANCES is

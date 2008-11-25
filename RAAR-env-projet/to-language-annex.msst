@@ -271,3 +271,15 @@ begin
 	put ($STR(0));
 end;
 
+syntactic_rule PNPROCESS is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule INSTANCES is
+begin
+	put ($STR(0));
+end;
+
+
+

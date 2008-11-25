@@ -5,6 +5,10 @@ semantic_tree ONE_PROCESS (NAME : string, INSTANCES : syntactic_tree) is
     semantic_leaf ([OBJECT_NAME #$str (NAME) # ])
 end;
 
+semantic_tree ONE_INSTANCE (START_PLACE : string) is
+    semantic_leaf ([OBJECT_NAME #$str (START_PLACE) # ])
+end;
+
 semantic_tree ONE_COMM_PLACE_PROC_IN (NAME : string, SOURCE_TRANS : string) is
     semantic_node ([ONE_COMM_PLACE_PROC_IN # # ]:
             semantic_leaf ([OBJECT_NAME #$str (NAME) # ]),

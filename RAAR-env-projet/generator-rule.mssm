@@ -27,7 +27,7 @@ semantic_rule WORK_ON_PROCESS (none) return semantic_tree is
 RETV : semantic_tree;
 begin
 	//Creating the subtree
-	RETV := create_sm_tree ([LIST_PROCESS # to_string (nb_node_instance (PROCESS)) #]);
+	RETV := create_sm_tree ([LIST_PROCESS # 'PN-Processes' # nb_node_instance (PROCESS)]);
 
 	if nb_node_instance (PROCESS) > 0 then
 		for PROCESS in 1 .. nb_node_instance (PROCESS) do
@@ -50,7 +50,7 @@ begin
 	nameProc := $atrv_str (attribute NAME from get_node_reference (PROCESS, $int (nodeID)));
 
 	//Creating the process subtree
-	RETV := create_sm_tree ([PNPROCESS # $str(nameProc) #]);
+	RETV := create_sm_tree ([PNPROCESS # $str(nameProc) # $int (nodeID)]);
 	
 	//Creating the three subtrees (instances, places, local transitions)
 	RETV := add_sm_son ($smt (RETV), sm_rule CREATE_INSTANCES (nodeID => $int (nodeID))) ;
@@ -68,7 +68,7 @@ begin
 	syInstances := $atrv_syt (attribute INSTANCES from get_node_reference (PROCESS, $int (nodeID)));
 	
 	//Creating the subtree
-	RETV := create_sm_tree ([INSTANCES # $str(nameProc) # number_of_sy_son($syt(syInstances))]);
+	RETV := create_sm_tree ([INSTANCES # 'Instances' # $int (nodeID)]);
 	
 	//Creating the subtree : instance1 .. instanceN
 	for INS in 1 .. number_of_sy_son ($syt(syInstances)) do
@@ -94,7 +94,7 @@ RETV : semantic_tree;
 begin
 
 	//Creating the root subtree indicating number of Synchronised Transitions
-	RETV := create_sm_tree ([LIST_SYNC_TRANS # to_string (nb_node_instance (SYNC_TRANS))#]);
+	RETV := create_sm_tree ([LIST_SYNC_TRANS # 'SyncTrans' # nb_node_instance (SYNC_TRANS)]);
 
 	//If at least one Synchronised Transition
 	if nb_node_instance (SYNC_TRANS) > 0 then
@@ -218,7 +218,7 @@ RETV : semantic_tree;
 begin
 
 	//Creating the root subtree indicating number of Communication Places
-	RETV := create_sm_tree ([LIST_COMM_PLACE # to_string (nb_node_instance (COMM_PLACE))#]);
+	RETV := create_sm_tree ([LIST_COMM_PLACE # 'CommPlaces' #nb_node_instance (COMM_PLACE)]);
 
 	//If at least one Synchronised Transition
 	if nb_node_instance (COMM_PLACE) > 0 then
@@ -285,7 +285,8 @@ begin
 									processName := $atrv_str (attribute NAME from get_neighbour_having_class(get_link_reference(BELONG, $int (GROUP)), 1, PROCESS));
 									P_OUT := add_sm_son ($smt (P_OUT),
 														sm_tree ONE_COMM_PLACE_PROC_OUT(NAME => $str (processName),
-																						TARGET_TRANS => $str (nameLT)));
+																						TARGET_TRANS => $str (nameLT),
+																						VALUE => $atrv_int (attribute VALUE from get_link_reference(COMM_ARC,$int (CA)))));
 									
 									message({'NameLT (OUT) : ' & $str(nameLT)}) ;
 									message({'1-Found NameLT process name is : ' & $str(processName)}) ;
@@ -317,7 +318,8 @@ begin
 									processName := $atrv_str (attribute NAME from get_neighbour_having_class(get_link_reference(BELONG, $int (GROUP)), 1, PROCESS));
 									P_IN := add_sm_son ($smt (P_IN),
 														sm_tree ONE_COMM_PLACE_PROC_IN(NAME => $str (processName),
-																						SOURCE_TRANS => $str (nameLT)));
+																						SOURCE_TRANS => $str (nameLT),
+																						VALUE => $atrv_int (attribute VALUE from get_link_reference(COMM_ARC,$int (CA)))));
 									message({'Found NameLT process name is : ' & $str(processName)}) ;
 								end if;
 							end for;
@@ -346,7 +348,7 @@ begin
 	nameProc := $atrv_str(attribute NAME from get_node_reference(PROCESS, $int(nodeID)));
 
 	//Creating the subtree
-	RETV := create_sm_tree([LOCAL_PLACES # 'Places' # 1]);
+	RETV := create_sm_tree([LOCAL_PLACES # 'Places' # ]);
 	
 	if nb_node_instance(BELONG) > 0 then
 		for GROUP in 1 .. nb_node_instance(BELONG) do
@@ -453,7 +455,7 @@ begin
 	nameProc := $atrv_str(attribute NAME from get_node_reference(PROCESS, $int(nodeID)));
 
 	//Creating the subtree
-	RETV := create_sm_tree([LOCAL_TRANSITIONS # 'Transitions' # 1]);
+	RETV := create_sm_tree([LOCAL_TRANSITIONS # 'Transitions' #]);
 	
 	if nb_node_instance(BELONG) > 0 then
 		for GROUP in 1 .. nb_node_instance(BELONG) do
@@ -538,7 +540,8 @@ begin
 				// Source place is a communication place
 				
 				CP_IN := add_sm_son ($smt (CP_IN),
-									sm_tree ONE_COMM_PLACE_IN(SOURCE_NAME => $str (nameIN)));
+									sm_tree ONE_COMM_PLACE_IN(SOURCE_NAME => $str (nameIN),
+																VALUE => $atrv_int (attribute VALUE from get_link_reference(COMM_ARC,$int (CA)))));
 				
 			elsif $str (nameIN) = $str (nameTrans) then
 			
@@ -549,7 +552,8 @@ begin
 				// Target place is a communication place
 				
 				CP_OUT := add_sm_son ($smt (CP_OUT),
-									sm_tree ONE_COMM_PLACE_OUT(TARGET_NAME => $str (nameOUT)));
+									sm_tree ONE_COMM_PLACE_OUT(TARGET_NAME => $str (nameOUT),
+																VALUE => $atrv_int (attribute VALUE from get_link_reference(COMM_ARC,$int (CA)))));
 			
 			end if;
 		end for;

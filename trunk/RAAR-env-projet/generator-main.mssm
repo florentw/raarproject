@@ -18,17 +18,16 @@ end;
 
 //The list of all semantic trees
 semantic_tree_list is
-	ONE_PROCESS (NAME : string, INSTANCES : syntactic_tree),
 	ONE_INSTANCE (START_PLACE : string),
-	ONE_COMM_PLACE_PROC_IN (NAME : string, SOURCE_TRANS : string),
-	ONE_COMM_PLACE_PROC_OUT (NAME : string, TARGET_TRANS : string),
+	ONE_COMM_PLACE_PROC_IN (NAME : string, SOURCE_TRANS : string, VALUE : integer),
+	ONE_COMM_PLACE_PROC_OUT (NAME : string, TARGET_TRANS : string, VALUE : integer),
 	ONE_SYNC_TRANS_PROC_IN (NAME : string, SOURCE_PLACE : string),
 	ONE_SYNC_TRANS_PROC_OUT (NAME : string, TARGET_PLACE : string),
 	ONE_SYNC_TRANS_IN (SOURCE_NAME : string),
 	ONE_SYNC_TRANS_OUT (TARGET_NAME : string),
 	ONE_LOC_TRANS_OUT (TARGET_NAME : string),
-	ONE_COMM_PLACE_IN (SOURCE_NAME : string),
-	ONE_COMM_PLACE_OUT (TARGET_NAME : string),
+	ONE_COMM_PLACE_IN (SOURCE_NAME : string, VALUE : integer),
+	ONE_COMM_PLACE_OUT (TARGET_NAME : string, VALUE : integer),
 	ONE_LOC_PLACE_OUT (TARGET_NAME : string)
 end;
 

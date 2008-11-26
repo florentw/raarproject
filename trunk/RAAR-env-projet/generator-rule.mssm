@@ -56,6 +56,7 @@ begin
 	RETV := add_sm_son ($smt (RETV), sm_rule CREATE_INSTANCES (nodeID => $int (nodeID))) ;
 	RETV := add_sm_son ($smt (RETV), sm_rule CREATE_PLACES (nodeID => $int (nodeID))) ;
 	RETV := add_sm_son ($smt (RETV), sm_rule CREATE_TRANSITIONS (nodeID => $int (nodeID))) ;
+	RETV := add_sm_son ($smt (RETV), sm_rule CREATE_LOC_SYNC_TRANSITIONS (nodeID => $int (nodeID))) ;
 
 	return $smt (RETV);
 end;
@@ -568,4 +569,89 @@ begin
 end;
 
 
+semantic_rule CREATE_LOC_SYNC_TRANSITIONS (nodeID : integer) return semantic_tree is
+	RETV : semantic_tree;
+	LPL_OUT : semantic_tree;
+	nameProc : string;
+	tmpNameProc : string;
+	nameST : string;
+	syInstances : syntactic_tree;
+begin
+	nameProc := $atrv_str (attribute NAME from get_node_reference (PROCESS, $int (nodeID)));
+	RETV := create_sm_tree ([LOC_SYNC_TRANSITIONS # 'LocSyncTransitions' # ]);
+	
+	if nb_node_instance (BELONG) > 0 then
+		for GROUP in 1 .. nb_node_instance (BELONG) do
+
+			tmpNameProc := $atrv_str (attribute NAME from get_neighbour_having_class(get_link_reference(BELONG, $int (GROUP)), 1, PROCESS));
+			
+			// We walk trough the good belong
+			if $str(tmpNameProc) = $str(nameProc) then
+			
+				if nb_neighbour_having_class (get_link_reference(BELONG,$int (GROUP)), SYNC_TRANS) > 0 then
+					for ST in 1 .. nb_neighbour_having_class (get_link_reference(BELONG,$int (GROUP)), SYNC_TRANS) do
+						
+						RETV := add_sm_son ($smt (RETV),
+											sm_rule CREATE_LOC_SYNC_TRANS ( nodeID => $int (ST),
+																			belongID => $int (GROUP)));
+	
+					end for;
+				end if;
+			
+			end if ;
+		end for;
+	end if;
+	
+	return $smt (RETV);
+end;
+
+semantic_rule CREATE_LOC_SYNC_TRANS (nodeID : integer, belongID : integer) return semantic_tree is
+	RETV : semantic_tree;
+	LPL_OUT : semantic_tree;
+	nameST : string;
+	namePL : string;
+	nameIN : string;
+	nameOUT : string;
+begin
+	nameST := $atrv_str (attribute NAME from get_node_reference (SYNC_TRANS, $int (nodeID)));
+	
+	RETV := create_sm_tree ([LOC_SYNC_TRANSITION #  $str(nameST) # $int(nodeID)]);
+	LPL_OUT := create_sm_tree ([ST_LOC_PLACE_OUT # 'LocOUTList' # ]);
+	
+	if nb_node_instance (ARC) > 0 then
+
+		for AR in 1 .. nb_node_instance (ARC) do
+
+			nameIN := $atrv_str (attribute NAME from get_neighbour_in (get_link_reference(ARC,$int (AR)), 1));
+			nameOUT := $atrv_str (attribute NAME from get_neighbour_out (get_link_reference(ARC,$int (AR)), 1));
+
+			message({'* ARC nb' & to_string($int(AR))}) ;
+			message({{$str(nameIN) & ' -> ' } & $str(nameOUT)}) ;
+
+			if $str (nameIN) = $str (nameST) then
+
+				//		AR
+				//  ST ---> PL
+
+				if nb_neighbour_having_class (get_link_reference(BELONG,$int (belongID)), STT_PLACE) > 0 then
+					for PL in 1 .. nb_neighbour_having_class (get_link_reference(BELONG,$int (belongID)), STT_PLACE) do
+						namePL := $atrv_str (attribute NAME from get_neighbour_having_class(get_link_reference(BELONG, $int (belongID)), $int(PL), STT_PLACE));
+
+						//Est ce que la place du BELONG est reliee a la transition ?
+						if $str (namePL) = $str (nameOUT) then
+
+							LPL_OUT := add_sm_son ($smt (LPL_OUT),
+													sm_tree ONE_LOC_PLACE_OUT(TARGET_NAME => $str (namePL)));
+
+						end if;
+					end for;
+				end if;
+
+			end if;
+		end for;
+	end if;
+	
+	RETV := add_sm_son ($smt (RETV), $smt (LPL_OUT)) ;
+	return $smt (RETV);
+end ;
 

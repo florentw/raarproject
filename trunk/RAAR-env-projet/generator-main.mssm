@@ -13,7 +13,9 @@ semantic_rule_list is
 	CREATE_PLACES (nodeID : integer) return semantic_tree,
 	CREATE_PLACE (namePL : string) return semantic_tree,
 	CREATE_TRANSITIONS (nodeID : integer) return semantic_tree,
-	CREATE_TRANS (nameTrans : string) return semantic_tree
+	CREATE_TRANS (nameTrans : string) return semantic_tree,
+	CREATE_LOC_SYNC_TRANSITIONS (nodeID : integer) return semantic_tree,
+	CREATE_LOC_SYNC_TRANS (nodeID : integer, belongID : integer) return semantic_tree
 end;
 
 //The list of all semantic trees
@@ -70,7 +72,10 @@ constructor_list is C_MPI,
 					COMM_PLACE_OUT,
 					INTERNAL_LOC_PLACE_OUT,
 					INTERNAL_LOC_TRANS_OUT,
-					LOC_PLACE_OUT;
+					LOC_PLACE_OUT,
+					LOC_SYNC_TRANSITIONS,
+					LOC_SYNC_TRANSITION,
+					ST_LOC_PLACE_OUT;
 
 //The list of all global variables
 global_variables none end;

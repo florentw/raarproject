@@ -27,7 +27,7 @@ semantic_rule WORK_ON_PROCESS (none) return semantic_tree is
 RETV : semantic_tree;
 begin
 	//Creating the subtree
-	RETV := create_sm_tree ([LIST_PROCESS # 'PN-Processes' # nb_node_instance (PROCESS)]);
+	RETV := create_sm_tree ([LIST_PROCESS # 'PN_Processes' # nb_node_instance (PROCESS)]);
 
 	if nb_node_instance (PROCESS) > 0 then
 		for PROCESS in 1 .. nb_node_instance (PROCESS) do
@@ -69,7 +69,7 @@ begin
 	syInstances := $atrv_syt (attribute INSTANCES from get_node_reference (PROCESS, $int (nodeID)));
 
 	//Creating the subtree
-	RETV := create_sm_tree ([INSTANCES # 'Instances' # $int (nodeID)]);
+	RETV := create_sm_tree ([INSTANCES # {'Instances' & to_string($int(nodeID)) } # $int (nodeID)]);
 
 	//Creating the subtree : instance1 .. instanceN
 	for INS in 1 .. number_of_sy_son ($syt(syInstances)) do
@@ -124,9 +124,9 @@ semantic_rule CREATE_SYNC_TRANS (nodeID : integer) return semantic_tree is
 begin
 	nameTrans := $atrv_str (attribute NAME from get_node_reference (SYNC_TRANS, $int (nodeID)));
 
-	RETV := create_sm_tree ([SYNC_TRANSITIONS # $str (nameTrans) # ]);
-	P_IN := create_sm_tree ([PROC_IN # 'PROCIN' #]);
-	P_OUT := create_sm_tree ([PROC_OUT # 'PROCOUT' #]);
+	RETV := create_sm_tree ([SYNC_TRANSITIONS # { 'SYNC_TRANSITIONS_' & $str(nameTrans) } # ]);
+	P_IN := create_sm_tree ([PROC_IN # {'PROCIN_' & $str(nameTrans)} #]);
+	P_OUT := create_sm_tree ([PROC_OUT # {'PROCOUT_' & $str(nameTrans)} #]);
 
 	message({'* SyncTrans Name : ' & $str (nameTrans)}) ;
 
@@ -250,9 +250,9 @@ begin
 	namePlace := $atrv_str (attribute NAME from get_node_reference (COMM_PLACE, $int (nodeID)));
 	nbTokenPlace := $atrv_int (attribute NB_IN_TOKENS from get_node_reference (COMM_PLACE , $int (nodeID)));
 
-	RETV := create_sm_tree ([COMM_PLACES # $str (namePlace) # $int (nbTokenPlace)]);
-	P_IN := create_sm_tree ([PROC_IN # 'PROCIN' #]);
-	P_OUT := create_sm_tree ([PROC_OUT # 'PROCOUT' #]);
+	RETV := create_sm_tree ([COMM_PLACES # $str(namePlace) # $int (nbTokenPlace)]);
+	P_IN := create_sm_tree ([PROC_IN # {'PROCIN_' & $str (namePlace)} #]);
+	P_OUT := create_sm_tree ([PROC_OUT # {'PROCOUT_' & $str (namePlace)} #]);
 
 	message({'* Name Place : ' & $str (namePlace)}) ;
 
@@ -349,7 +349,7 @@ begin
 	nameProc := $atrv_str(attribute NAME from get_node_reference(PROCESS, $int(nodeID)));
 
 	//Creating the subtree
-	RETV := create_sm_tree([LOCAL_PLACES # 'Places' # ]);
+	RETV := create_sm_tree([LOCAL_PLACES # {'Places' & to_string($int(nodeID)) } # ]);
 
 	if nb_node_instance(BELONG) > 0 then
 		for GROUP in 1 .. nb_node_instance(BELONG) do
@@ -384,9 +384,9 @@ semantic_rule CREATE_PLACE (namePL : string) return semantic_tree is
 	nameOUT : string;
 begin
 	RETV := create_sm_tree([LOCAL_PLACE # $str(namePL) #]);
-	ST_IN := create_sm_tree ([SYNC_TRANS_IN # #]);
-	ST_OUT := create_sm_tree ([SYNC_TRANS_OUT # #]);
-	LT_OUT := create_sm_tree ([LOC_TRANS_OUT # #]);
+	ST_IN := create_sm_tree ([SYNC_TRANS_IN # {'SYNC_TRANS_IN' & $str(namePL) } #]);
+	ST_OUT := create_sm_tree ([SYNC_TRANS_OUT # {'SYNC_TRANS_OUT' & $str(namePL) } #]);
+	LT_OUT := create_sm_tree ([LOC_TRANS_OUT # {'LOC_TRANS_OUT' & $str(namePL) } #]);
 
 	message({ 'CREATE_PLACE Place : ' & $str(namePL) }) ;
 
@@ -456,7 +456,7 @@ begin
 	nameProc := $atrv_str(attribute NAME from get_node_reference(PROCESS, $int(nodeID)));
 
 	//Creating the subtree
-	RETV := create_sm_tree([LOCAL_TRANSITIONS # 'Transitions' #]);
+	RETV := create_sm_tree([LOCAL_TRANSITIONS # {'Transitions' & to_string($int(nodeID))} #]);
 
 	if nb_node_instance(BELONG) > 0 then
 		for GROUP in 1 .. nb_node_instance(BELONG) do
@@ -491,9 +491,9 @@ semantic_rule CREATE_TRANS (nameTrans : string) return semantic_tree is
 	nameOUT : string;
 begin
 	RETV := create_sm_tree([LOCAL_TRANS # $str(nameTrans) #]);
-	CP_IN := create_sm_tree ([COMM_PLACE_IN # #]);
-	CP_OUT := create_sm_tree ([COMM_PLACE_OUT # #]);
-	LP_OUT := create_sm_tree ([LOC_PLACE_OUT # #]);
+	CP_IN := create_sm_tree ([COMM_PLACE_IN # {'COMM_PLACE_IN_' & $str(nameTrans)} #]);
+	CP_OUT := create_sm_tree ([COMM_PLACE_OUT # {'COMM_PLACE_OUT_' & $str(nameTrans)} #]);
+	LP_OUT := create_sm_tree ([LOC_PLACE_OUT # {'LOC_PLACE_OUT_' & $str(nameTrans)} #]);
 
 	message({ 'CREATE_TRANS Trans : ' & $str(nameTrans) }) ;
 
@@ -578,7 +578,7 @@ semantic_rule CREATE_LOC_SYNC_TRANSITIONS (nodeID : integer) return semantic_tre
 	syInstances : syntactic_tree;
 begin
 	nameProc := $atrv_str (attribute NAME from get_node_reference (PROCESS, $int (nodeID)));
-	RETV := create_sm_tree ([LOC_SYNC_TRANSITIONS # 'LocSyncTransitions' # ]);
+	RETV := create_sm_tree ([LOC_SYNC_TRANSITIONS # {'LocSyncTransitions' & to_string($int(nodeID)) } # ]);
 	
 	if nb_node_instance (BELONG) > 0 then
 		for GROUP in 1 .. nb_node_instance (BELONG) do
@@ -616,7 +616,7 @@ begin
 	nameST := $atrv_str (attribute NAME from get_node_reference (SYNC_TRANS, $int (nodeID)));
 	
 	RETV := create_sm_tree ([LOC_SYNC_TRANSITION #  $str(nameST) # $int(nodeID)]);
-	LPL_OUT := create_sm_tree ([ST_LOC_PLACE_OUT # 'LocOUTList' # ]);
+	LPL_OUT := create_sm_tree ([ST_LOC_PLACE_OUT # {'LocOUTList_' & $str(nameST)} # ]);
 	
 	if nb_node_instance (ARC) > 0 then
 

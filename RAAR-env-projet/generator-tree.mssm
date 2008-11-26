@@ -1,7 +1,9 @@
 annex_file
 
-semantic_tree ONE_INSTANCE (START_PLACE : string) is
-	semantic_leaf ([OBJECT_NAME #$str (START_PLACE) # ])
+semantic_tree ONE_INSTANCE (START_PLACE : string, PROCNAME : string) is
+	semantic_node ([ONE_INSTANCE # { $str (PROCNAME) & $str (START_PLACE) } # ]:
+			semantic_leaf ([OBJECT_NAME #$str (START_PLACE) #]),
+			semantic_leaf ([OBJECT_NAME #$str (PROCNAME) #]))
 end;
 
 semantic_tree ONE_COMM_PLACE_PROC_IN (NAME : string, SOURCE_TRANS : string, VALUE : integer) is

@@ -23,6 +23,12 @@ increase_marging;
 	put($STR(3));
 	put_line(';');
 	apply($3);
+	
+	put('root -> ') ;
+	put($STR(4));
+	put_line(';');
+	apply($4);
+
 
 decrease_marging;
 
@@ -141,9 +147,34 @@ begin
    new_line (1);
 end;
 
+syntactic_rule INTERNAL_PROCESS_TABLE is
+begin
+   new_line (1);
+end;
+
 syntactic_rule ONE_COMM_ARC is
 begin
    new_line (1);
+end;
+
+syntactic_rule ONE_INSTANCE is
+begin
+   new_line (1);
+end;
+
+syntactic_rule LIST_INSTANCE is
+begin
+	if $# > 0 then
+	
+		put($STR(0)) ;
+		put(' -> ') ;
+		put($STR(1)) ;
+		put_line(';') ;
+	
+		if $# > 1 then
+			apply LIST_INSTANCE ($2*);
+		end if;
+	end if;
 end;
 
 syntactic_rule OBJECT_NAME is

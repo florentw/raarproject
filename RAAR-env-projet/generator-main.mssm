@@ -6,10 +6,10 @@ semantic_rule_list is
 	WORK_ON_PROCESS (none) return semantic_tree,
 	WORK_ON_SYNC_TRANS (none) return semantic_tree,
 	WORK_ON_COMM_PLACE (none) return semantic_tree,
+	WORK_ON_INSTANCES (none) return semantic_tree,
 	CREATE_COMM_PLACE (nodeID : integer) return semantic_tree,
 	CREATE_SYNC_TRANS (nodeID : integer) return semantic_tree,
 	CREATE_PROCESS (nodeID : integer) return semantic_tree,
-	CREATE_INSTANCES (nodeID : integer) return semantic_tree,
 	CREATE_PLACES (nodeID : integer) return semantic_tree,
 	CREATE_PLACE (namePL : string) return semantic_tree,
 	CREATE_TRANSITIONS (nodeID : integer) return semantic_tree,
@@ -20,7 +20,7 @@ end;
 
 //The list of all semantic trees
 semantic_tree_list is
-	ONE_INSTANCE (START_PLACE : string),
+	ONE_INSTANCE (START_PLACE : string, PROCNAME : string),
 	ONE_COMM_PLACE_PROC_IN (NAME : string, SOURCE_TRANS : string, VALUE : integer),
 	ONE_COMM_PLACE_PROC_OUT (NAME : string, TARGET_TRANS : string, VALUE : integer),
 	ONE_SYNC_TRANS_PROC_IN (NAME : string, SOURCE_PLACE : string),
@@ -39,7 +39,6 @@ constructor_list is C_MPI,
 					LIST_PROCESS,
 					INTERNAL_LIST_PROCESS,
 					HEAD_LIST_PROCESS,
-					LIST_STT_PLACE,
 					LIST_COMM_PLACE,
 					INTERNAL_LIST_COMM_PLACE,
 					LIST_LOC_TRANS,
@@ -75,7 +74,10 @@ constructor_list is C_MPI,
 					LOC_PLACE_OUT,
 					LOC_SYNC_TRANSITIONS,
 					LOC_SYNC_TRANSITION,
-					ST_LOC_PLACE_OUT;
+					ST_LOC_PLACE_OUT,
+					LIST_INSTANCE,
+					ONE_INSTANCE,
+					INTERNAL_PROCESS_TABLE;
 
 //The list of all global variables
 global_variables none end;

@@ -6,7 +6,7 @@ THE_TREE : semantic_tree;
 begin
 
 	//Creating the main tree
-	THE_TREE := create_sm_tree ([C_MPI # # ]);
+	THE_TREE := create_sm_tree ([C_MPI# # ]);
 
 	//Creating the subtrees
 	message ('Working on process...');
@@ -15,6 +15,8 @@ begin
 	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_SYNC_TRANS ());
 	message ('Working on communication places...');
 	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_COMM_PLACE ());
+	message ('Working on instances...');
+	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_INSTANCES ());
 
 	//Generating the tree
 	generate $smt (THE_TREE) in 'hello.c';
@@ -32,7 +34,7 @@ begin
 	if nb_node_instance (PROCESS) > 0 then
 		for PROCESS in 1 .. nb_node_instance (PROCESS) do
 
-			//Getting the name and instance of each process
+			//Getting the name of each process
 			RETV := add_sm_son ($smt (RETV),
 								sm_rule CREATE_PROCESS (nodeID => $int (PROCESS))) ;
 
@@ -41,6 +43,42 @@ begin
 
 	return $smt (RETV);
 end;
+
+//The process semantic rule
+semantic_rule WORK_ON_INSTANCES (none) return semantic_tree is
+RETV : semantic_tree;
+nameProc : string;
+syInstances : syntactic_tree ;
+begin
+	//Creating the subtree
+	RETV := create_sm_tree ([LIST_INSTANCE # 'Instances' # ]);
+
+	if nb_node_instance (PROCESS) > 0 then
+		for PROCESS in 1 .. nb_node_instance (PROCESS) do
+
+			syInstances := $atrv_syt (attribute INSTANCES from get_node_reference (PROCESS, $int(PROCESS)));
+
+			//Creating the subtree : instance1 .. instanceN
+			for INS in 1 .. number_of_sy_son ($syt(syInstances)) do
+		
+				nameProc := $atrv_str (attribute NAME from get_node_reference (PROCESS, $int(PROCESS)));
+		
+				RETV := add_sm_son ($smt (RETV),
+									sm_tree ONE_INSTANCE (START_PLACE => $str_sy_node(
+																			$sy_son(1,
+																				$sy_son($int(INS),
+																						$syt(syInstances))
+																			)
+																		),
+														PROCNAME => $str(nameProc)));
+				
+			end for;
+		end for;
+	end if;
+
+	return $smt (RETV);
+end;
+
 
 semantic_rule CREATE_PROCESS (nodeID : integer) return semantic_tree is
 	RETV : semantic_tree;
@@ -52,39 +90,10 @@ begin
 	//Creating the process subtree
 	RETV := create_sm_tree ([PNPROCESS # $str(nameProc) # $int (nodeID)]);
 
-	//Creating the three subtrees (instances, places, local transitions)
-	RETV := add_sm_son ($smt (RETV), sm_rule CREATE_INSTANCES (nodeID => $int (nodeID))) ;
+	//Creating the three subtrees (places, local transitions)
 	RETV := add_sm_son ($smt (RETV), sm_rule CREATE_PLACES (nodeID => $int (nodeID))) ;
 	RETV := add_sm_son ($smt (RETV), sm_rule CREATE_TRANSITIONS (nodeID => $int (nodeID))) ;
 	RETV := add_sm_son ($smt (RETV), sm_rule CREATE_LOC_SYNC_TRANSITIONS (nodeID => $int (nodeID))) ;
-
-	return $smt (RETV);
-end;
-
-semantic_rule CREATE_INSTANCES (nodeID : integer) return semantic_tree is
-	RETV : semantic_tree;
-	nameProc : string;
-	syInstances : syntactic_tree;
-begin
-	syInstances := $atrv_syt (attribute INSTANCES from get_node_reference (PROCESS, $int (nodeID)));
-
-	//Creating the subtree
-	RETV := create_sm_tree ([INSTANCES # {'Instances' & to_string($int(nodeID)) } # $int (nodeID)]);
-
-	//Creating the subtree : instance1 .. instanceN
-	for INS in 1 .. number_of_sy_son ($syt(syInstances)) do
-
-		message ({ '-> Instance starting in : ' & $str_sy_node($sy_son(1, $sy_son($int(INS), $syt(syInstances)))) }) ;
-
-		RETV := add_sm_son ($smt (RETV),
-							sm_tree ONE_INSTANCE (START_PLACE => $str_sy_node(
-																	$sy_son(1,
-																		$sy_son($int(INS),
-																				$syt(syInstances))
-																	)
-																)
-												));
-	end for;
 
 	return $smt (RETV);
 end;

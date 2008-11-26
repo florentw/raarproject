@@ -124,7 +124,7 @@ begin
         increase_marging;
 
         //Apply sub-tree rule
-        apply PNPROCESS ($0);
+        apply INTERNAL_LIST_PROCESS ($0);
 
         decrease_marging;
         put_line('}');
@@ -161,23 +161,56 @@ end;
 
 //Internal body syntactic rule for PT-processes
 syntactic_rule INTERNAL_LIST_PROCESS is
-    begin
+begin
     put ('//Process ');
-    apply ($1);
+    put ($STR(1));
     new_line(1);
     put ('if (!strcmp(process[my_rank - 3],"');
-    apply ($1);
+    put ($STR(1));
     put_line('")) {');
     increase_marging;
+
+    //Printing process information
     put ('printf(" My rank is %d and I am ');
-    apply ($1);
+    put ($STR(1));
     put_line ('\n",my_rank);');
+    new_line(1);
+
+    //Main loop
+    put_line ('int state, flag;');
+    put_line ('while (1) {');
+    increase_marging;
+
+    put_line('//Sleeping EXEC_STEP seconds');
+    put_line('sleep(EXEC_STEP);');
+    new_line(1);
+
+    put_line('//Checking if Prototype manager request END');
+    put_line('MPI_Iprobe(PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&flag,&status);');
+    put_line('if (flag) {');
+    increase_marging;
+    put_line('int buf;');
+    put_line('MPI_Recv(&buf,1,MPI_INT,PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&status);');
+    put_line('break;');
     decrease_marging;
     put_line('}');
     new_line(1);
+
+    apply PNPROCESS ($1);
+
+    decrease_marging;
+    put_line ('}');
+
+    decrease_marging;
+    put_line('}');
+    new_line(1);
+
     if $# > 1 then
         apply INTERNAL_LIST_PROCESS ($2*);
     end if;
+
+
+
 end;
 
 syntactic_rule LIST_STT_PLACE is
@@ -318,56 +351,30 @@ end;
 
 syntactic_rule PNPROCESS is
 begin
-    put ('//Process ');
-    put ($STR(1));
-    new_line(1);
-    put ('if (!strcmp(process[my_rank - 3],"');
-    put ($STR(1));
-    put_line('")) {');
-    increase_marging;
+        new_line(1);
+        put('//');
+        put($STR(2));
+        new_line(1);
+        put('enum STATES {');
 
-    //Printing process information
-    put ('printf(" My rank is %d and I am ');
-    put ($STR(1));
-    put_line ('\n",my_rank);');
-    new_line(1);
+        apply LOCAL_PLACES ($2);
 
-    //Main loop
-    put_line ('int state, flag;');
-    put_line ('while (1) {');
-    increase_marging;
+        put('};');
+        new_line(2);
 
-    put_line('//Sleeping EXEC_STEP seconds');
-    put_line('sleep(EXEC_STEP);');
-    new_line(1);
+        put_line('//Main switch');
+        put_line ('switch(state) {');
+        increase_marging;
 
-    put_line('//Checking if Prototype manager request END');
-    put_line('MPI_Iprobe(PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&flag,&status);');
-    put_line('if (flag) {');
-    increase_marging;
-    put_line('int buf;');
-    put_line('MPI_Recv(&buf,1,MPI_INT,PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&status);');
-    put_line('break;');
-    decrease_marging;
-    put_line('}');
-    new_line(1);
+        apply LOCAL_PLACE ($2);
 
-    put_line('//Main switch');
-    put_line ('switch(state) {');
-    increase_marging;
-    put_line ('default: break;');
-    decrease_marging;
-    put_line ('}');
+        new_line(1);
+        put_line ('//Default');
+        put_line ('default: break;');
+        decrease_marging;
+        put_line ('}');
 
-    decrease_marging;
-    put_line ('}');
 
-    decrease_marging;
-    put_line('}');
-    new_line(1);
-    if $# > 1 then
-        apply PNPROCESS ($2*);
-    end if;
 end;
 
 syntactic_rule INSTANCES is
@@ -377,12 +384,33 @@ end;
 
 syntactic_rule LOCAL_PLACES is
 begin
-	put ($STR(0));
+	put($STR(1));
+        if $# > 1 then
+	    put(',');
+            apply LOCAL_PLACES ($2*);
+        end if;
 end;
 
 syntactic_rule LOCAL_PLACE is
 begin
-	put ($STR(0));
+        new_line(1);
+	put('//');
+	put ($STR(1));
+        new_line(1);
+
+        put('case ');
+	put ($STR(1));
+	put (' : ');
+        new_line(1);
+
+        increase_marging;
+        put_line('//Transition...');
+        put_line('break;');
+        decrease_marging;
+
+        if $# > 1 then
+            apply LOCAL_PLACE ($2*);
+        end if;
 end;
 
 syntactic_rule SYNC_TRANS_IN is

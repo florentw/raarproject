@@ -38,8 +38,8 @@ begin
     new_line (1);
     put_line ('#define TAG_END 0');
     new_line (1);
-    put_line ('#define EXEC_DURATION 5');
-    put_line ('#define EXEC_STEP 0.1');
+    put_line ('#define EXEC_DURATION 10');
+    put_line ('#define EXEC_STEP 1');
     new_line (1);
     put_line ('#define PROTO_MANAGER 0');
     put_line ('#define SYNCT_MANAGER 1');
@@ -177,7 +177,7 @@ begin
     new_line(1);
 
     //Main loop
-    put_line ('int state, flag;');
+    put_line ('int flag, state = 0;');
     put_line ('while (1) {');
     increase_marging;
 
@@ -208,9 +208,6 @@ begin
     if $# > 1 then
         apply INTERNAL_LIST_PROCESS ($2*);
     end if;
-
-
-
 end;
 
 syntactic_rule LIST_STT_PLACE is
@@ -245,11 +242,6 @@ syntactic_rule INTERNAL_LIST_COMM_PLACE is
     if $# > 1 then
         apply INTERNAL_LIST_COMM_PLACE ($2*);
     end if;
-end;
-
-syntactic_rule LIST_LOC_TRANS is
-begin
-   new_line (1);
 end;
 
 syntactic_rule LIST_SYNC_TRANS is
@@ -358,6 +350,7 @@ begin
         put('enum STATES {');
 
         apply LOCAL_PLACES ($2);
+        apply LIST_LOC_TRANS ($3);
 
         put('};');
         new_line(2);
@@ -367,6 +360,7 @@ begin
         increase_marging;
 
         apply LOCAL_PLACE ($2);
+        apply LOCAL_TRANS ($3);
 
         new_line(1);
         put_line ('//Default');
@@ -377,24 +371,19 @@ begin
 
 end;
 
-syntactic_rule INSTANCES is
-begin
-	put ($STR(0));
-end;
-
-syntactic_rule LOCAL_PLACES is
+syntactic_rule LIST_LOC_TRANS is
 begin
 	put($STR(1));
         if $# > 1 then
 	    put(',');
-            apply LOCAL_PLACES ($2*);
+            apply LIST_LOC_TRANS ($2*);
         end if;
 end;
 
-syntactic_rule LOCAL_PLACE is
+syntactic_rule LOCAL_TRANS is
 begin
         new_line(1);
-	put('//');
+	put('//Transition ');
 	put ($STR(1));
         new_line(1);
 
@@ -404,13 +393,90 @@ begin
         new_line(1);
 
         increase_marging;
-        put_line('//Transition...');
+        put_line('//Going to next place...');
+        put('state = ');
+        apply LOC_TRANS_OUT ($1);
+	put (';');
+        new_line(1);
+
+        put('printf("My_rank is %d and I am firing the ');
+        put ($STR(1));
+        put (' transition and my next state is ');
+        apply LOC_TRANS_OUT ($1);
+        put ('.",my_rank);');
+        put ('printf("\n");');
+        new_line(1);
+
+        put_line('break;');
+        decrease_marging;
+
+        if $# > 1 then
+            apply LOCAL_TRANS ($2*);
+        end if;
+end;
+
+syntactic_rule INSTANCES is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule LOCAL_PLACES is
+begin
+	put($STR(1));
+	put(',');
+        if $# > 1 then
+            apply LOCAL_PLACES ($2*);
+        end if;
+end;
+
+syntactic_rule LOCAL_PLACE is
+begin
+        new_line(1);
+	put('//Place ');
+	put ($STR(1));
+        new_line(1);
+
+        put('case ');
+	put ($STR(1));
+	put (' : ');
+        new_line(1);
+
+        increase_marging;
+        put_line('//Going to next transition');
+        put('state = ');
+        apply LOC_PLACE_OUT ($1);
+	put (';');
+        new_line(1);
+
+
         put_line('break;');
         decrease_marging;
 
         if $# > 1 then
             apply LOCAL_PLACE ($2*);
         end if;
+end;
+
+syntactic_rule LOC_PLACE_OUT is
+begin
+        //To local transition
+	apply INTERNAL_LOC_PLACE_OUT ($3);
+end;
+
+syntactic_rule INTERNAL_LOC_PLACE_OUT is
+begin
+	put ($STR(1));
+end;
+
+syntactic_rule LOC_TRANS_OUT is
+begin
+        //To local place
+	apply INTERNAL_LOC_TRANS_OUT ($3);
+end;
+
+syntactic_rule INTERNAL_LOC_TRANS_OUT is
+begin
+	put ($STR(1));
 end;
 
 syntactic_rule SYNC_TRANS_IN is
@@ -423,27 +489,12 @@ begin
 	put ($STR(0));
 end;
 
-syntactic_rule LOC_TRANS_OUT is
-begin
-	put ($STR(0));
-end;
-
-syntactic_rule LOC_PLACE_OUT is
-begin
-	put ($STR(0));
-end;
-
 syntactic_rule COMM_PLACE_IN is
 begin
 	put ($STR(0));
 end;
 
 syntactic_rule COMM_PLACE_OUT is
-begin
-	put ($STR(0));
-end;
-
-syntactic_rule LOCAL_TRANS is
 begin
 	put ($STR(0));
 end;

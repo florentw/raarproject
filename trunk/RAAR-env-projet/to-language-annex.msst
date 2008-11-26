@@ -1,6 +1,11 @@
 annex_file
 
-//The main syntactic rule
+
+//***************************************************
+//******       The Main program                ******
+//***************************************************
+
+
 syntactic_rule C_MPI is
 begin
     put_line ('/*');
@@ -37,8 +42,10 @@ begin
     put_line ('#include <mpi.h>');
     new_line (1);
     put_line ('#define TAG_END 0');
+    put_line ('#define TAG_COMMP_PUT 1');
+    put_line ('#define TAG_COMMP_GET 2');
     new_line (1);
-    put_line ('#define EXEC_DURATION 10');
+    put_line ('#define EXEC_DURATION 30');
     put_line ('#define EXEC_STEP 1');
     new_line (1);
     put_line ('#define PROTO_MANAGER 0');
@@ -65,7 +72,7 @@ begin
     put_line ('sleep(EXEC_DURATION);');
     new_line (1);
     put_line ('//Killing all the process');
-    put_line ('for(i = 3; i < nb_proc; i++) {');
+    put_line ('for(i = 1; i < nb_proc; i++) {');
     increase_marging;
     put_line('int buf = 0;');
     put_line ('MPI_Isend(&buf,1,MPI_INT,i,TAG_END,MPI_COMM_WORLD,&request);');
@@ -98,7 +105,202 @@ begin
     put_line ('}');
 end;
 
-//External syntactic rule for Petri Net processes (PT-processes)
+
+//***************************************************
+//******       Syncronisation transitions      ******
+//***************************************************
+
+
+syntactic_rule LIST_SYNC_TRANS is
+begin
+    put ('//There are ');
+    put ($STR_INT (0));
+    put_line (' synchronisation transitions');
+    put_line('if (my_rank == SYNCT_MANAGER) {');
+    increase_marging;
+    put_line('printf(" My rank is %d and I am the synchronisation transitions manager\n",my_rank);');
+    new_line(1);
+
+    put_line ('int flag;');
+    put_line ('while (1) {');
+    increase_marging;
+
+    put_line('//Sleeping EXEC_STEP seconds');
+    put_line('sleep(EXEC_STEP);');
+    new_line(1);
+
+    put_line('//Checking if Prototype manager request END');
+    put_line('MPI_Iprobe(PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&flag,&status);');
+    put_line('if (flag) {');
+    increase_marging;
+    put_line('int buf;');
+    put_line('MPI_Recv(&buf,1,MPI_INT,PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&status);');
+    put_line('break;');
+    decrease_marging;
+    put_line('}');
+    new_line(1);
+
+    if $# > 0 then
+        apply INTERNAL_LIST_SYNC_TRANS ($0);
+    end if;
+
+    decrease_marging;
+    put_line ('}');
+
+    decrease_marging;
+    put_line('}');
+    new_line(2);
+end;
+
+syntactic_rule INTERNAL_LIST_SYNC_TRANS is
+    begin
+    put ('//Synchronisation transition ');
+    apply ($1);
+    put ('!');
+    new_line(1);
+    if $# > 1 then
+        apply INTERNAL_LIST_SYNC_TRANS ($2*);
+    end if;
+end;
+
+
+//***************************************************
+//******       Communication places            ******
+//***************************************************
+
+
+syntactic_rule LIST_COMM_PLACE is
+begin
+    put_line('//Communication places manager');
+    put ('//There are ');
+    put ($STR_INT (0));
+    put_line (' communication places');
+    put_line('if (my_rank == COMMP_MANAGER) {');
+    increase_marging;
+    put_line('printf(" My rank is %d and I am the communication places manager\n",my_rank);');
+    new_line(1);
+
+    apply HEAD_LIST_COMM_PLACE ($0);
+    new_line(1);
+
+    put_line ('int cmp, flag;');
+    put_line ('while (1) {');
+    increase_marging;
+
+    put_line('//Sleeping EXEC_STEP seconds');
+    put_line('sleep(EXEC_STEP);');
+    new_line(1);
+
+    put_line('//Checking if Prototype manager request END');
+    put_line('MPI_Iprobe(PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&flag,&status);');
+    put_line('if (flag) {');
+    increase_marging;
+    put_line('int buf;');
+    put_line('MPI_Recv(&buf,1,MPI_INT,PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&status);');
+    put_line('break;');
+    decrease_marging;
+    put_line('}');
+    new_line(1);
+
+    if $# > 0 then
+        apply INTERNAL_LIST_COMM_PLACE ($0);
+    end if;
+
+    decrease_marging;
+    put_line ('}');
+
+    decrease_marging;
+    put_line('}');
+    new_line(2);
+end;
+
+syntactic_rule HEAD_LIST_COMM_PLACE is
+begin
+    put ('int ');
+    put ($STR(1));
+    put (' = 0;');
+    if $# > 1 then
+        apply HEAD_LIST_COMM_PLACE ($2*);
+    end if;
+end;
+
+syntactic_rule INTERNAL_LIST_COMM_PLACE is
+begin
+    apply COMM_PLACES ($1);
+    if $# > 1 then
+        apply INTERNAL_LIST_COMM_PLACE ($2*);
+    end if;
+end;
+
+syntactic_rule COMM_PLACES is
+begin
+    put ('//Communication place ');
+    put ($STR(0));
+    new_line(1);
+    put ('cmp = ');
+    put ($STR(0));
+    put (';');
+    new_line(2);
+
+    put_line ('//In communication arcs TODO: PN-process verification');
+    apply ONE_COMM_PLACE_PROC_IN ($1);
+    new_line(1);
+
+    put_line ('//Out communication arcs TODO: PN-process verification');
+    apply ONE_COMM_PLACE_PROC_OUT ($2);
+
+    put ($STR(0));
+    put (' = cmp;');
+    new_line(1);
+end;
+
+syntactic_rule ONE_COMM_PLACE_PROC_IN is
+begin
+    put ('//');
+    put ($STR(1));
+    new_line(1);
+    put_line('MPI_Iprobe(MPI_ANY_SOURCE,TAG_COMMP_PUT,MPI_COMM_WORLD,&flag,&status);');
+    put_line('if (flag) {');
+    increase_marging;
+    put_line('int buf, source = status.MPI_SOURCE;');
+    put_line('MPI_Recv(&buf,1,MPI_INT,source,TAG_COMMP_PUT,MPI_COMM_WORLD,&status);');
+    put_line('cmp++;');
+    decrease_marging;
+    put_line('}');
+    new_line(1);
+
+    if $# > 1 then
+        apply ONE_COMM_PLACE_PROC_IN ($2*);
+    end if;
+end;
+
+syntactic_rule ONE_COMM_PLACE_PROC_OUT is
+begin
+    put ('//');
+    put ($STR(1));
+    new_line(1);
+    put_line('MPI_Iprobe(MPI_ANY_SOURCE,TAG_COMMP_GET,MPI_COMM_WORLD,&flag,&status);');
+    put_line('if (flag && cmp > 0) {');
+    increase_marging;
+    put_line('int buf, source = status.MPI_SOURCE;');
+    put_line('MPI_Recv(&buf,1,MPI_INT,source,TAG_COMMP_GET,MPI_COMM_WORLD,&status);');
+    put_line('MPI_Ssend(&buf,1,MPI_INT,source,TAG_COMMP_GET,MPI_COMM_WORLD);');
+    put_line('cmp--;');
+    decrease_marging;
+    put_line('}');
+    new_line(1);
+
+    if $# > 1 then
+        apply ONE_COMM_PLACE_PROC_OUT ($2*);
+    end if;
+end;
+
+
+//***************************************************
+//******       PN-processes                    ******
+//***************************************************
+
+
 syntactic_rule LIST_PROCESS is
 begin
     put ('//There are ');
@@ -156,7 +358,6 @@ syntactic_rule HEAD_LIST_PROCESS is
         put (',');
         apply HEAD_LIST_PROCESS ($2*);
     end if;
-
 end;
 
 //Internal body syntactic rule for PT-processes
@@ -210,137 +411,6 @@ begin
     end if;
 end;
 
-syntactic_rule LIST_STT_PLACE is
-begin
-   new_line (1);
-end;
-
-syntactic_rule LIST_COMM_PLACE is
-begin
-    put ('//There are ');
-    put ($STR_INT (0));
-    put_line (' communication places');
-    if $# > 0 then
-        put_line('//Communication places manager');
-        put_line('if (my_rank == 1) {');
-        increase_marging;
-        put_line('printf(" My rank is %d and I am the communication places manager\n",my_rank);');
-        new_line(1);
-        apply INTERNAL_LIST_COMM_PLACE ($0);
-        decrease_marging;
-        put_line('}');
-    end if;
-    new_line(2);
-end;
-
-syntactic_rule INTERNAL_LIST_COMM_PLACE is
-    begin
-    put ('//Communication place ');
-    apply ($1);
-    put ('!');
-    new_line(1);
-    if $# > 1 then
-        apply INTERNAL_LIST_COMM_PLACE ($2*);
-    end if;
-end;
-
-syntactic_rule LIST_SYNC_TRANS is
-begin
-    put ('//There are ');
-    put ($STR_INT (0));
-    put_line (' synchronisation transitions');
-    new_line(1);
-    if $# > 0 then
-        apply INTERNAL_LIST_SYNC_TRANS ($0);
-    end if;
-end;
-
-syntactic_rule INTERNAL_LIST_SYNC_TRANS is
-    begin
-    put ('//Synchronisation transition ');
-    apply ($1);
-    put ('!');
-    new_line(1);
-    if $# > 1 then
-        apply INTERNAL_LIST_SYNC_TRANS ($2*);
-    end if;
-end;
-
-syntactic_rule LIST_BELONG is
-begin
-   new_line (1);
-end;
-
-syntactic_rule LIST_ARC is
-begin
-   new_line (1);
-end;
-
-syntactic_rule LIST_COMM_ARC is
-begin
-   new_line (1);
-end;
-
-syntactic_rule ONE_BELONG is
-begin
-   new_line (1);
-end;
-
-syntactic_rule ONE_ARC is
-begin
-   new_line (1);
-end;
-
-syntactic_rule ONE_COMM_ARC is
-begin
-   new_line (1);
-end;
-
-syntactic_rule OBJECT_NAME is
-begin
-   put ($STR(0));
-end;
-
-syntactic_rule COMM_PLACES is
-begin
-	put ($STR(0));
-end;
-
-syntactic_rule PROC_OUT is
-begin
-	put ($STR(0));
-end;
-
-syntactic_rule PROC_IN is
-begin
-	put ($STR(0));
-end;
-
-syntactic_rule ONE_COMM_PLACE_PROC_OUT is
-begin
-	put ($STR(0));
-end;
-
-syntactic_rule ONE_COMM_PLACE_PROC_IN is
-begin
-	put ($STR(0));
-end;
-
-syntactic_rule ONE_SYNC_TRANS_PROC_OUT is
-begin
-	put ($STR(0));
-end;
-
-syntactic_rule ONE_SYNC_TRANS_PROC_IN is
-begin
-	put ($STR(0));
-end;
-
-syntactic_rule SYNC_TRANSITIONS is
-begin
-	put ($STR(0));
-end;
-
 syntactic_rule PNPROCESS is
 begin
         new_line(1);
@@ -349,8 +419,8 @@ begin
         new_line(1);
         put('enum STATES {');
 
-        apply LOCAL_PLACES ($2);
-        apply LIST_LOC_TRANS ($3);
+        apply LOCAL_PLACES ($1);
+        apply LOCAL_TRANSITIONS ($2);
 
         put('};');
         new_line(2);
@@ -359,24 +429,28 @@ begin
         put_line ('switch(state) {');
         increase_marging;
 
-        apply LOCAL_PLACE ($2);
-        apply LOCAL_TRANS ($3);
+        apply LOCAL_PLACE ($1);
+        apply LOCAL_TRANS ($2);
 
         new_line(1);
         put_line ('//Default');
         put_line ('default: break;');
         decrease_marging;
         put_line ('}');
-
-
 end;
 
-syntactic_rule LIST_LOC_TRANS is
+
+//***************************************************
+//******       PN-processes : Transitions      ******
+//***************************************************
+
+
+syntactic_rule LOCAL_TRANSITIONS is
 begin
 	put($STR(1));
         if $# > 1 then
 	    put(',');
-            apply LIST_LOC_TRANS ($2*);
+            apply LOCAL_TRANSITIONS ($2*);
         end if;
 end;
 
@@ -393,6 +467,10 @@ begin
         new_line(1);
 
         increase_marging;
+
+        apply COMM_TRANS_IN ($1);
+        apply COMM_TRANS_OUT ($1);
+
         put_line('//Going to next place...');
         put('state = ');
         apply LOC_TRANS_OUT ($1);
@@ -404,9 +482,8 @@ begin
         put (' transition and my next state is ');
         apply LOC_TRANS_OUT ($1);
         put ('.",my_rank);');
-        put ('printf("\n");');
         new_line(1);
-
+        put_line ('printf("\n");');
         put_line('break;');
         decrease_marging;
 
@@ -415,10 +492,23 @@ begin
         end if;
 end;
 
-syntactic_rule INSTANCES is
+syntactic_rule COMM_TRANS_IN is
 begin
-	put ($STR(0));
+	put_line ('//IN');
 end;
+
+syntactic_rule COMM_TRANS_OUT is
+begin
+	put_line ('//OUT');
+end;
+
+
+
+
+//***************************************************
+//******       PN-processes : Places           ******
+//***************************************************
+
 
 syntactic_rule LOCAL_PLACES is
 begin
@@ -479,6 +569,90 @@ begin
 	put ($STR(1));
 end;
 
+
+
+
+
+
+
+
+
+
+//***************************************************
+//******       Functions to do...              ******
+//***************************************************
+
+
+syntactic_rule LIST_BELONG is
+begin
+   new_line (1);
+end;
+
+syntactic_rule LIST_ARC is
+begin
+   new_line (1);
+end;
+
+syntactic_rule LIST_COMM_ARC is
+begin
+   new_line (1);
+end;
+
+syntactic_rule ONE_BELONG is
+begin
+   new_line (1);
+end;
+
+syntactic_rule ONE_ARC is
+begin
+   new_line (1);
+end;
+
+syntactic_rule ONE_COMM_ARC is
+begin
+   new_line (1);
+end;
+
+syntactic_rule OBJECT_NAME is
+begin
+   put ($STR(0));
+end;
+
+syntactic_rule PROC_OUT is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule PROC_IN is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule ONE_SYNC_TRANS_PROC_OUT is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule ONE_SYNC_TRANS_PROC_IN is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule SYNC_TRANSITIONS is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule LIST_STT_PLACE is
+begin
+   new_line (1);
+end;
+
+syntactic_rule INSTANCES is
+begin
+	put ($STR(0));
+end;
+
 syntactic_rule SYNC_TRANS_IN is
 begin
 	put ($STR(0));
@@ -499,11 +673,6 @@ begin
 	put ($STR(0));
 end;
 
-syntactic_rule LOCAL_TRANSITIONS is
-begin
-	put ($STR(0));
-end;
-
 syntactic_rule LOC_SYNC_TRANSITIONS is
 begin
 	put ($STR(0));
@@ -515,6 +684,21 @@ begin
 end;
 
 syntactic_rule ST_LOC_PLACE_OUT is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule INTERNAL_PROCESS_TABLE is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule LIST_INSTANCE is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule ONE_INSTANCE is
 begin
 	put ($STR(0));
 end;

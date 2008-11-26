@@ -466,43 +466,59 @@ begin
 	put (' : ');
         new_line(1);
 
-        increase_marging;
-
-        apply COMM_TRANS_IN ($1);
-        apply COMM_TRANS_OUT ($1);
-
-        put_line('//Going to next place...');
-        put('state = ');
         apply LOC_TRANS_OUT ($1);
-	put (';');
-        new_line(1);
-
-        put('printf("My_rank is %d and I am firing the ');
-        put ($STR(1));
-        put (' transition and my next state is ');
-        apply LOC_TRANS_OUT ($1);
-        put ('.",my_rank);');
-        new_line(1);
-        put_line ('printf("\n");');
-        put_line('break;');
-        decrease_marging;
 
         if $# > 1 then
             apply LOCAL_TRANS ($2*);
         end if;
 end;
 
+syntactic_rule LOC_TRANS_OUT is
+begin
+        increase_marging;
+
+        apply COMM_TRANS_IN ($1);
+        apply COMM_TRANS_OUT ($2);
+
+        put_line('//Going to next place...');
+        put('state = ');
+	apply INTERNAL_LOC_TRANS_OUT ($3);
+	put (';');
+        new_line(1);
+
+        put('printf("My_rank is %d and I am firing the ');
+        put ($STR(0));
+        put (' transition and my next state is ');
+	apply INTERNAL_LOC_TRANS_OUT ($3);
+        put ('.",my_rank);');
+        new_line(1);
+        put_line ('printf("\n");');
+        put_line('break;');
+        decrease_marging;
+end;
+
 syntactic_rule COMM_TRANS_IN is
 begin
-	put_line ('//IN');
+	put('//IN: ');
+        if $# > 0 then
+	    put($STR(1));
+        end if;
+        new_line(1);
 end;
 
 syntactic_rule COMM_TRANS_OUT is
 begin
-	put_line ('//OUT');
+	put ('//OUT: ');
+        if $# > 0 then
+	    put($STR(1));
+        end if;
+        new_line(1);
 end;
 
-
+syntactic_rule INTERNAL_LOC_TRANS_OUT is
+begin
+	put ($STR(1));
+end;
 
 
 //***************************************************
@@ -549,7 +565,7 @@ end;
 
 syntactic_rule LOC_PLACE_OUT is
 begin
-        //To local transition
+        //To local transition TODO: Synchronisation transition
 	apply INTERNAL_LOC_PLACE_OUT ($3);
 end;
 
@@ -557,18 +573,6 @@ syntactic_rule INTERNAL_LOC_PLACE_OUT is
 begin
 	put ($STR(1));
 end;
-
-syntactic_rule LOC_TRANS_OUT is
-begin
-        //To local place
-	apply INTERNAL_LOC_TRANS_OUT ($3);
-end;
-
-syntactic_rule INTERNAL_LOC_TRANS_OUT is
-begin
-	put ($STR(1));
-end;
-
 
 
 

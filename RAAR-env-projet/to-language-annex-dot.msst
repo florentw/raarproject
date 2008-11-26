@@ -1,0 +1,523 @@
+annex_file
+
+//The main syntactic rule
+syntactic_rule C_MPI is
+begin
+
+put_line ('digraph G {') ;
+
+increase_marging;
+
+	put('root -> ') ;
+	put($STR(1));
+	put_line(';');
+	
+	apply($1);
+	
+	put('root -> ') ;
+	put($STR(2));
+	put_line(';');
+	apply($2);
+	
+	put('root -> ') ;
+	put($STR(3));
+	put_line(';');
+	apply($3);
+
+decrease_marging;
+
+put_line ('}') ;
+
+end;
+
+//External syntactic rule for Petri Net processes (PT-processes)
+syntactic_rule LIST_PROCESS is
+begin
+    //If more than zero PT-process
+    if $# > 0 then
+
+		put($STR(0)) ;
+		put(' -> ') ;
+		put($STR(1)) ;
+		put_line(';') ;
+		
+		if $# > 1 then
+			apply LIST_PROCESS($2*) ;
+		end if;
+		
+		apply($1);
+    end if;
+end;
+
+syntactic_rule HEAD_LIST_PROCESS is
+begin
+   new_line (1);
+end;
+
+//Internal body syntactic rule for PT-processes
+syntactic_rule INTERNAL_LIST_PROCESS is
+begin
+	new_line(1);
+end;
+
+syntactic_rule LIST_STT_PLACE is
+begin
+   new_line (1);
+end;
+
+syntactic_rule LIST_COMM_PLACE is
+begin
+	if $# > 0 then
+	
+		put($STR(0)) ;
+		put(' -> ') ;
+		put($STR(1)) ;
+		put_line(';') ;
+	
+		if $# > 1 then
+			apply LIST_COMM_PLACE ($2*);
+		end if;
+	
+		apply($1);
+	
+	end if;
+end;
+
+syntactic_rule INTERNAL_LIST_COMM_PLACE is
+begin
+	new_line(1);
+end;
+
+syntactic_rule LIST_LOC_TRANS is
+begin
+   new_line (1);
+end;
+
+syntactic_rule LIST_SYNC_TRANS is
+begin
+	if $# > 0 then
+	
+		put($STR(0)) ;
+		put(' -> ') ;
+		put($STR(1)) ;
+		put_line(';') ;
+	
+		if $# > 1 then
+			apply LIST_SYNC_TRANS ($2*);
+		end if;
+	
+		apply($1);
+	
+	end if;
+end;
+
+syntactic_rule INTERNAL_LIST_SYNC_TRANS is
+begin
+    new_line(1);
+end;
+
+syntactic_rule LIST_BELONG is
+begin
+   new_line (1);
+end;
+
+syntactic_rule LIST_ARC is
+begin
+   new_line (1);
+end;
+
+syntactic_rule LIST_COMM_ARC is
+begin
+   new_line (1);
+end;
+
+syntactic_rule ONE_BELONG is
+begin
+   new_line (1);
+end;
+
+syntactic_rule ONE_ARC is
+begin
+   new_line (1);
+end;
+
+syntactic_rule ONE_COMM_ARC is
+begin
+   new_line (1);
+end;
+
+syntactic_rule OBJECT_NAME is
+begin
+   put ($STR(0));
+end;
+
+syntactic_rule COMM_PLACES is
+begin
+	if $# > 0 then
+	
+		put($STR(0)) ;
+		put(' -> ') ;
+		put($STR(1)) ;
+		put_line(';') ;
+	
+		if $# > 1 then
+			apply COMM_PLACES ($2*);
+		end if;
+	
+		apply($1);
+	
+	end if;
+end;
+
+syntactic_rule PROC_OUT is
+begin
+	if $# > 0 then
+	
+		put($STR(0)) ;
+		put(' -> ') ;
+		put($STR(1)) ;
+		put_line(';') ;
+	
+		if $# > 1 then
+			apply PROC_OUT ($2*);
+		end if;
+	end if;
+end;
+
+syntactic_rule PROC_IN is
+begin
+	if $# > 0 then
+	
+		put($STR(0)) ;
+		put(' -> ') ;
+		put($STR(1)) ;
+		put_line(';') ;
+	
+		if $# > 1 then
+			apply PROC_IN ($2*);
+		end if;
+	end if;
+end;
+
+syntactic_rule ONE_COMM_PLACE_PROC_OUT is
+begin
+	if $# > 0 then
+	
+		put($STR(0)) ;
+		put(' -> ') ;
+		put($STR(1)) ;
+		put_line(';') ;
+	
+		if $# > 1 then
+			apply ONE_COMM_PLACE_PROC_OUT ($2*);
+		end if;
+	end if;
+end;
+
+syntactic_rule ONE_COMM_PLACE_PROC_IN is
+begin
+	if $# > 0 then
+	
+		put($STR(0)) ;
+		put(' -> ') ;
+		put($STR(1)) ;
+		put_line(';') ;
+	
+		if $# > 1 then
+			apply ONE_COMM_PLACE_PROC_IN ($2*);
+		end if;
+	end if;
+end;
+
+syntactic_rule ONE_SYNC_TRANS_PROC_OUT is
+begin
+	if $# > 0 then
+	
+		put($STR(0)) ;
+		put(' -> ') ;
+		put($STR(1)) ;
+		put_line(';') ;
+	
+		if $# > 1 then
+			apply ONE_SYNC_TRANS_PROC_OUT ($2*);
+		end if;
+	end if;
+end;
+
+syntactic_rule ONE_SYNC_TRANS_PROC_IN is
+begin
+	if $# > 0 then
+	
+		put($STR(0)) ;
+		put(' -> ') ;
+		put($STR(1)) ;
+		put_line(';') ;
+	
+		if $# > 1 then
+			apply ONE_SYNC_TRANS_PROC_IN ($2*);
+		end if;
+	end if;
+end;
+
+syntactic_rule SYNC_TRANSITIONS is
+begin
+	if $# > 0 then
+	
+		put($STR(0)) ;
+		put(' -> ') ;
+		put($STR(1)) ;
+		put_line(';') ;
+	
+		if $# > 1 then
+			apply SYNC_TRANSITIONS ($2*);
+		end if;
+	
+		apply($1);
+	
+	end if;
+end;
+
+syntactic_rule PNPROCESS is
+begin
+	put($STR(0)) ;
+	put(' -> ') ;
+	put($STR(1)) ;
+	put_line(';') ;
+
+	if $# > 1 then
+        apply PNPROCESS ($2*);
+    end if;
+
+    apply($1);
+end;
+
+syntactic_rule INSTANCES is
+begin
+	put($STR(0)) ;
+	put(' -> ') ;
+	put('INSTANCE_') ;
+	put($STR(1)) ;
+	put_line(';') ;
+	
+	if $# > 1 then
+        apply INSTANCES ($2*);
+    end if;
+end;
+
+syntactic_rule LOCAL_PLACES is
+begin
+	put($STR(0)) ;
+	put(' -> ') ;
+	put($STR(1)) ;
+	put_line(';') ;
+	
+	if $# > 1 then
+        apply LOCAL_PLACES ($2*) ;
+    end if;
+    
+    apply ($1) ;
+end;
+
+syntactic_rule LOCAL_PLACE is
+begin
+	put($STR(0)) ;
+	put(' -> ') ;
+	put($STR(1)) ;
+	put_line(';') ;
+    
+	if $# > 1 then
+		apply LOCAL_PLACE ($2*) ;
+	end if;
+	
+    apply($1) ;
+end;
+
+syntactic_rule SYNC_TRANS_IN is
+begin
+
+	if $# > 0 then
+
+		put($STR(0)) ;
+		put(' -> ') ;
+		put('SYNC_TRANS_IN_') ;
+		put($STR(1)) ;
+		put_line(';') ;
+		
+		if $# > 1 then
+			apply SYNC_TRANS_IN ($2*) ;
+		end if;
+    
+    end if;
+end;
+
+syntactic_rule SYNC_TRANS_OUT is
+begin
+	if $# > 0 then
+
+		put($STR(0)) ;
+		put(' -> ') ;
+		put('SYNC_TRANS_OUT_') ;
+		put($STR(1)) ;
+		put_line(';') ;
+		
+		if $# > 1 then
+			apply SYNC_TRANS_OUT ($2*) ;
+		end if;
+    
+    end if;
+end;
+
+syntactic_rule LOC_TRANS_OUT is
+begin
+	if $# > 0 then
+
+		put($STR(0)) ;
+		put(' -> ') ;
+		put('LOC_TRANS_OUT_') ;
+		put($STR(1)) ;
+		put_line(';') ;
+		
+		if $# > 1 then
+			apply LOC_TRANS_OUT ($2*) ;
+		end if;
+    
+    end if;
+end;
+
+syntactic_rule LOC_PLACE_OUT is
+begin
+	if $# > 0 then
+
+		put($STR(0)) ;
+		put(' -> ') ;
+		put('LOC_PLACE_OUT_') ;
+		put($STR(1)) ;
+		put_line(';') ;
+		
+		if $# > 1 then
+			apply LOC_PLACE_OUT ($2*) ;
+		end if;
+    
+    end if;
+end;
+
+syntactic_rule COMM_PLACE_IN is
+begin
+	if $# > 0 then
+
+		put($STR(0)) ;
+		put(' -> ') ;
+		put('COMM_PLACE_IN_') ;
+		put($STR(1)) ;
+		put_line(';') ;
+		
+		if $# > 1 then
+			apply COMM_PLACE_IN ($2*) ;
+		end if;
+    
+    end if;
+end;
+
+syntactic_rule COMM_PLACE_OUT is
+begin
+	if $# > 0 then
+
+		put($STR(0)) ;
+		put(' -> ') ;
+		put('COMM_PLACE_OUT_') ;
+		put($STR(1)) ;
+		put_line(';') ;
+		
+		if $# > 1 then
+			apply COMM_PLACE_OUT ($2*) ;
+		end if;
+    
+    end if;
+end;
+
+syntactic_rule LOCAL_TRANS is
+begin
+	put($STR(0)) ;
+	put(' -> ') ;
+	put($STR(1)) ;
+	put_line(';') ;
+	
+	if $# > 1 then
+		apply LOCAL_TRANS ($2*) ;
+	end if;
+	
+    apply($1) ;
+end;
+
+syntactic_rule LOCAL_TRANSITIONS is
+begin
+	if $# > 0 then
+
+		put($STR(0)) ;
+		put(' -> ') ;
+		put($STR(1)) ;
+		put_line(';') ;
+		
+		if $# > 1 then
+			apply LOCAL_TRANSITIONS ($2*) ;
+		end if;
+		
+		apply($1);
+		
+	end if ;
+end;
+
+syntactic_rule LOC_SYNC_TRANSITIONS is
+begin
+	if $# > 0 then
+
+		put($STR(0)) ;
+		put(' -> ') ;
+		put('LOC_SYNC_TRANSITIONS_') ;
+		put($STR(1)) ;
+		put_line(';') ;
+		
+		if $# > 1 then
+			apply LOC_SYNC_TRANSITIONS ($2*) ;
+		end if;
+    
+    end if;
+end;
+
+syntactic_rule LOC_SYNC_TRANSITION is
+begin
+	put($STR(0)) ;
+	put(' -> ') ;
+	put($STR(1)) ;
+	put_line(';') ;
+	
+	apply ($1) ;
+end;
+
+syntactic_rule ST_LOC_PLACE_OUT is
+begin
+	if $# > 0 then
+
+		put($STR(0)) ;
+		put(' -> ') ;
+		put('ST_LOC_PLACE_OUT_') ;
+		put($STR(1)) ;
+		put_line(';') ;
+		
+		if $# > 1 then
+			apply ST_LOC_PLACE_OUT ($2*) ;
+		end if;
+    
+    end if;
+end;
+
+syntactic_rule INTERNAL_LOC_TRANS_OUT is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule INTERNAL_LOC_PLACE_OUT is
+begin
+	put ($STR(0));
+end;
+

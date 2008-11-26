@@ -68,6 +68,8 @@ constructor_list is C_MPI,
 					LOCAL_TRANS,
 					COMM_PLACE_IN,
 					COMM_PLACE_OUT,
+					INTERNAL_LOC_PLACE_OUT,
+					INTERNAL_LOC_TRANS_OUT,
 					LOC_PLACE_OUT;
 
 //The list of all global variables

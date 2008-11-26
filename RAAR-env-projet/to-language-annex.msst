@@ -24,7 +24,7 @@ begin
     put_line ('##               : Julien CLEMENT <julien.jclement@gmail.com>');
     put_line ('##               : Felix MACH <felix.mach@gmail.com>');
     put_line ('##               : Henry LAY <lay.henri83@gmail.com>');
-    put_line ('##               : Remi FOUCARD <raymooz@gmail.com>');
+    put_line ('##               : Remi VILLE <raymooz@gmail.com>');
     put_line ('##               : Shi-Hon CHAN <syone7@gmail.com>');
     put_line ('##');
     put_line ('##');
@@ -500,6 +500,21 @@ begin
 end;
 
 syntactic_rule LOCAL_TRANSITIONS is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule LOC_SYNC_TRANSITIONS is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule LOC_SYNC_TRANSITION is
+begin
+	put ($STR(0));
+end;
+
+syntactic_rule ST_LOC_PLACE_OUT is
 begin
 	put ($STR(0));
 end;

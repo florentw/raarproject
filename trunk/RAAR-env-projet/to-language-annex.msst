@@ -218,7 +218,7 @@ syntactic_rule HEAD_LIST_COMM_PLACE is
 begin
     put ('int ');
     put ($STR(1));
-    put (' = 0;');
+    put (' = 1;');
     if $# > 1 then
         apply HEAD_LIST_COMM_PLACE ($2*);
     end if;
@@ -265,6 +265,7 @@ begin
     put_line('int buf, source = status.MPI_SOURCE;');
     put_line('MPI_Recv(&buf,1,MPI_INT,source,TAG_COMMP_PUT,MPI_COMM_WORLD,&status);');
     put_line('cmp++;');
+    put_line('printf("My rank is %d and I received a new token in one of my communication places, the new value is %d.\n", my_rank, cmp);');
     decrease_marging;
     put_line('}');
     new_line(1);
@@ -378,7 +379,7 @@ begin
     new_line(1);
 
     //Main loop
-    put_line ('int flag, state = 0;');
+    put_line ('int buf, flag, state = 0;');
     put_line ('while (1) {');
     increase_marging;
 
@@ -499,18 +500,43 @@ end;
 
 syntactic_rule COMM_TRANS_IN is
 begin
-	put('//IN: ');
+	put('//IN arcs from communication places');
         if $# > 0 then
-	    put($STR(1));
+	    apply INTERNAL_COMM_TRANS_IN ($1);
+        end if;
+        new_line(1);
+end;
+
+syntactic_rule INTERNAL_COMM_TRANS_IN is
+begin
+	put('//Arc from communication place ');
+        put ($STR(0));
+        new_line(1);
+	put_line ('MPI_Send(&buf,1,MPI_INT,COMMP_MANAGER,TAG_COMMP_GET,MPI_COMM_WORLD);');
+	put_line ('MPI_Recv(&buf,1,MPI_INT,COMMP_MANAGER,TAG_COMMP_GET,MPI_COMM_WORLD,&status);');
+        if $# > 0 then
+	    apply INTERNAL_COMM_TRANS_IN ($2*);
         end if;
         new_line(1);
 end;
 
 syntactic_rule COMM_TRANS_OUT is
 begin
-	put ('//OUT: ');
+	put_line ('//Out arcs to communication places');
         if $# > 0 then
-	    put($STR(1));
+	    apply INTERNAL_COMM_TRANS_OUT ($1);
+        end if;
+        new_line(1);
+end;
+
+syntactic_rule INTERNAL_COMM_TRANS_OUT is
+begin
+        put ('//Arc to communication place ');
+        put ($STR(0));
+        new_line(1);
+	put_line ('MPI_Isend(&buf,1,MPI_INT,COMMP_MANAGER,TAG_COMMP_PUT,MPI_COMM_WORLD,&request);');
+        if $# > 1 then
+	    apply INTERNAL_COMM_TRANS_OUT ($2*);
         end if;
         new_line(1);
 end;

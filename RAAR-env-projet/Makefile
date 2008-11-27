@@ -2,7 +2,7 @@
 # fko, 18/10/2007
 ###################
 ## Vous devez positionner cette variable de la sorte si vous
-## installez le package du TME dans le même répertoire que
+## installez le package du TME dans le mï¿½me rï¿½pertoire que
 ## le package de MetaScribe.
 CONTAINER_TDIR			= ../executables
 #CONTAINER_TDIR			= /Users/admin/MetaScribe/executables
@@ -53,7 +53,7 @@ test-generator:
 	@echo -e "\n\nCompiling the code..."
 	mpicc -Wall -o hello hello.c
 	@echo -e "\n\nExecuting the program..."
-	mpirun -v -c 10 hello
+	mpirun -v -c 7 hello
 	@echo -e "\n\nClosing LAM..."
 	lamwipe -v bhost
 	@echo -e "\n\nDone!"

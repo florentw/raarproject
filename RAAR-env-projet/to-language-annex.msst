@@ -52,10 +52,32 @@ begin
     put_line ('#define SYNCT_MANAGER 1');
     put_line ('#define COMMP_MANAGER 2');
     new_line (1);
+    
+    
+    //Declare the global enum for local places
+    apply GLOBAL_LIST_ELEMENTS($0) ;
+    
+    new_line (1);
+    
+    //Calling the LIST_PROCESS syntactic rule
+    apply($1);
+    
+    new_line (1);
+    
+    // Declare instaceArray global var
+    apply GLOBAL_LIST_INSTANCE ($4) ;
+    
+    new_line (1);
     put_line ('int main (int argc, char** argv) {');
     new_line (1);
     increase_marging;
     put_line ('int i, my_rank, nb_proc;');
+    new_line (1);
+    
+    // Instanciate the instaceArray global var
+    apply ($4) ;
+    
+    new_line (1);
     put_line ('MPI_Request request;');
     put_line ('MPI_Status status;');
     new_line (1);
@@ -90,15 +112,21 @@ begin
     //Calling the LIST_COMM_PLACE syntactic rule
     apply($3);
 
-    //Calling the LIST_PROCESS syntactic rule
-    apply($1);
+	new_line (1);
+
+	put_line ('// Launching each PNProcess instance') ;
+	put_line ('if (my_rank > 2) {') ;
+	increase_marging;
+	put_line ('instanceArray[my_rank-3]->code(instanceArray[my_rank-3]->startState, my_rank, nb_proc) ;') ;
+	decrease_marging;
+	put_line ('}') ;
 
     new_line (1);
     put_line ('if (my_rank != 0) {');
     increase_marging;
     put_line ('MPI_Barrier(MPI_COMM_WORLD);');
     decrease_marging;
-    put_line ('};');
+    put_line ('}');
     put_line ('MPI_Finalize();');
     put_line ('return 0;');
     decrease_marging;
@@ -309,41 +337,21 @@ begin
     put (' processes');
     new_line(1);
 
-    //If more than zero PT-process
+    //If more than zero PN-process
     if $# > 0 then
 
         //Creation of a string array to distribute the PN-process
-        put ('char *process[');
-        put ($STR_INT (0));
-        put ('] = {');
+        put ('enum PROCESSES_T {');
+        increase_marging;
         apply HEAD_LIST_PROCESS ($0);
+        decrease_marging;
         put ('};');
         new_line(2);
-
-        put_line('//The MPI processes with rank from 3 to number of processes + 2 will be the PN-processes');
-        put ('if(my_rank > 2 && my_rank < ');
-        put ($STR_INT (0));
-        put_line(' + 3) {');
-        increase_marging;
 
         //Apply sub-tree rule
         apply INTERNAL_LIST_PROCESS ($0);
 
-        decrease_marging;
-        put_line('}');
         new_line(1);
-
-        put_line('//The MPI processes without work');
-        put ('if(my_rank >= ');
-        put ($STR_INT (0));
-        put_line(' + 3) {');
-        increase_marging;
-        put_line('//Waiting for END request from Prototype manager');
-        put_line('int buf;');
-        put_line('MPI_Recv(&buf,1,MPI_INT,PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&status);');
-        decrease_marging;
-        put_line('}');
-
     end if;
 end;
 
@@ -352,9 +360,8 @@ syntactic_rule HEAD_LIST_PROCESS is
     begin
 
     //Creation of a string array with the name of each process
-    put ('"');
-    put ($STR(1));
-    put ('"');
+    put ('__');
+    put_upper ($STR(1));
     if $# > 1 then
         put (',');
         apply HEAD_LIST_PROCESS ($2*);
@@ -364,13 +371,18 @@ end;
 //Internal body syntactic rule for PT-processes
 syntactic_rule INTERNAL_LIST_PROCESS is
 begin
-    put ('//Process ');
-    put ($STR(1));
     new_line(1);
-    put ('if (!strcmp(process[my_rank - 3],"');
+    put ('//Process ');
+    put_line ($STR(1));
+
+    put ('void PNProc_');
     put ($STR(1));
-    put_line('")) {');
+    put_line('(int state, int my_rank, int nb_proc) {');
     increase_marging;
+
+	new_line (1);
+    put_line ('MPI_Status status;');
+    new_line (1);
 
     //Printing process information
     put ('printf(" My rank is %d and I am ');
@@ -379,7 +391,8 @@ begin
     new_line(1);
 
     //Main loop
-    put_line ('int buf, flag, state = 0;');
+    put_line ('int buf, flag;');
+
     put_line ('while (1) {');
     increase_marging;
 
@@ -418,13 +431,6 @@ begin
         put('//');
         put($STR(2));
         new_line(1);
-        put('enum STATES {');
-
-        apply LOCAL_PLACES ($1);
-        apply LOCAL_TRANSITIONS ($2);
-
-        put('};');
-        new_line(2);
 
         put_line('//Main switch');
         put_line ('switch(state) {');
@@ -448,11 +454,12 @@ end;
 
 syntactic_rule LOCAL_TRANSITIONS is
 begin
-	put($STR(1));
-        if $# > 1 then
-	    put(',');
-            apply LOCAL_TRANSITIONS ($2*);
-        end if;
+	put('__') ;
+	put_upper($STR(1));
+	if $# > 1 then
+		put(',');
+		apply LOCAL_TRANSITIONS ($2*);
+	end if;
 end;
 
 syntactic_rule LOCAL_TRANS is
@@ -463,7 +470,8 @@ begin
         new_line(1);
 
         put('case ');
-	put ($STR(1));
+	put ('__') ;
+	put_upper ($STR(1));
 	put (' : ');
         new_line(1);
 
@@ -543,7 +551,8 @@ end;
 
 syntactic_rule INTERNAL_LOC_TRANS_OUT is
 begin
-	put ($STR(1));
+	put ('__') ;
+	put_upper ($STR(1));
 end;
 
 
@@ -551,12 +560,64 @@ end;
 //******       PN-processes : Places           ******
 //***************************************************
 
+syntactic_rule INTERNAL_GLOBAL_LIST_SYNC_TRANS is
+begin
+
+	if $# > 0 then
+		put(',');
+		apply INTERNAL_PROCESS_TRANSITIONS ($1);
+	
+		if $# > 1 then
+			apply INTERNAL_GLOBAL_LIST_SYNC_TRANS ($2*);
+		end if;
+	end if;
+end ;
+
+syntactic_rule GLOBAL_LIST_ELEMENTS is
+begin
+
+	new_line(1) ;
+	put ('enum ELEMENTS { ') ;
+	apply INTERNAL_GLOBAL_LIST_ELEMENTS($1) ;
+	apply INTERNAL_GLOBAL_LIST_SYNC_TRANS($2) ;
+	put_line (' } ;') ;
+	new_line(1) ;
+
+end;
+
+syntactic_rule INTERNAL_GLOBAL_LIST_ELEMENTS is
+begin
+
+	apply INTERNAL_PROCESS_PLACES($1) ;
+	put(',');
+	apply INTERNAL_PROCESS_TRANSITIONS($1) ;
+	
+	if $# > 1 then
+		put(',');
+		apply INTERNAL_GLOBAL_LIST_ELEMENTS ($2*);
+	end if;
+end;
+
+syntactic_rule INTERNAL_PROCESS_TRANSITIONS is
+begin
+
+	apply LOCAL_TRANSITIONS ($2) ;
+	
+end;
+
+syntactic_rule INTERNAL_PROCESS_PLACES is
+begin
+
+	apply LOCAL_PLACES($1) ;
+	
+end;
 
 syntactic_rule LOCAL_PLACES is
 begin
-	put($STR(1));
-	put(',');
+	put('__');
+	put_upper($STR(1));
         if $# > 1 then
+        	put(',');
             apply LOCAL_PLACES ($2*);
         end if;
 end;
@@ -569,7 +630,8 @@ begin
         new_line(1);
 
         put('case ');
-	put ($STR(1));
+    put ('__') ;
+	put_upper ($STR(1));
 	put (' : ');
         new_line(1);
 
@@ -597,7 +659,8 @@ end;
 
 syntactic_rule INTERNAL_LOC_PLACE_OUT is
 begin
-	put ($STR(1));
+	put ('__') ;
+	put_upper ($STR(1));
 end;
 
 
@@ -723,13 +786,58 @@ begin
 	put ($STR(0));
 end;
 
+syntactic_rule GLOBAL_LIST_INSTANCE is
+begin
+
+	put_line ('// Instances structure') ;
+	put_line ('typedef struct INSTANCE {') ;
+	increase_marging ;
+	put_line ('void (*code)(int, int, int) ;') ;
+	put_line ('int PNProcess ;') ;
+	put_line ('int startState ;') ;
+	decrease_marging ;
+	put_line('} INSTANCE_T ;') ;
+
+	put_line ('// Global instances array') ;
+	put ('INSTANCE_T * instanceArray[') ;
+	put (to_string($#)) ;
+	put_line ('] ;') ;
+
+end;
+
 syntactic_rule LIST_INSTANCE is
 begin
-	put ($STR(0));
+
+	put_line ('int instIndex = 0 ;') ;
+	apply INTERNAL_LIST_INSTANCE ($0);
+	
+end;
+
+syntactic_rule INTERNAL_LIST_INSTANCE is
+begin
+	apply ($1) ;
+
+	if $# > 1 then
+		apply INTERNAL_LIST_INSTANCE ($2*);
+	end if;
 end;
 
 syntactic_rule ONE_INSTANCE is
 begin
-	put ($STR(0));
+	put_line ('instanceArray[instIndex] = (INSTANCE_T *) malloc(sizeof(INSTANCE_T)) ;') ;
+
+	put ('instanceArray[instIndex]->code = &PNProc_') ;
+	put ($STR(2)) ;
+	put_line (' ;') ;
+	
+	put ('instanceArray[instIndex]->PNProcess = __') ;
+	put_upper ($STR(2)) ;
+	put_line (' ;') ;
+	
+	put ('instanceArray[instIndex++]->startState = __') ;
+	put_upper ($STR(1)) ;
+	put_line (' ;') ;
+	
+	new_line(1);
 end;
 

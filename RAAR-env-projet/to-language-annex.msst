@@ -381,6 +381,7 @@ begin
     increase_marging;
 
 	new_line (1);
+	put_line ('MPI_Request request;');
     put_line ('MPI_Status status;');
     new_line (1);
 

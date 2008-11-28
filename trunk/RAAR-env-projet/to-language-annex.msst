@@ -44,6 +44,7 @@ begin
     put_line ('#include <mpi.h>');
     new_line (1);
     put_line ('#define TAG_END 0');
+    put_line ('#define TAG_ANSWER 0');
     put_line ('#define TAG_COMMP_PUT 1');
     put_line ('#define TAG_COMMP_GET 2');
     new_line (1);
@@ -60,9 +61,16 @@ begin
     apply GLOBAL_LIST_ELEMENTS($0) ;
     new_line (1);
 
+    //Declare the global enum for communication places
+    apply GLOBAL_LIST_COMM_PLACE($0) ;
+    new_line (1);
+
     //Calling the LIST_PROCESS syntactic rule
     apply($1);
     new_line (1);
+
+	apply INIT_LIST_COMM_PLACE ($3) ;
+	new_line (1);
 
     // Declare instanceArray global var
     apply GLOBAL_LIST_INSTANCE ($4) ;
@@ -262,7 +270,213 @@ end;
 //******       Communication places            ******
 //***************************************************
 
+syntactic_rule GLOBAL_LIST_COMM_PLACE is
+begin
+	
+	new_line(1);
+	
+	put_line ('typedef struct COMM_PLACE_T {') ;
+	increase_marging;
+	put_line ('struct CP_QUEUE_NODE_T * queue ;') ;
+	put_line ('int count ;') ;
+	decrease_marging;
+	put_line ('} COMM_PLACE ;') ;
+	
+	new_line(1);
+	
+	put_line ('typedef struct CP_QUEUE_NODE_T {') ;
+	increase_marging;
+	put_line ('struct CP_QUEUE_NODE_T * next ;') ;
+	put_line ('int rank ;') ;
+	put_line ('int nbToken ;') ;
+	decrease_marging;
+	put_line ('} CP_QUEUE_NODE ;') ;
+	
+	new_line(1);
+	
+	put_line ('enum COMM_PLACES_TAG_T {') ;
+	increase_marging;
+	
+	apply HEAD_TAG_ENUM_COMM_PLACE($3) ;
+	new_line(1);
+	decrease_marging;
+	put_line ('} ;') ;
 
+	put_line ('enum COMM_PLACES_T {') ;
+	increase_marging;
+	
+	apply HEAD_ENUM_COMM_PLACE($3) ;
+	new_line(1);
+	decrease_marging;
+	put_line ('} ;') ;
+
+	new_line(2);
+
+	put_line ('void appendToQueue (CP_QUEUE_NODE ** pqueue, int rank, int nbToken)') ;
+	put_line ('{') ;
+	increase_marging;
+	put_line ('if (!(*pqueue))') ;
+	put_line ('{') ;
+	increase_marging;
+	put_line ('*pqueue = (CP_QUEUE_NODE *) malloc(sizeof(CP_QUEUE_NODE)) ;') ;
+	put_line ('(*pqueue)->next = NULL ;') ;
+	put_line ('(*pqueue)->rank = rank ;') ;
+	put_line ('(*pqueue)->nbToken = nbToken ;') ;
+	put_line ('return ;') ;
+	decrease_marging;
+	put_line ('}') ;
+	new_line(1) ;
+	put_line ('CP_QUEUE_NODE * tmp = *pqueue ;') ;
+	new_line(1) ;
+	put_line ('while (tmp->next) tmp = tmp->next ;') ;
+	new_line(1) ;
+	put_line ('tmp->next = (CP_QUEUE_NODE *) malloc(sizeof(CP_QUEUE_NODE)) ;') ;
+	put_line ('tmp->next->next = NULL ;') ;
+	put_line ('tmp->next->rank = rank ;') ;
+	put_line ('tmp->next->nbToken = nbToken ;') ;
+	put_line ('printf("Added a process to queue, nbToken=%d, rank=%d\n", nbToken, rank) ;') ;
+	decrease_marging;
+	put_line ('}') ;
+	
+	new_line(1) ;
+	
+	put_line ('CP_QUEUE_NODE * popFromQueue(CP_QUEUE_NODE ** pqueue)') ;
+	put_line ('{') ;
+	increase_marging;
+	put_line ('if (!(*pqueue)) return NULL ;') ;
+	new_line(1) ;
+	put_line ('CP_QUEUE_NODE * tmp = *pqueue ;') ;
+	new_line(1) ;
+	put_line ('*pqueue = (*pqueue)->next ;') ;
+	put_line ('printf("Popped a process from queue, nbToken=%d, rank=%d\n", tmp->nbToken, tmp->rank) ;') ;
+	put_line ('return tmp ;') ;
+	decrease_marging;
+	put_line ('}') ;
+
+end;
+
+syntactic_rule INIT_GLOBAL_LIST_COMM_PLACE is
+begin
+	put ('COMM_PLACE * cpArray[') ;
+	put (to_string($#)) ;
+	put_line ('] ;') ;
+	
+	apply HEAD_INIT_LIST_COMM_PLACE($0) ;
+end;
+
+syntactic_rule HEAD_ENUM_COMM_PLACE is
+begin
+	if $# > 0 then
+	
+		put ('__') ;
+		put_upper ($STR(1));
+		
+		if $# > 1 then
+			put (',') ;
+		
+			apply HEAD_ENUM_COMM_PLACE ($2*);
+		end if;
+	
+	end if;
+end;
+
+syntactic_rule HEAD_TAG_ENUM_COMM_PLACE is
+begin
+	if $# > 0 then
+	
+		put ('__') ;
+		put_upper ($STR(1));
+		put ('_GET,') ;
+		
+		put ('__') ;
+		put_upper ($STR(1));
+		put ('_PUT') ;
+		
+		if $# > 1 then
+			put (',') ;
+		
+			apply HEAD_TAG_ENUM_COMM_PLACE ($2*);
+		end if;
+	
+	end if;
+end;
+
+syntactic_rule HEAD_INIT_LIST_COMM_PLACE is
+begin
+	if $# > 0 then
+
+		put ('cpArray[') ;
+		put ('__') ;
+		put_upper ($STR(1));
+		put_line('] = (COMM_PLACE *) malloc(sizeof(COMM_PLACE)) ;') ;
+		
+		put ('cpArray[') ;
+		put ('__') ;
+		put_upper ($STR(1));
+		put (']->count = ') ;
+		put (to_string($int(1))) ;
+		put_line (' ;') ;
+		
+		put ('cpArray[') ;
+		put ('__') ;
+		put_upper ($STR(1));
+		put_line(']->queue = NULL ;') ;
+	
+		if $# > 1 then
+			new_line(1) ;
+		
+			apply HEAD_INIT_LIST_COMM_PLACE ($2*);
+		end if;
+	
+	end if;
+end;
+
+syntactic_rule INIT_LIST_COMM_PLACE is
+begin
+
+	put_line ('void commPlaceMngr (int my_rank, int nb_proc)') ;
+	put_line ('{') ;
+	increase_marging;
+	
+	put_line ('MPI_Status status;');
+	
+	apply INIT_GLOBAL_LIST_COMM_PLACE ($0) ;
+	new_line(1);
+	
+	put_line('printf(" My rank is %d and I am the communication places manager\n",my_rank);');
+	new_line(1);
+	
+	put_line ('while (1) {');
+	increase_marging;
+	
+		put_line('int buf;');
+		put_line('MPI_Recv(&buf,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status);');
+		
+		new_line(1);
+		
+		put_line('if (status.MPI_SOURCE == PROTO_MANAGER) break ;') ;
+		
+		new_line(1);
+		put_line('switch (status.MPI_TAG) {') ;
+	
+			increase_marging;
+	
+			if $# > 0 then
+				apply INTERNAL_LIST_COMM_PLACE ($0);
+			end if;
+	
+			decrease_marging;
+	
+		new_line(1);
+		put_line('}') ;
+	
+	decrease_marging;
+	put_line('}');
+
+	decrease_marging;
+	put_line('}');
+
+end ;
 
 syntactic_rule LIST_COMM_PLACE is
 begin
@@ -272,57 +486,11 @@ begin
     put_line (' communication places');
     put_line('if (my_rank == COMMP_MANAGER) {');
     increase_marging;
-    put_line('printf(" My rank is %d and I am the communication places manager\n",my_rank);');
-    new_line(1);
-
-    apply HEAD_LIST_COMM_PLACE ($0);
-    new_line(1);
-
-    put_line ('int cmp, flag;');
-    put_line ('while (1) {');
-    increase_marging;
-
-    put_line('//Sleeping EXEC_STEP seconds');
-    put_line('sleep(EXEC_STEP);');
-    new_line(1);
-
-    put_line('//Checking if Prototype manager request END');
-    put_line('MPI_Iprobe(PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&flag,&status);');
-    put_line('if (flag) {');
-    increase_marging;
-    put_line('int buf;');
-    put_line('MPI_Recv(&buf,1,MPI_INT,PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&status);');
-    put_line('break;');
-    decrease_marging;
-    put_line('}');
-    new_line(1);
-
-    if $# > 0 then
-        apply INTERNAL_LIST_COMM_PLACE ($0);
-    end if;
-
-    decrease_marging;
-    put_line ('}');
-
+    put_line('commPlaceMngr(my_rank, nb_proc);');
     decrease_marging;
     put_line('}');
     new_line(2);
 end;
-
-
-syntactic_rule HEAD_LIST_COMM_PLACE is
-begin
-    put ('int ');
-    put ($STR(1));
-    put (' = ');
-    put (to_string($int(1))) ;
-    put (';') ;
-    
-    if $# > 1 then
-        apply HEAD_LIST_COMM_PLACE ($2*);
-    end if;
-end;
-
 
 syntactic_rule INTERNAL_LIST_COMM_PLACE is
 begin
@@ -338,23 +506,73 @@ begin
     put ('//Communication place ');
     put ($STR(0));
     new_line(1);
-    put ('cmp = ');
-    put ($STR(0));
-    put (';');
-    new_line(2);
 
-    put_line ('//In communication arcs TODO: PN-process verification');
-    apply ONE_COMM_PLACE_PROC_IN ($1);
+	put('case __') ;
+    put_upper ($STR(0));
+    put_line ('_GET:') ;
+    increase_marging;
+    
+    put ('if ((cpArray[__') ;
+    put_upper ($STR(0));
+    put_line (']->count - buf) >= 0) {');
+    increase_marging;
+    put ('cpArray[__') ;
+    put_upper ($STR(0));
+    put_line (']->count -= buf ;') ;
+    put_line ('MPI_Send(&buf, 1, MPI_INT, status.MPI_SOURCE, TAG_ANSWER, MPI_COMM_WORLD) ;') ;
+    decrease_marging;
+    put_line ('} else {') ;
+    increase_marging;
+    put ('appendToQueue(') ;
+    put ('&cpArray[__') ;
+    put_upper ($STR(0));
+    put_line (']->queue, status.MPI_SOURCE, buf) ;') ;
+    decrease_marging;
+    put_line ('}') ;
+    put_line ('break ;') ;
     new_line(1);
 
-    put_line ('//Out communication arcs TODO: PN-process verification');
-    apply ONE_COMM_PLACE_PROC_OUT ($2);
+	decrease_marging;
 
-    put ($STR(0));
-    put (' = cmp;');
+	put('case __') ;
+    put_upper ($STR(0));
+    put_line ('_PUT:') ;
+    increase_marging;
+    
+    put ('cpArray[__') ;
+    put_upper ($STR(0));
+    put_line (']->count += buf ;') ;
+    
+    put ('if (cpArray[__') ;
+    put_upper ($STR(0));
+    put_line (']->queue->next && ') ;
+	put ('(cpArray[__') ;
+    put_upper ($STR(0));
+    put_line (']->queue->next->nbToken - buf >= 0)) {') ;
+    
+    increase_marging;
+    
+    put ('CP_QUEUE_NODE * tmpNode = popFromQueue(') ;
+    put ('&cpArray[__') ;
+    put_upper ($STR(0));
+    put_line (']->queue);') ;
+    
+    put ('cpArray[__') ;
+    put_upper ($STR(0));
+    put_line (']->count -= tmpNode->nbToken ;') ;
+    
+    put_line ('MPI_Send(&buf, 1, MPI_INT, tmpNode->rank, TAG_ANSWER, MPI_COMM_WORLD) ;') ;
+    
+    put_line ('free (tmpNode) ;') ;
+    decrease_marging;
+	put_line ('}') ;
+	
+    put_line ('break ;') ;
+    new_line(1);
+    
+    decrease_marging;
     new_line(1);
 end;
-
 
 syntactic_rule ONE_COMM_PLACE_PROC_IN is
 begin
@@ -599,7 +817,7 @@ begin
 	apply INTERNAL_COMM_TRANS_IN ($1);
 
         new_line(1);
-        put_line ('//Blocant wait for a message');
+        put_line ('//Blocking wait for a message');
         put_line ('MPI_Probe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status);');
         new_line(1);
 
@@ -613,7 +831,7 @@ begin
         put_line ('//If answer from communication places manager');
         put_line ('if (status.MPI_SOURCE == COMMP_MANAGER)');
         increase_marging;
-        put_line ('MPI_Recv(&buf,1,MPI_INT,COMMP_MANAGER,TAG_COMMP_GET,MPI_COMM_WORLD,&status);');
+        put_line ('MPI_Recv(&buf,1,MPI_INT,COMMP_MANAGER,TAG_ANSWER,MPI_COMM_WORLD,&status);');
         decrease_marging;
     end if;
 end;
@@ -624,13 +842,21 @@ begin
     put('//Arc from communication place ');
     put ($STR(0));
     new_line(1);
-    put_line ('MPI_Send(&buf,1,MPI_INT,COMMP_MANAGER,TAG_COMMP_GET,MPI_COMM_WORLD);');
+    
+    put ('buf = ');
+    put (to_string($INT(0))) ;
+    put_line (';') ;
+    
+    put ('MPI_Send(&buf,1,MPI_INT,COMMP_MANAGER,') ;
+    put ('__') ;
+    put_upper ($STR(0));
+	put_line ('_GET ,MPI_COMM_WORLD);');
+	
     if $# > 0 then
         apply INTERNAL_COMM_TRANS_IN ($2*);
     end if;
     new_line(1);
 end;
-
 
 syntactic_rule COMM_TRANS_OUT is
 begin
@@ -647,7 +873,16 @@ begin
     put ('//Arc to communication place ');
     put ($STR(0));
     new_line(1);
-    put_line ('MPI_Isend(&buf,1,MPI_INT,COMMP_MANAGER,TAG_COMMP_PUT,MPI_COMM_WORLD,&request);');
+    
+    put ('buf = ');
+    put (to_string($INT(0))) ;
+    put_line (';') ;
+    
+    put ('MPI_Isend(&buf,1,MPI_INT,COMMP_MANAGER,') ;
+    put ('__') ;
+    put_upper ($STR(0));
+	put_line ('_PUT ,MPI_COMM_WORLD,&request);');
+	
     if $# > 1 then
         apply INTERNAL_COMM_TRANS_OUT ($2*);
     end if;

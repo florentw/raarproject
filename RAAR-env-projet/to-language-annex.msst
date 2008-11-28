@@ -64,7 +64,7 @@ begin
     apply($1);
     new_line (1);
 
-    // Declare instaceArray global var
+    // Declare instanceArray global var
     apply GLOBAL_LIST_INSTANCE ($4) ;
 
     new_line (1);
@@ -74,7 +74,7 @@ begin
     put_line ('int i, my_rank, nb_proc;');
     new_line (1);
 
-    // Instanciate the instaceArray global var
+    // Instanciate the instanceArray global var
     apply ($4) ;
 
     new_line (1);
@@ -126,6 +126,12 @@ begin
     put_line ('MPI_Barrier(MPI_COMM_WORLD);');
     decrease_marging;
     put_line ('}');
+    
+    new_line(1);
+    // Free the instanceArray global var
+    apply GLOBAL_FREE_LIST_INSTANCE ($4) ;
+    new_line(1);
+    
     put_line ('MPI_Finalize();');
     put_line ('return 0;');
     decrease_marging;
@@ -143,7 +149,8 @@ end;
 syntactic_rule GLOBAL_LIST_ELEMENTS is
 begin
     new_line(1) ;
-    put ('enum ELEMENTS { ') ;
+    put_line ('// Global enum for each pn-process element') ;
+    put ('enum ELEMENTS_T { ') ;
     apply INTERNAL_GLOBAL_LIST_ELEMENTS($1) ;
     apply INTERNAL_GLOBAL_LIST_SYNC_TRANS($2) ;
     put_line (' } ;') ;
@@ -307,7 +314,10 @@ syntactic_rule HEAD_LIST_COMM_PLACE is
 begin
     put ('int ');
     put ($STR(1));
-    put (' = 1;');
+    put (' = ');
+    put (to_string($int(1))) ;
+    put (';') ;
+    
     if $# > 1 then
         apply HEAD_LIST_COMM_PLACE ($2*);
     end if;
@@ -740,13 +750,22 @@ begin
     put_line ('] ;') ;
 end;
 
+syntactic_rule GLOBAL_FREE_LIST_INSTANCE is
+begin
+	put_line ('// Free the global list instance array') ;
+	put ('for (i = 0; i<') ;
+	put (to_string($#)) ;
+	put_line ('; i++)') ;
+	increase_marging;
+	put_line ('free(instanceArray[i]) ;') ;
+	decrease_marging;
+end;
 
 syntactic_rule LIST_INSTANCE is
 begin
     put_line ('int instIndex = 0 ;') ;
     apply INTERNAL_LIST_INSTANCE ($0);
 end;
-
 
 syntactic_rule INTERNAL_LIST_INSTANCE is
 begin
@@ -755,7 +774,6 @@ begin
         apply INTERNAL_LIST_INSTANCE ($2*);
     end if;
 end;
-
 
 syntactic_rule ONE_INSTANCE is
 begin

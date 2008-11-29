@@ -133,7 +133,7 @@ semantic_rule CREATE_SYNC_TRANS (nodeID : integer) return semantic_tree is
 begin
 	nameTrans := $atrv_str (attribute NAME from get_node_reference (SYNC_TRANS, $int (nodeID)));
 
-	RETV := create_sm_tree ([SYNC_TRANSITIONS # { 'SYNC_TRANSITIONS_' & $str(nameTrans) } # ]);
+	RETV := create_sm_tree ([SYNC_TRANSITIONS # $str(nameTrans) # ]);
 	P_IN := create_sm_tree ([PROC_IN # {'PROCIN_' & $str(nameTrans)} #]);
 	P_OUT := create_sm_tree ([PROC_OUT # {'PROCOUT_' & $str(nameTrans)} #]);
 

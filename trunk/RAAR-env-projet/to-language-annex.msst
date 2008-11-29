@@ -617,9 +617,6 @@ end;
 syntactic_rule INTERNAL_LIST_COMM_PLACE is
 begin
     apply COMM_PLACES ($1);
-    if $# > 1 then
-        apply INTERNAL_LIST_COMM_PLACE ($2*);
-    end if;
 end;
 
 
@@ -949,7 +946,7 @@ begin
     put('//Arc from communication place ');
     put_line ($STR(0));
 
-    put ('buf[__') ;
+    put ('bufCP[__') ;
     put_upper ($STR(0)) ;
 	put ('] = ');
     put (to_string($INT(0))) ;

@@ -265,9 +265,9 @@ begin
 	put_line('if (status.MPI_SOURCE == PROTO_MANAGER) break ;') ;
 	new_line(1) ;
 
-    if $# > 0 then
-        apply INTERNAL_LIST_SYNC_TRANS ($0);
-    end if;
+        if $# > 0 then
+            apply INTERNAL_LIST_SYNC_TRANS ($0);
+        end if;
 
 	decrease_marging;
 	put_line('}') ;
@@ -1106,6 +1106,7 @@ end;
 
 syntactic_rule LOC_SYNC_TRANSITION is
 begin
+    if $# > 0 then
         new_line(1);
         put('//Synchronization transition ');
         put ($STR(1));
@@ -1118,7 +1119,13 @@ begin
         new_line(1);
 
         increase_marging;
-        put_line('MPI_Send(&buf,1,MPI_INT,SYNCT_MANAGER,TAG_SYNCT_ASK,MPI_COMM_WORLD);');
+
+        put ('buf = __') ;
+        put_upper($STR(1));
+        put (';') ;
+	new_line(1);
+        put('MPI_Send(&buf,1,MPI_INT,SYNCT_MANAGER,TAG_SYNCT_ASK,MPI_COMM_WORLD);');
+	new_line(1);
 
 	put_line ('//Blocking wait for a message');
 	put_line ('MPI_Recv(&buf, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
@@ -1155,6 +1162,7 @@ begin
         if $# > 1 then
             apply LOC_SYNC_TRANSITION ($2*);
         end if;
+    end if;
 end;
 
 

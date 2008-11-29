@@ -46,6 +46,8 @@ begin
     put_line ('#define TAG_END 0');
     put_line ('#define TAG_COMMP_PUT 1');
     put_line ('#define TAG_COMMP_GET 2');
+    put_line ('#define TAG_SYNCT_ASK 3');
+    put_line ('#define TAG_SYNCT_ACK 4');
     new_line (1);
     put_line ('#define EXEC_DURATION 30');
     put_line ('#define EXEC_STEP 1');
@@ -63,7 +65,7 @@ begin
     //Declare the global enum for communication places
     apply GLOBAL_LIST_COMM_PLACE($0) ;
     new_line (1);
-    
+
     //Declare the global enum for sync transitions
     apply GLOBAL_LIST_SYNC_TRANS($0) ;
     new_line (1);
@@ -74,7 +76,7 @@ begin
 
 	apply INIT_LIST_COMM_PLACE ($3) ;
 	new_line (1);
-	
+
 	apply INIT_LIST_SYNC_TRANS ($2) ;
 	new_line (1);
 
@@ -139,12 +141,12 @@ begin
     put_line ('MPI_Barrier(MPI_COMM_WORLD);');
     decrease_marging;
     put_line ('}');
-    
+
     new_line(1);
     // Free the instanceArray global var
     apply GLOBAL_FREE_LIST_INSTANCE ($4) ;
     new_line(1);
-    
+
     put_line ('MPI_Finalize();');
     put_line ('return 0;');
     decrease_marging;
@@ -178,12 +180,12 @@ begin
 		put(',');
 		put ('__') ;
 		put_upper ($STR(1)) ;
-	
+
 		if $# > 1 then
 			apply INTERNAL_GLOBAL_LIST_SYNC_TRANS ($2*);
 		end if;
 	end if;
-	
+
 end ;
 
 
@@ -231,16 +233,16 @@ end ;
 syntactic_rule GLOBAL_ENUM_SYNC_TRANS is
 begin
 	if $# > 0 then
-	
+
 		put ('__ST_') ;
 		put_upper ($STR(1));
-		
+
 		if $# > 1 then
 			put (',') ;
-		
+
 			apply GLOBAL_ENUM_SYNC_TRANS ($2*);
 		end if;
-	
+
 	else
 		put ('__NO_ST');
 	end if;
@@ -262,11 +264,11 @@ begin
 	put_line('MPI_Recv(&buf,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status);');
 	put_line('if (status.MPI_SOURCE == PROTO_MANAGER) break ;') ;
 	new_line(1) ;
-	
+
     if $# > 0 then
         apply INTERNAL_LIST_SYNC_TRANS ($0);
     end if;
-	
+
 	decrease_marging;
 	put_line('}') ;
 	decrease_marging;
@@ -308,18 +310,18 @@ end;
 
 syntactic_rule GLOBAL_LIST_COMM_PLACE is
 begin
-	
+
 	new_line(1);
-	
+
 	put_line ('typedef struct COMM_PLACE_T {') ;
 	increase_marging;
 	put_line ('struct CP_QUEUE_NODE_T * queue ;') ;
 	put_line ('int count ;') ;
 	decrease_marging;
 	put_line ('} COMM_PLACE ;') ;
-	
+
 	new_line(1);
-	
+
 	put_line ('typedef struct CP_QUEUE_NODE_T {') ;
 	increase_marging;
 	put_line ('struct CP_QUEUE_NODE_T * next ;') ;
@@ -327,12 +329,12 @@ begin
 	put_line ('int nbToken ;') ;
 	decrease_marging;
 	put_line ('} CP_QUEUE_NODE ;') ;
-	
+
 	new_line(1);
-	
+
 	put_line ('enum COMM_PLACES_TAG_T {') ;
 	increase_marging;
-	
+
 	apply HEAD_TAG_ENUM_COMM_PLACE($3) ;
 	new_line(1);
 	decrease_marging;
@@ -340,7 +342,7 @@ begin
 
 	put_line ('enum COMM_PLACES_T {') ;
 	increase_marging;
-	
+
 	apply HEAD_ENUM_COMM_PLACE($3) ;
 	new_line(1);
 	decrease_marging;
@@ -373,9 +375,9 @@ begin
 	put_line ('printf("Added a process to queue, nbToken=%d, rank=%d\n", nbToken, rank) ;') ;
 	decrease_marging;
 	put_line ('}') ;
-	
+
 	new_line(1) ;
-	
+
 	put_line ('CP_QUEUE_NODE * popFromQueue(CP_QUEUE_NODE ** pqueue)') ;
 	put_line ('{') ;
 	increase_marging;
@@ -417,7 +419,7 @@ begin
 	put ('COMM_PLACE * cpArray[') ;
 	put (to_string($#)) ;
 	put_line ('] ;') ;
-	
+
 	apply HEAD_INIT_LIST_COMM_PLACE($0) ;
 end;
 
@@ -426,30 +428,30 @@ begin
 	put ('for (i = 0; i<') ;
 	put (to_string($#)) ;
 	put_line ('; i++) {') ;
-	
+
 	increase_marging;
 	put_line ('freeQueue (&cpArray[i]->queue) ;') ;
 	put_line ('free (cpArray[i]) ;') ;
 	decrease_marging;
-	
+
 	put_line ('}') ;
-	
+
 	new_line (1) ;
 end;
 
 syntactic_rule HEAD_ENUM_COMM_PLACE is
 begin
 	if $# > 0 then
-	
+
 		put ('__') ;
 		put_upper ($STR(1));
-		
+
 		if $# > 1 then
 			put (',') ;
-		
+
 			apply HEAD_ENUM_COMM_PLACE ($2*);
 		end if;
-	
+
 	else
 		put ('__NO_CP');
 	end if;
@@ -458,25 +460,25 @@ end;
 syntactic_rule HEAD_TAG_ENUM_COMM_PLACE is
 begin
 	if $# > 0 then
-	
+
 		put ('__') ;
 		put_upper ($STR(1));
 		put ('_GET,') ;
-		
+
 		put ('__') ;
 		put_upper ($STR(1));
 		put ('_PUT,') ;
-		
+
 		put ('__') ;
 		put_upper ($STR(1));
 		put ('_ANS') ;
-		
+
 		if $# > 1 then
 			put (',') ;
-		
+
 			apply HEAD_TAG_ENUM_COMM_PLACE ($2*);
 		end if;
-	
+
 	else
 		put ('__NO_CP_TAG');
 	end if;
@@ -490,25 +492,25 @@ begin
 		put ('__') ;
 		put_upper ($STR(1));
 		put_line('] = (COMM_PLACE *) malloc(sizeof(COMM_PLACE)) ;') ;
-		
+
 		put ('cpArray[') ;
 		put ('__') ;
 		put_upper ($STR(1));
 		put (']->count = ') ;
 		put (to_string($int(1))) ;
 		put_line (' ;') ;
-		
+
 		put ('cpArray[') ;
 		put ('__') ;
 		put_upper ($STR(1));
 		put_line(']->queue = NULL ;') ;
-	
+
 		if $# > 1 then
 			new_line(1) ;
-		
+
 			apply HEAD_INIT_LIST_COMM_PLACE ($2*);
 		end if;
-	
+
 	end if;
 end;
 
@@ -518,40 +520,40 @@ begin
 	put_line ('void commPlaceMngr (int my_rank, int nb_proc)') ;
 	put_line ('{') ;
 	increase_marging;
-	
+
 	put_line ('MPI_Status status;');
 	put_line ('int i;');
-	
+
 	apply INIT_GLOBAL_LIST_COMM_PLACE ($0) ;
 	new_line(1);
-	
+
 	put_line('printf(" My rank is %d and I am the communication places manager\n",my_rank);');
 	new_line(1);
-	
+
 	put_line ('while (1) {');
 	increase_marging;
-	
+
 		put_line('int buf;');
 		put_line('MPI_Recv(&buf,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status);');
-		
+
 		new_line(1);
-		
+
 		put_line('if (status.MPI_SOURCE == PROTO_MANAGER) break ;') ;
-		
+
 		new_line(1);
 		put_line('switch (status.MPI_TAG) {') ;
-	
+
 			increase_marging;
-	
+
 			if $# > 0 then
 				apply INTERNAL_LIST_COMM_PLACE ($0);
 			end if;
-	
+
 			decrease_marging;
-	
+
 		new_line(1);
 		put_line('}') ;
-	
+
 	decrease_marging;
 	put_line('}');
 
@@ -595,7 +597,7 @@ begin
     put_upper ($STR(0));
     put_line ('_GET:') ;
     increase_marging;
-    
+
     put ('if ((cpArray[__') ;
     put_upper ($STR(0));
     put_line (']->count - buf) >= 0) {');
@@ -603,12 +605,12 @@ begin
     put ('cpArray[__') ;
     put_upper ($STR(0));
     put_line (']->count -= buf ;') ;
-    
+
     put ('MPI_Send(&buf, 1, MPI_INT, status.MPI_SOURCE, ') ;
 	put ('__') ;
     put_upper ($STR(0));
 	put_line ('_ANS, MPI_COMM_WORLD) ;') ;
-	
+
     decrease_marging;
     put_line ('} else {') ;
     increase_marging;
@@ -627,41 +629,41 @@ begin
     put_upper ($STR(0));
     put_line ('_PUT:') ;
     increase_marging;
-    
+
     put ('cpArray[__') ;
     put_upper ($STR(0));
     put_line (']->count += buf ;') ;
-    
+
     put ('if (cpArray[__') ;
     put_upper ($STR(0));
     put (']->queue->next && ') ;
 	put ('(cpArray[__') ;
     put_upper ($STR(0));
     put_line (']->queue->next->nbToken - buf >= 0)) {') ;
-    
+
     increase_marging;
-    
+
     put ('CP_QUEUE_NODE * tmpNode = popFromQueue(') ;
     put ('&cpArray[__') ;
     put_upper ($STR(0));
     put_line (']->queue);') ;
-    
+
     put ('cpArray[__') ;
     put_upper ($STR(0));
     put_line (']->count -= tmpNode->nbToken ;') ;
-    
+
     put ('MPI_Send(&buf, 1, MPI_INT, tmpNode->rank, ') ;
 	put ('__') ;
     put_upper ($STR(0));
 	put_line ('_ANS, MPI_COMM_WORLD) ;') ;
-    
+
     put_line ('free (tmpNode) ;') ;
     decrease_marging;
 	put_line ('}') ;
-	
+
     put_line ('break ;') ;
     new_line(1);
-    
+
     decrease_marging;
     new_line(1);
 end;
@@ -831,6 +833,7 @@ begin
 
     apply LOCAL_PLACE ($1);
     apply LOCAL_TRANS ($2);
+    apply LOC_SYNC_TRANSITION ($3);
 
     new_line(1);
     put_line ('//Default');
@@ -906,30 +909,30 @@ syntactic_rule COMM_TRANS_IN is
 begin
 	put('//IN arcs from communication places');
 	if $# > 0 then
-	
+
 		apply INTERNAL_COMM_TRANS_IN ($1);
-		
+
 		put ('rcvCount = ') ;
 		put (to_string($#)) ;
 		put_line (';') ;
-	
+
 		new_line(1);
-		
+
 		put_line ('while (1)') ;
 		put_line ('{');
 		increase_marging;
-		
+
 		put_line ('//Blocking wait for a message');
 		put_line ('MPI_Recv(&buf, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
 		new_line(1);
-	
+
 		put_line ('//If END request from prototype manager');
 		put_line ('if (status.MPI_SOURCE == PROTO_MANAGER)');
 		increase_marging;
 		put_line('return ;') ;
 		decrease_marging;
 		new_line(1);
-	
+
 		put_line ('//If answer from communication places manager');
 		put_line ('if (status.MPI_SOURCE == COMMP_MANAGER) {');
 		increase_marging;
@@ -938,12 +941,12 @@ begin
 
 		decrease_marging;
 		put_line ('}');
-		
+
 		decrease_marging;
 		put_line ('}');
-		
+
 		new_line(1);
-		
+
 	end if;
 end;
 
@@ -952,16 +955,16 @@ begin
     put('//Arc from communication place ');
     put ($STR(0));
     new_line(1);
-    
+
     put ('buf = ');
     put (to_string($INT(0))) ;
     put_line (';') ;
-    
+
     put ('MPI_Send(&buf,1,MPI_INT,COMMP_MANAGER,') ;
     put ('__') ;
     put_upper ($STR(0));
 	put_line ('_GET ,MPI_COMM_WORLD);');
-	
+
     if $# > 0 then
         apply INTERNAL_COMM_TRANS_IN ($2*);
     end if;
@@ -983,16 +986,16 @@ begin
     put ('//Arc to communication place ');
     put ($STR(0));
     new_line(1);
-    
+
     put ('buf = ');
     put (to_string($INT(0))) ;
     put_line (';') ;
-    
+
     put ('MPI_Isend(&buf,1,MPI_INT,COMMP_MANAGER,') ;
     put ('__') ;
     put_upper ($STR(0));
 	put_line ('_PUT ,MPI_COMM_WORLD,&request);');
-	
+
     if $# > 1 then
         apply INTERNAL_COMM_TRANS_OUT ($2*);
     end if;
@@ -1042,6 +1045,7 @@ begin
     put ('printf("My rank is %d and my state is ');
     put ($STR(1));
     put ('.\n", my_rank);');
+    new_line(1);
     put_line('//Going to next transition');
     put('state = ');
     apply LOC_PLACE_OUT ($1);
@@ -1059,7 +1063,6 @@ end;
 
 syntactic_rule LOC_PLACE_OUT is
 begin
-    //To local transition TODO: Synchronisation transition
     apply INTERNAL_LOC_PLACE_OUT ($3);
     apply INTERNAL_ST_LOC_PLACE_OUT ($2) ;
 end;
@@ -1067,22 +1070,96 @@ end;
 syntactic_rule INTERNAL_LOC_PLACE_OUT is
 begin
 	if $# > 0 then
-
 		put ('__') ;
 		put_upper ($STR(1));
-    
     end if;
 end;
 
 syntactic_rule INTERNAL_ST_LOC_PLACE_OUT is
 begin
 	if $# > 0 then
-
 		put ('__') ;
 		put_upper ($STR(1));
-    
     end if;
 end;
+
+
+
+//***************************************************
+//******    PN-processes : Synch. transitions  ******
+//***************************************************
+
+
+
+syntactic_rule ONE_SYNC_TRANS_PROC_OUT is
+begin
+    put('__');
+    put_upper($STR(1));
+end;
+
+
+syntactic_rule LOC_SYNC_TRANSITIONS is
+begin
+    apply ONE_SYNC_TRANS_PROC_OUT ($1);
+end;
+
+
+syntactic_rule LOC_SYNC_TRANSITION is
+begin
+        new_line(1);
+        put('//Synchronization transition ');
+        put ($STR(1));
+        new_line(1);
+
+        put('case ');
+        put ('__') ;
+        put_upper ($STR(1));
+        put (' : ');
+        new_line(1);
+
+        increase_marging;
+        put_line('MPI_Send(&buf,1,MPI_INT,SYNCT_MANAGER,TAG_SYNCT_ASK,MPI_COMM_WORLD);');
+
+	put_line ('//Blocking wait for a message');
+	put_line ('MPI_Recv(&buf, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
+	new_line(1);
+
+	put_line ('//If END request from prototype manager');
+	put_line ('if (status.MPI_SOURCE == PROTO_MANAGER)');
+	increase_marging;
+	put_line('return ;') ;
+	decrease_marging;
+	new_line(1);
+
+	put_line ('//If answer from communication places manager');
+	put_line ('if (status.MPI_SOURCE == SYNCT_MANAGER && status.MPI_TAG == TAG_SYNCT_ACK) {');
+	increase_marging;
+
+        put ('printf("My rank is %d and I am firing the synchronized transition ');
+        put ($STR(1));
+        put ('.\n", my_rank);');
+        new_line(1);
+        put_line('//Going to next place');
+        put('state = ');
+        apply LOC_SYNC_TRANSITIONS ($1);
+        put (';');
+        new_line(1);
+
+        put_line('break;');
+        decrease_marging;
+
+	decrease_marging;
+	put_line ('}');
+
+
+        if $# > 1 then
+            apply LOC_SYNC_TRANSITION ($2*);
+        end if;
+end;
+
+
+
+
 
 
 //***************************************************
@@ -1206,17 +1283,7 @@ begin
     put ($STR(0));
 end;
 
-syntactic_rule ONE_SYNC_TRANS_PROC_OUT is
-begin
-    put ($STR(0));
-end;
-
 syntactic_rule ONE_SYNC_TRANS_PROC_IN is
-begin
-    put ($STR(0));
-end;
-
-syntactic_rule SYNC_TRANSITIONS is
 begin
     put ($STR(0));
 end;
@@ -1227,6 +1294,11 @@ begin
 end;
 
 syntactic_rule INSTANCES is
+begin
+    put ($STR(0));
+end;
+
+syntactic_rule SYNC_TRANSITIONS is
 begin
     put ($STR(0));
 end;
@@ -1247,16 +1319,6 @@ begin
 end;
 
 syntactic_rule COMM_PLACE_OUT is
-begin
-    put ($STR(0));
-end;
-
-syntactic_rule LOC_SYNC_TRANSITIONS is
-begin
-    put ($STR(0));
-end;
-
-syntactic_rule LOC_SYNC_TRANSITION is
 begin
     put ($STR(0));
 end;

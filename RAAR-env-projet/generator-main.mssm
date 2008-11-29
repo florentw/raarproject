@@ -96,7 +96,10 @@ constructor_list is C_MPI,
 					INIT_GLOBAL_LIST_COMM_PLACE,
 					INIT_LIST_COMM_PLACE,
 					FREE_GLOBAL_LIST_COMM_PLACE,
-					INIT_LIST_SYNC_TRANS;
+					INIT_LIST_SYNC_TRANS,
+					GLOBAL_LIST_SYNC_TRANS,
+					GLOBAL_ENUM_SYNC_TRANS,
+					INTERNAL_ST_LOC_PLACE_OUT;
 
 //The list of all global variables
 global_variables none end;

@@ -63,6 +63,10 @@ begin
     //Declare the global enum for communication places
     apply GLOBAL_LIST_COMM_PLACE($0) ;
     new_line (1);
+    
+    //Declare the global enum for sync transitions
+    apply GLOBAL_LIST_SYNC_TRANS($0) ;
+    new_line (1);
 
     //Calling the LIST_PROCESS syntactic rule
     apply($1);
@@ -169,14 +173,17 @@ end;
 
 syntactic_rule INTERNAL_GLOBAL_LIST_SYNC_TRANS is
 begin
-    if $# > 0 then
-        put(',');
-        apply INTERNAL_PROCESS_TRANSITIONS ($1);
 
-        if $# > 1 then
-            apply INTERNAL_GLOBAL_LIST_SYNC_TRANS ($2*);
-        end if;
-    end if;
+	if $# > 0 then
+		put(',');
+		put ('__') ;
+		put_upper ($STR(1)) ;
+	
+		if $# > 1 then
+			apply INTERNAL_GLOBAL_LIST_SYNC_TRANS ($2*);
+		end if;
+	end if;
+	
 end ;
 
 
@@ -207,13 +214,37 @@ end;
 
 
 //***************************************************
-//******       Syncronisation transitions      ******
+//******       Synchronisation transitions      ******
 //***************************************************
 
-//syntactic_rule GLOBAL_LIST_SYNC_TRANS is
-//begin
+syntactic_rule GLOBAL_LIST_SYNC_TRANS is
+begin
+	new_line(1) ;
 
-//end ;
+	put_line ('enum SYNC_TRANS_T {') ;
+	apply GLOBAL_ENUM_SYNC_TRANS ($2) ;
+	new_line(1) ;
+	put_line ('} ;') ;
+
+end ;
+
+syntactic_rule GLOBAL_ENUM_SYNC_TRANS is
+begin
+	if $# > 0 then
+	
+		put ('__ST_') ;
+		put_upper ($STR(1));
+		
+		if $# > 1 then
+			put (',') ;
+		
+			apply GLOBAL_ENUM_SYNC_TRANS ($2*);
+		end if;
+	
+	else
+		put ('__NO_ST');
+	end if;
+end ;
 
 syntactic_rule INIT_LIST_SYNC_TRANS is
 begin
@@ -419,6 +450,8 @@ begin
 			apply HEAD_ENUM_COMM_PLACE ($2*);
 		end if;
 	
+	else
+		put ('__NO_CP');
 	end if;
 end;
 
@@ -444,6 +477,8 @@ begin
 			apply HEAD_TAG_ENUM_COMM_PLACE ($2*);
 		end if;
 	
+	else
+		put ('__NO_CP_TAG');
 	end if;
 end;
 
@@ -1026,15 +1061,28 @@ syntactic_rule LOC_PLACE_OUT is
 begin
     //To local transition TODO: Synchronisation transition
     apply INTERNAL_LOC_PLACE_OUT ($3);
+    apply INTERNAL_ST_LOC_PLACE_OUT ($2) ;
 end;
-
 
 syntactic_rule INTERNAL_LOC_PLACE_OUT is
 begin
-    put ('__') ;
-    put_upper ($STR(1));
+	if $# > 0 then
+
+		put ('__') ;
+		put_upper ($STR(1));
+    
+    end if;
 end;
 
+syntactic_rule INTERNAL_ST_LOC_PLACE_OUT is
+begin
+	if $# > 0 then
+
+		put ('__') ;
+		put_upper ($STR(1));
+    
+    end if;
+end;
 
 
 //***************************************************

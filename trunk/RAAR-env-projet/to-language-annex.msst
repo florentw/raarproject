@@ -353,6 +353,27 @@ begin
 	decrease_marging;
 	put_line ('}') ;
 
+	new_line(1) ;
+
+	put_line ('void freeQueue (CP_QUEUE_NODE ** pqueue)') ;
+	put_line ('{') ;
+	increase_marging;
+	put_line ('if (!(*pqueue)) return ;') ;
+	new_line(1) ;
+	put_line ('CP_QUEUE_NODE * tmp2, * tmp = *pqueue ;') ;
+	new_line(1) ;
+	put_line ('while (tmp->next)') ;
+	put_line ('{') ;
+	increase_marging;
+	put_line ('tmp2 = tmp ;') ;
+	put_line ('tmp = tmp->next ;') ;
+	put_line ('free(tmp2) ;') ;
+	decrease_marging;
+	put_line ('}') ;
+	decrease_marging;
+	put_line ('}') ;
+
+	new_line(1) ;
 end;
 
 syntactic_rule INIT_GLOBAL_LIST_COMM_PLACE is
@@ -362,6 +383,22 @@ begin
 	put_line ('] ;') ;
 	
 	apply HEAD_INIT_LIST_COMM_PLACE($0) ;
+end;
+
+syntactic_rule FREE_GLOBAL_LIST_COMM_PLACE is
+begin
+	put ('for (i = 0; i<') ;
+	put (to_string($#)) ;
+	put_line ('; i++) {') ;
+	
+	increase_marging;
+	put_line ('freeQueue (&cpArray[i]->queue) ;') ;
+	put_line ('free (cpArray[i]) ;') ;
+	decrease_marging;
+	
+	put_line ('}') ;
+	
+	new_line (1) ;
 end;
 
 syntactic_rule HEAD_ENUM_COMM_PLACE is
@@ -439,6 +476,7 @@ begin
 	increase_marging;
 	
 	put_line ('MPI_Status status;');
+	put_line ('int i;');
 	
 	apply INIT_GLOBAL_LIST_COMM_PLACE ($0) ;
 	new_line(1);
@@ -472,6 +510,8 @@ begin
 	
 	decrease_marging;
 	put_line('}');
+
+	apply FREE_GLOBAL_LIST_COMM_PLACE ($0) ;
 
 	decrease_marging;
 	put_line('}');

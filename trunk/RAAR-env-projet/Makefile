@@ -82,7 +82,7 @@ clean:
 # Supprimer les fichiers generes par la compilation
 bigclean:
 	make clean
-	rm -f *.ads *.adb *.c
+	rm -f *.ads *.adb hello.c
 
 # supprimer aussi le generateur de code produit par metascribe ainsi que les
 superclean:

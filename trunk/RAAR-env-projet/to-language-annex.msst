@@ -452,7 +452,7 @@ begin
 		new_line(1);
 		put_line ('if ( tmp == NULL )') ;
 		increase_marging;
-			put_line ('printf("tableau vide!!!\n");') ;
+			put_line ('return NULL;') ;
 		decrease_marging;
 		new_line(1);
 		put_line ('while( tmp != NULL )') ;
@@ -924,7 +924,7 @@ begin
 	if $# > 0 then
 
 		put_line ('memset(bufCP, 0, CP_COUNT*sizeof(int)) ;') ;
-		apply INTERNAL_COMM_TRANS_IN ($1);
+		apply INTERNAL_COMM_TRANS_IN ($0);
 		put_line ('MPI_Send(bufCP, CP_COUNT, MPI_INT, COMMP_MANAGER, TAG_CP_GET, MPI_COMM_WORLD) ;');
 
 		put_line ('//Blocking wait for a message');
@@ -944,15 +944,15 @@ end;
 syntactic_rule INTERNAL_COMM_TRANS_IN is
 begin
     put('//Arc from communication place ');
-    put_line ($STR(0));
+    put_line ($STR(1));
 
     put ('bufCP[__') ;
-    put_upper ($STR(0)) ;
+    put_upper ($STR(1)) ;
 	put ('] = ');
-    put (to_string($INT(0))) ;
+    put (to_string($INT(1))) ;
     put_line (';') ;
 
-    if $# > 0 then
+    if $# > 1 then
         apply INTERNAL_COMM_TRANS_IN ($2*);
     end if;
     new_line(1);
@@ -965,7 +965,7 @@ begin
     
     	put_line ('memset(bufCP, 0, CP_COUNT*sizeof(int)) ;') ;
     	
-        apply INTERNAL_COMM_TRANS_OUT ($1);
+        apply INTERNAL_COMM_TRANS_OUT ($0);
         
 		put_line ('MPI_Send(bufCP, CP_COUNT, MPI_INT, COMMP_MANAGER, TAG_CP_PUT, MPI_COMM_WORLD) ;');
     end if;
@@ -975,13 +975,13 @@ end;
 syntactic_rule INTERNAL_COMM_TRANS_OUT is
 begin
     put ('//Arc to communication place ');
-    put ($STR(0));
+    put ($STR(1));
     new_line(1);
 
     put ('bufCP[__') ;
-    put_upper ($STR(0)) ;
+    put_upper ($STR(1)) ;
 	put ('] = ');
-    put (to_string($INT(0))) ;
+    put (to_string($INT(1))) ;
     put_line (';') ;
 
     if $# > 1 then

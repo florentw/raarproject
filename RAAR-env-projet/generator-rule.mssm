@@ -254,6 +254,7 @@ semantic_rule CREATE_COMM_PLACE (nodeID : integer) return semantic_tree is
 	namePlace : string;
 	nbTokenPlace : integer;
 	nameLT : string;
+	tmpValue : integer;
 	processName : string;
 begin
 	namePlace := $atrv_str (attribute NAME from get_node_reference (COMM_PLACE, $int (nodeID)));
@@ -293,10 +294,18 @@ begin
 								if $str (nameLT) = $str (nameOUT) then
 
 									processName := $atrv_str (attribute NAME from get_neighbour_having_class(get_link_reference(BELONG, $int (GROUP)), 1, PROCESS));
+									
+									// Testing wether the attribute value is defined
+									if is_atr_defined(attribute VALUE from get_link_reference(COMM_ARC,$int (CA))) then
+										tmpValue := $atrv_int (attribute VALUE from get_link_reference(COMM_ARC,$int (CA))) ;
+									else
+										tmpValue := 1;
+									end if ;
+									
 									P_OUT := add_sm_son ($smt (P_OUT),
 														sm_tree ONE_COMM_PLACE_PROC_OUT(NAME => $str (processName),
 																						TARGET_TRANS => $str (nameLT),
-																						VALUE => 1)); //$atrv_int (attribute VALUE from get_link_reference(COMM_ARC,$int (CA)))));
+																						VALUE => $int(tmpValue)));
 
 									message({'NameLT (OUT) : ' & $str(nameLT)}) ;
 									message({'1-Found NameLT process name is : ' & $str(processName)}) ;
@@ -325,11 +334,19 @@ begin
 
 									message({'NameLT (IN) : ' & $str(nameLT)}) ;
 
+									// Testing wether the attribute value is defined
+									if is_atr_defined(attribute VALUE from get_link_reference(COMM_ARC,$int (CA))) then
+										tmpValue := $atrv_int (attribute VALUE from get_link_reference(COMM_ARC,$int (CA))) ;
+									else
+										tmpValue := 1;
+									end if ;
+
 									processName := $atrv_str (attribute NAME from get_neighbour_having_class(get_link_reference(BELONG, $int (GROUP)), 1, PROCESS));
 									P_IN := add_sm_son ($smt (P_IN),
 														sm_tree ONE_COMM_PLACE_PROC_IN(NAME => $str (processName),
 																						SOURCE_TRANS => $str (nameLT),
-																						VALUE => 1)); //$atrv_int (attribute VALUE from get_link_reference(COMM_ARC,$int (CA)))));
+																						VALUE => $int(tmpValue)));
+									
 									message({'Found NameLT process name is : ' & $str(processName)}) ;
 								end if;
 							end for;

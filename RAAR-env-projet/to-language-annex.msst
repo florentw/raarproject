@@ -48,6 +48,10 @@ begin
     put_line ('#define TAG_COMMP_GET 2');
     put_line ('#define TAG_SYNCT_ASK 3');
     put_line ('#define TAG_SYNCT_ACK 4');
+    put_line ('#define TAG_CP_ANS 5') ;
+    put_line ('#define TAG_CP_GET 6') ;
+    put_line ('#define TAG_CP_PUT 7') ;
+
     new_line (1);
     put_line ('#define EXEC_DURATION 30');
     put_line ('#define EXEC_STEP 1');
@@ -311,34 +315,19 @@ end;
 syntactic_rule GLOBAL_LIST_COMM_PLACE is
 begin
 
-	new_line(1);
-
-	put_line ('typedef struct COMM_PLACE_T {') ;
-	increase_marging;
-	put_line ('struct CP_QUEUE_NODE_T * queue ;') ;
-	put_line ('int count ;') ;
-	decrease_marging;
-	put_line ('} COMM_PLACE ;') ;
-
+	put ('#define CP_COUNT ') ;
+	apply GLOBAL_LIST_CP_COUNT($3) ;
 	new_line(1);
 
 	put_line ('typedef struct CP_QUEUE_NODE_T {') ;
 	increase_marging;
 	put_line ('struct CP_QUEUE_NODE_T * next ;') ;
 	put_line ('int rank ;') ;
-	put_line ('int nbToken ;') ;
+	put ('int tokenMask[CP_COUNT] ;') ;
 	decrease_marging;
 	put_line ('} CP_QUEUE_NODE ;') ;
 
 	new_line(1);
-
-	put_line ('enum COMM_PLACES_TAG_T {') ;
-	increase_marging;
-
-	apply HEAD_TAG_ENUM_COMM_PLACE($3) ;
-	new_line(1);
-	decrease_marging;
-	put_line ('} ;') ;
 
 	put_line ('enum COMM_PLACES_T {') ;
 	increase_marging;
@@ -348,18 +337,29 @@ begin
 	decrease_marging;
 	put_line ('} ;') ;
 
+	new_line(1);
+	
+	put ('CP_QUEUE_NODE * cpQueue = NULL ;') ;
+
 	new_line(2);
 
-	put_line ('void appendToQueue (CP_QUEUE_NODE ** pqueue, int rank, int nbToken)') ;
+	put_line ('void appendToQueue (CP_QUEUE_NODE ** pqueue, int rank, int * tokenMask, int arraySize)') ;
 	put_line ('{') ;
+	
 	increase_marging;
+	put_line ('int i ;') ;
+	
 	put_line ('if (!(*pqueue))') ;
 	put_line ('{') ;
 	increase_marging;
 	put_line ('*pqueue = (CP_QUEUE_NODE *) malloc(sizeof(CP_QUEUE_NODE)) ;') ;
 	put_line ('(*pqueue)->next = NULL ;') ;
 	put_line ('(*pqueue)->rank = rank ;') ;
-	put_line ('(*pqueue)->nbToken = nbToken ;') ;
+	
+	put ('for (i = 0; i<arraySize; i++)') ;
+	increase_marging;
+		put_line ('(*pqueue)->tokenMask[i] = tokenMask[i] ;') ;
+	decrease_marging;
 	put_line ('return ;') ;
 	decrease_marging;
 	put_line ('}') ;
@@ -371,23 +371,11 @@ begin
 	put_line ('tmp->next = (CP_QUEUE_NODE *) malloc(sizeof(CP_QUEUE_NODE)) ;') ;
 	put_line ('tmp->next->next = NULL ;') ;
 	put_line ('tmp->next->rank = rank ;') ;
-	put_line ('tmp->next->nbToken = nbToken ;') ;
-	put_line ('printf("Added a process to queue, nbToken=%d, rank=%d\n", nbToken, rank) ;') ;
-	decrease_marging;
-	put_line ('}') ;
-
-	new_line(1) ;
-
-	put_line ('CP_QUEUE_NODE * popFromQueue(CP_QUEUE_NODE ** pqueue)') ;
-	put_line ('{') ;
+	put ('for (i = 0; i<arraySize; i++)') ;
 	increase_marging;
-	put_line ('if (!(*pqueue)) return NULL ;') ;
-	new_line(1) ;
-	put_line ('CP_QUEUE_NODE * tmp = *pqueue ;') ;
-	new_line(1) ;
-	put_line ('*pqueue = (*pqueue)->next ;') ;
-	put_line ('printf("Popped a process from queue, nbToken=%d, rank=%d\n", tmp->nbToken, tmp->rank) ;') ;
-	put_line ('return tmp ;') ;
+		put_line ('(*pqueue)->tokenMask[i] = tokenMask[i] ;') ;
+	decrease_marging;
+	put_line ('printf("Added a process to queue, rank=%d\n", rank) ;') ;
 	decrease_marging;
 	put_line ('}') ;
 
@@ -412,31 +400,117 @@ begin
 	put_line ('}') ;
 
 	new_line(1) ;
+
+	put_line ('int tab_cmp(int* tab1, int* tab2, int size)') ;
+	put_line ('{') ;
+	increase_marging;
+		put_line ('int i;') ;
+		put_line ('int top=0;') ;
+		put_line ('int point=0;') ;
+		new_line(1) ;
+		put_line ('for(i=0;i<size;i++)') ;
+		put_line ('{') ;
+		increase_marging;
+		put_line ('if (*(tab1+i) > top)') ;
+		increase_marging;
+		put_line ('top = *(tab1+i);') ;
+		decrease_marging;
+		decrease_marging;
+		put_line ('}') ;
+		new_line(1) ;
+		put_line ('top = top*size ;') ;
+		new_line(1) ;
+		put_line ('for (i=0;i<size;i++)') ;
+		put_line ('{') ;
+		increase_marging;
+		put_line ('if (*(tab1+i) != 0)') ;
+		put_line ('{') ;
+		increase_marging;
+		put_line ('if (*(tab2+i) > 0)') ;
+		increase_marging;
+		put_line ('point+=top+(*(tab1+i)<=*(tab2+i)?*(tab1+i):*(tab2+i));') ;
+		decrease_marging;
+		decrease_marging;
+		put_line ('}') ;
+		decrease_marging;
+		put_line ('}') ;
+		put_line ('return point;') ;
+		decrease_marging;
+	put_line ('}') ;
+
+	new_line(1) ;
+
+	put_line ('CP_QUEUE_NODE* find_tab(int* tab_ref,CP_QUEUE_NODE** node,int size)') ;
+	put_line ('{') ;
+	increase_marging;
+		put_line ('CP_QUEUE_NODE* tmp=*node;') ;
+		put_line ('CP_QUEUE_NODE* res=*node;') ;
+		put_line ('CP_QUEUE_NODE* avant=*node;') ;
+		put_line ('CP_QUEUE_NODE* res_avant;') ;
+		put_line ('int point=0;') ;
+		put_line ('int point_tmp;') ;
+		new_line(1);
+		put_line ('if ( tmp == NULL )') ;
+		increase_marging;
+			put_line ('printf("tableau vide!!!\n");') ;
+		decrease_marging;
+		new_line(1);
+		put_line ('while( tmp != NULL )') ;
+		put_line ('{') ;
+		increase_marging;
+			put_line ('point_tmp=tab_cmp(tab_ref,tmp->tokenMask,size);') ;
+			put_line ('if (point_tmp > point)') ;
+			put_line ('{') ;
+			increase_marging;
+				put_line ('point=point_tmp;') ;
+				put_line ('res = tmp;') ;
+				put_line ('res_avant = avant;') ;
+			decrease_marging;
+			put_line ('}') ;
+			put_line ('avant=tmp;') ;
+			put_line ('tmp=tmp->next;') ;
+		decrease_marging;
+		put_line ('}') ;
+		new_line(1);
+		put_line ('if (res != *node)') ;
+		increase_marging;
+			put_line ('res_avant->next = res->next;') ;
+		decrease_marging;
+		put_line ('else') ;
+		increase_marging;
+			put_line ('*node = res->next;') ;
+		decrease_marging;
+		new_line(1);
+		put_line ('return res;') ;
+	decrease_marging;
+	put_line ('}') ;
+
+	new_line(1) ;
+end;
+
+syntactic_rule GLOBAL_LIST_CP_COUNT is
+begin
+	put (to_string($#)) ;
 end;
 
 syntactic_rule INIT_GLOBAL_LIST_COMM_PLACE is
 begin
-	put ('COMM_PLACE * cpArray[') ;
-	put (to_string($#)) ;
-	put_line ('] ;') ;
-
+	put_line ('int cpArray[CP_COUNT] ;') ;
+	
 	apply HEAD_INIT_LIST_COMM_PLACE($0) ;
+end;
+
+syntactic_rule GLOBAL_LIST_INSTANCE_COUNT is
+begin
+	put (to_string($#)) ;
 end;
 
 syntactic_rule FREE_GLOBAL_LIST_COMM_PLACE is
 begin
-	put ('for (i = 0; i<') ;
-	put (to_string($#)) ;
-	put_line ('; i++) {') ;
 
-	increase_marging;
-	put_line ('freeQueue (&cpArray[i]->queue) ;') ;
-	put_line ('free (cpArray[i]) ;') ;
-	decrease_marging;
-
-	put_line ('}') ;
-
+	put_line ('freeQueue (&cpQueue) ;') ;
 	new_line (1) ;
+	
 end;
 
 syntactic_rule HEAD_ENUM_COMM_PLACE is
@@ -457,33 +531,6 @@ begin
 	end if;
 end;
 
-syntactic_rule HEAD_TAG_ENUM_COMM_PLACE is
-begin
-	if $# > 0 then
-
-		put ('__') ;
-		put_upper ($STR(1));
-		put ('_GET,') ;
-
-		put ('__') ;
-		put_upper ($STR(1));
-		put ('_PUT,') ;
-
-		put ('__') ;
-		put_upper ($STR(1));
-		put ('_ANS') ;
-
-		if $# > 1 then
-			put (',') ;
-
-			apply HEAD_TAG_ENUM_COMM_PLACE ($2*);
-		end if;
-
-	else
-		put ('__NO_CP_TAG');
-	end if;
-end;
-
 syntactic_rule HEAD_INIT_LIST_COMM_PLACE is
 begin
 	if $# > 0 then
@@ -491,19 +538,9 @@ begin
 		put ('cpArray[') ;
 		put ('__') ;
 		put_upper ($STR(1));
-		put_line('] = (COMM_PLACE *) malloc(sizeof(COMM_PLACE)) ;') ;
-
-		put ('cpArray[') ;
-		put ('__') ;
-		put_upper ($STR(1));
-		put (']->count = ') ;
+		put ('] = ') ;
 		put (to_string($int(1))) ;
 		put_line (' ;') ;
-
-		put ('cpArray[') ;
-		put ('__') ;
-		put_upper ($STR(1));
-		put_line(']->queue = NULL ;') ;
 
 		if $# > 1 then
 			new_line(1) ;
@@ -522,7 +559,7 @@ begin
 	increase_marging;
 
 	put_line ('MPI_Status status;');
-	put_line ('int i;');
+	put_line ('int i, buf[CP_COUNT];');
 
 	apply INIT_GLOBAL_LIST_COMM_PLACE ($0) ;
 	new_line(1);
@@ -533,8 +570,7 @@ begin
 	put_line ('while (1) {');
 	increase_marging;
 
-		put_line('int buf;');
-		put_line('MPI_Recv(&buf,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status);');
+		put_line('MPI_Recv(buf, CP_COUNT, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
 
 		new_line(1);
 
@@ -590,81 +626,62 @@ end;
 syntactic_rule COMM_PLACES is
 begin
     put ('//Communication place ');
-    put ($STR(0));
-    new_line(1);
+    put_line ($STR(0));
 
-	put('case __') ;
-    put_upper ($STR(0));
-    put_line ('_GET:') ;
+	put_line('case TAG_CP_GET:') ;
     increase_marging;
+		new_line (1) ;
+		put_line ('if (tab_cmp(cpArray, buf, CP_COUNT) > 0) {') ;
+		increase_marging;
+		
+		put_line ('for (i = 0; i<CP_COUNT; i++)') ;
+		increase_marging;
+			put_line ('cpArray[i] -= buf[i] ;') ;
+		decrease_marging;
+		new_line (1) ;
+		put_line ('MPI_Send(&buf, 1, MPI_INT, status.MPI_SOURCE, TAG_CP_ANS, MPI_COMM_WORLD) ;') ;
+		
+		decrease_marging;
+		put_line ('} else {') ;
+		increase_marging;
+		
+			put_line ('appendToQueue(&cpQueue, status.MPI_SOURCE, buf, CP_COUNT) ;') ;
+		
+		decrease_marging;
+		put_line ('}') ;
 
-    put ('if ((cpArray[__') ;
-    put_upper ($STR(0));
-    put_line (']->count - buf) >= 0) {');
-    increase_marging;
-    put ('cpArray[__') ;
-    put_upper ($STR(0));
-    put_line (']->count -= buf ;') ;
-
-    put ('MPI_Send(&buf, 1, MPI_INT, status.MPI_SOURCE, ') ;
-	put ('__') ;
-    put_upper ($STR(0));
-	put_line ('_ANS, MPI_COMM_WORLD) ;') ;
-
-    decrease_marging;
-    put_line ('} else {') ;
-    increase_marging;
-    put ('appendToQueue(') ;
-    put ('&cpArray[__') ;
-    put_upper ($STR(0));
-    put_line (']->queue, status.MPI_SOURCE, buf) ;') ;
-    decrease_marging;
-    put_line ('}') ;
-    put_line ('break ;') ;
-    new_line(1);
+		put_line ('break ;') ;
+		new_line(1);
 
 	decrease_marging;
 
-	put('case __') ;
-    put_upper ($STR(0));
-    put_line ('_PUT:') ;
+	put_line('case TAG_CP_PUT:') ;
     increase_marging;
 
-    put ('cpArray[__') ;
-    put_upper ($STR(0));
-    put_line (']->count += buf ;') ;
+		put_line ('for (i = 0; i<CP_COUNT; i++)') ;
+		increase_marging;
+			put_line ('cpArray[i] += buf[i] ;') ;
+		decrease_marging;
+		new_line (1) ;
+		put_line ('CP_QUEUE_NODE * tmpProc ;') ;
+		put_line ('tmpProc = find_tab(cpArray, &cpQueue, CP_COUNT) ;') ;
+		new_line (1) ;
+		put_line ('if (!tmpProc) break ;') ;
 
-    put ('if (cpArray[__') ;
-    put_upper ($STR(0));
-    put (']->queue->next && ') ;
-	put ('(cpArray[__') ;
-    put_upper ($STR(0));
-    put_line (']->queue->next->nbToken - buf >= 0)) {') ;
+		put_line ('for (i = 0; i<CP_COUNT; i++)') ;
+		increase_marging;
+			put_line ('cpArray[i] -= tmpProc->tokenMask[i] ;') ;
+		decrease_marging;
+		new_line (1) ;
+		put_line ('MPI_Send(&buf, 1, MPI_INT, tmpProc->rank, TAG_CP_ANS, MPI_COMM_WORLD) ;') ;
 
-    increase_marging;
+		put_line ('free(tmpProc) ;') ;
+		new_line (1) ;
+		put_line ('break ;') ;
+		new_line(1);
 
-    put ('CP_QUEUE_NODE * tmpNode = popFromQueue(') ;
-    put ('&cpArray[__') ;
-    put_upper ($STR(0));
-    put_line (']->queue);') ;
+	decrease_marging;
 
-    put ('cpArray[__') ;
-    put_upper ($STR(0));
-    put_line (']->count -= tmpNode->nbToken ;') ;
-
-    put ('MPI_Send(&buf, 1, MPI_INT, tmpNode->rank, ') ;
-	put ('__') ;
-    put_upper ($STR(0));
-	put_line ('_ANS, MPI_COMM_WORLD) ;') ;
-
-    put_line ('free (tmpNode) ;') ;
-    decrease_marging;
-	put_line ('}') ;
-
-    put_line ('break ;') ;
-    new_line(1);
-
-    decrease_marging;
     new_line(1);
 end;
 
@@ -774,7 +791,6 @@ begin
     increase_marging;
 
     new_line (1);
-    put_line ('MPI_Request request;');
     put_line ('MPI_Status status;');
     new_line (1);
 
@@ -785,7 +801,7 @@ begin
     new_line(1);
 
     //Main loop
-    put_line ('int buf, rcvCount, flag;');
+    put_line ('int bufCP[CP_COUNT], buf, flag;');
 
     put_line ('while (1) {');
     increase_marging;
@@ -907,23 +923,15 @@ end;
 
 syntactic_rule COMM_TRANS_IN is
 begin
-	put('//IN arcs from communication places');
+	put_line('//IN arcs from communication places');
 	if $# > 0 then
 
+		put_line ('memset(bufCP, 0, CP_COUNT*sizeof(int)) ;') ;
 		apply INTERNAL_COMM_TRANS_IN ($1);
-
-		put ('rcvCount = ') ;
-		put (to_string($#)) ;
-		put_line (';') ;
-
-		new_line(1);
-
-		put_line ('while (1)') ;
-		put_line ('{');
-		increase_marging;
+		put_line ('MPI_Send(bufCP, CP_COUNT, MPI_INT, COMMP_MANAGER, TAG_CP_GET, MPI_COMM_WORLD) ;');
 
 		put_line ('//Blocking wait for a message');
-		put_line ('MPI_Recv(&buf, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
+		put_line ('MPI_Recv(bufCP, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
 		new_line(1);
 
 		put_line ('//If END request from prototype manager');
@@ -932,38 +940,20 @@ begin
 		put_line('return ;') ;
 		decrease_marging;
 		new_line(1);
-
-		put_line ('//If answer from communication places manager');
-		put_line ('if (status.MPI_SOURCE == COMMP_MANAGER) {');
-		increase_marging;
-
-		put_line('if (--rcvCount == 0) break ;') ;
-
-		decrease_marging;
-		put_line ('}');
-
-		decrease_marging;
-		put_line ('}');
-
-		new_line(1);
-
+		
 	end if;
 end;
 
 syntactic_rule INTERNAL_COMM_TRANS_IN is
 begin
     put('//Arc from communication place ');
-    put ($STR(0));
-    new_line(1);
+    put_line ($STR(0));
 
-    put ('buf = ');
+    put ('buf[__') ;
+    put_upper ($STR(0)) ;
+	put ('] = ');
     put (to_string($INT(0))) ;
     put_line (';') ;
-
-    put ('MPI_Send(&buf,1,MPI_INT,COMMP_MANAGER,') ;
-    put ('__') ;
-    put_upper ($STR(0));
-	put_line ('_GET ,MPI_COMM_WORLD);');
 
     if $# > 0 then
         apply INTERNAL_COMM_TRANS_IN ($2*);
@@ -975,9 +965,13 @@ syntactic_rule COMM_TRANS_OUT is
 begin
     put_line ('//Out arcs to communication places');
     if $# > 0 then
+    
+    	put_line ('memset(bufCP, 0, CP_COUNT*sizeof(int)) ;') ;
+    	
         apply INTERNAL_COMM_TRANS_OUT ($1);
+        
+		put_line ('MPI_Send(bufCP, CP_COUNT, MPI_INT, COMMP_MANAGER, TAG_CP_PUT, MPI_COMM_WORLD) ;');
     end if;
-    new_line(1);
 end;
 
 
@@ -987,14 +981,11 @@ begin
     put ($STR(0));
     new_line(1);
 
-    put ('buf = ');
+    put ('bufCP[__') ;
+    put_upper ($STR(0)) ;
+	put ('] = ');
     put (to_string($INT(0))) ;
     put_line (';') ;
-
-    put ('MPI_Isend(&buf,1,MPI_INT,COMMP_MANAGER,') ;
-    put ('__') ;
-    put_upper ($STR(0));
-	put_line ('_PUT ,MPI_COMM_WORLD,&request);');
 
     if $# > 1 then
         apply INTERNAL_COMM_TRANS_OUT ($2*);

@@ -44,7 +44,6 @@ begin
     put_line ('#include <mpi.h>');
     new_line (1);
     put_line ('#define TAG_END 0');
-    put_line ('#define TAG_ANSWER 0');
     put_line ('#define TAG_COMMP_PUT 1');
     put_line ('#define TAG_COMMP_GET 2');
     new_line (1);
@@ -71,6 +70,9 @@ begin
 
 	apply INIT_LIST_COMM_PLACE ($3) ;
 	new_line (1);
+	
+	apply INIT_LIST_SYNC_TRANS ($2) ;
+	new_line (1);
 
     // Declare instanceArray global var
     apply GLOBAL_LIST_INSTANCE ($4) ;
@@ -87,7 +89,6 @@ begin
 
     new_line (1);
     put_line ('MPI_Request request;');
-    put_line ('MPI_Status status;');
     new_line (1);
     put_line ('MPI_Init(&argc, &argv);');
     put_line ('MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);');
@@ -209,7 +210,39 @@ end;
 //******       Syncronisation transitions      ******
 //***************************************************
 
+//syntactic_rule GLOBAL_LIST_SYNC_TRANS is
+//begin
 
+//end ;
+
+syntactic_rule INIT_LIST_SYNC_TRANS is
+begin
+
+	put_line('void syncTransMngr (int my_rank, int nb_proc)') ;
+	put_line('{') ;
+	increase_marging;
+	put_line ('MPI_Status status;');
+	put_line('int buf;');
+	new_line(1) ;
+	put_line('printf(" My rank is %d and I am the synchronisation transitions manager\n",my_rank);');
+	new_line(1) ;
+	put_line('while (1) {') ;
+	increase_marging;
+	put_line('MPI_Recv(&buf,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status);');
+	put_line('if (status.MPI_SOURCE == PROTO_MANAGER) break ;') ;
+	new_line(1) ;
+	
+    if $# > 0 then
+        apply INTERNAL_LIST_SYNC_TRANS ($0);
+    end if;
+	
+	decrease_marging;
+	put_line('}') ;
+	decrease_marging;
+	put_line('}') ;
+	new_line(1) ;
+
+end ;
 
 syntactic_rule LIST_SYNC_TRANS is
 begin
@@ -218,35 +251,7 @@ begin
     put_line (' synchronisation transitions');
     put_line('if (my_rank == SYNCT_MANAGER) {');
     increase_marging;
-    put_line('printf(" My rank is %d and I am the synchronisation transitions manager\n",my_rank);');
-    new_line(1);
-
-    put_line ('int flag;');
-    put_line ('while (1) {');
-    increase_marging;
-
-    put_line('//Sleeping EXEC_STEP seconds');
-    put_line('sleep(EXEC_STEP);');
-    new_line(1);
-
-    put_line('//Checking if Prototype manager request END');
-    put_line('MPI_Iprobe(PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&flag,&status);');
-    put_line('if (flag) {');
-    increase_marging;
-    put_line('int buf;');
-    put_line('MPI_Recv(&buf,1,MPI_INT,PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&status);');
-    put_line('break;');
-    decrease_marging;
-    put_line('}');
-    new_line(1);
-
-    if $# > 0 then
-        apply INTERNAL_LIST_SYNC_TRANS ($0);
-    end if;
-
-    decrease_marging;
-    put_line ('}');
-
+    put_line('syncTransMngr(my_rank, nb_proc) ;') ;
     decrease_marging;
     put_line('}');
     new_line(2);
@@ -427,7 +432,11 @@ begin
 		
 		put ('__') ;
 		put_upper ($STR(1));
-		put ('_PUT') ;
+		put ('_PUT,') ;
+		
+		put ('__') ;
+		put_upper ($STR(1));
+		put ('_ANS') ;
 		
 		if $# > 1 then
 			put (',') ;
@@ -559,7 +568,12 @@ begin
     put ('cpArray[__') ;
     put_upper ($STR(0));
     put_line (']->count -= buf ;') ;
-    put_line ('MPI_Send(&buf, 1, MPI_INT, status.MPI_SOURCE, TAG_ANSWER, MPI_COMM_WORLD) ;') ;
+    
+    put ('MPI_Send(&buf, 1, MPI_INT, status.MPI_SOURCE, ') ;
+	put ('__') ;
+    put_upper ($STR(0));
+	put_line ('_ANS, MPI_COMM_WORLD) ;') ;
+	
     decrease_marging;
     put_line ('} else {') ;
     increase_marging;
@@ -585,7 +599,7 @@ begin
     
     put ('if (cpArray[__') ;
     put_upper ($STR(0));
-    put_line (']->queue->next && ') ;
+    put (']->queue->next && ') ;
 	put ('(cpArray[__') ;
     put_upper ($STR(0));
     put_line (']->queue->next->nbToken - buf >= 0)) {') ;
@@ -601,7 +615,10 @@ begin
     put_upper ($STR(0));
     put_line (']->count -= tmpNode->nbToken ;') ;
     
-    put_line ('MPI_Send(&buf, 1, MPI_INT, tmpNode->rank, TAG_ANSWER, MPI_COMM_WORLD) ;') ;
+    put ('MPI_Send(&buf, 1, MPI_INT, tmpNode->rank, ') ;
+	put ('__') ;
+    put_upper ($STR(0));
+	put_line ('_ANS, MPI_COMM_WORLD) ;') ;
     
     put_line ('free (tmpNode) ;') ;
     decrease_marging;
@@ -731,7 +748,7 @@ begin
     new_line(1);
 
     //Main loop
-    put_line ('int buf, flag;');
+    put_line ('int buf, rcvCount, flag;');
 
     put_line ('while (1) {');
     increase_marging;
@@ -852,30 +869,48 @@ end;
 
 syntactic_rule COMM_TRANS_IN is
 begin
-    put('//IN arcs from communication places');
-    if $# > 0 then
-	apply INTERNAL_COMM_TRANS_IN ($1);
+	put('//IN arcs from communication places');
+	if $# > 0 then
+	
+		apply INTERNAL_COMM_TRANS_IN ($1);
+		
+		put ('rcvCount = ') ;
+		put (to_string($#)) ;
+		put_line (';') ;
+	
+		new_line(1);
+		
+		put_line ('while (1)') ;
+		put_line ('{');
+		increase_marging;
+		
+		put_line ('//Blocking wait for a message');
+		put_line ('MPI_Recv(&buf, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
+		new_line(1);
+	
+		put_line ('//If END request from prototype manager');
+		put_line ('if (status.MPI_SOURCE == PROTO_MANAGER)');
+		increase_marging;
+		put_line('return ;') ;
+		decrease_marging;
+		new_line(1);
+	
+		put_line ('//If answer from communication places manager');
+		put_line ('if (status.MPI_SOURCE == COMMP_MANAGER) {');
+		increase_marging;
 
-        new_line(1);
-        put_line ('//Blocking wait for a message');
-        put_line ('MPI_Probe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status);');
-        new_line(1);
+		put_line('if (--rcvCount == 0) break ;') ;
 
-        put_line ('//If END request from prototype manager');
-        put_line ('if (status.MPI_SOURCE == PROTO_MANAGER)');
-        increase_marging;
-        put_line ('break;');
-        decrease_marging;
-        new_line(1);
-
-        put_line ('//If answer from communication places manager');
-        put_line ('if (status.MPI_SOURCE == COMMP_MANAGER)');
-        increase_marging;
-        put_line ('MPI_Recv(&buf,1,MPI_INT,COMMP_MANAGER,TAG_ANSWER,MPI_COMM_WORLD,&status);');
-        decrease_marging;
-    end if;
+		decrease_marging;
+		put_line ('}');
+		
+		decrease_marging;
+		put_line ('}');
+		
+		new_line(1);
+		
+	end if;
 end;
-
 
 syntactic_rule INTERNAL_COMM_TRANS_IN is
 begin

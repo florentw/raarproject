@@ -52,7 +52,7 @@ node 'p1t3' is LOC_TRANS
 link 'p1bl1' is BELONG
 	where (none)
 	relate together	STT_PLACE:'p1p1', STT_PLACE:'p1p2', STT_PLACE:'p1p3', 
-		   	LOC_TRANS:'p1t1', LOC_TRANS:'p1t2', LOC_TRANS:'p1t3'
+		   	LOC_TRANS:'p1t1', LOC_TRANS:'p1t2', LOC_TRANS:'p1t3',
 			PROCESS:'proc1';
 
 // Arcs
@@ -153,7 +153,7 @@ node 'p2t4' is LOC_TRANS
 link 'p2bl1' is BELONG
 	where (none)
 	relate together	STT_PLACE:'p2p1', STT_PLACE:'p2p2', STT_PLACE:'p2p3', 
-		   	LOC_TRANS:'p2t1', LOC_TRANS:'p2t2', LOC_TRANS:'p2t3', LOC_TRANS:'p2t4'
+		   	LOC_TRANS:'p2t1', LOC_TRANS:'p2t2', LOC_TRANS:'p2t3', LOC_TRANS:'p2t4',
 			PROCESS:'proc2';
 
 // Arcs

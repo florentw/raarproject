@@ -93,21 +93,21 @@ link 'commp1l2' is COMM_ARC
 
 // Arcs vers Mutex2
 
-link 'commp1l2' is COMM_ARC
+link 'commp1l3' is COMM_ARC
 	where (none)
 	relate COMM_PLACE:'cp2' to LOC_TRANS:'p1t2';
 
-link 'commp1l3' is COMM_ARC
+link 'commp1l4' is COMM_ARC
 	where (none)
 	relate LOC_TRANS:'p1t2' to COMM_PLACE:'cp2';
 
 // Arcs vers Mutex3
 
-link 'commp1l4' is COMM_ARC
+link 'commp1l5' is COMM_ARC
 	where (none)
 	relate COMM_PLACE:'cp3' to LOC_TRANS:'p1t3';
 
-link 'commp1l5' is COMM_ARC
+link 'commp1l6' is COMM_ARC
 	where (none)
 	relate LOC_TRANS:'p1t3' to COMM_PLACE:'cp3';
 
@@ -202,28 +202,28 @@ link 'commp2l2' is COMM_ARC
 
 // Arcs vers Mutex2
 
-link 'commp2l2' is COMM_ARC
+link 'commp2l3' is COMM_ARC
 	where (none)
 	relate COMM_PLACE:'cp2' to LOC_TRANS:'p2t2';
 
-link 'commp2l3' is COMM_ARC
+link 'commp2l4' is COMM_ARC
 	where (none)
 	relate LOC_TRANS:'p2t2' to COMM_PLACE:'cp2';
 
 // Arcs vers Mutex3
 
-link 'commp2l4' is COMM_ARC
+link 'commp2l5' is COMM_ARC
 	where (none)
 	relate COMM_PLACE:'cp3' to LOC_TRANS:'p2t3';
 
-link 'commp2l5' is COMM_ARC
+link 'commp2l6' is COMM_ARC
 	where (none)
 	relate LOC_TRANS:'p2t3' to COMM_PLACE:'cp3';
 
-link 'commp2l6' is COMM_ARC
+link 'commp2l7' is COMM_ARC
 	where (none)
 	relate COMM_PLACE:'cp3' to LOC_TRANS:'p2t4';
 
-link 'commp2l7' is COMM_ARC
+link 'commp2l8' is COMM_ARC
 	where (none)
 	relate LOC_TRANS:'p2t4' to COMM_PLACE:'cp3';

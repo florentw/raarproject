@@ -1,0 +1,293 @@
+main_file
+formalism ( 'ANLZED_PN' ) ;
+// Attributs globaux
+where (attribute NAME => '6_comm_place_bis_modele') ;
+
+// Pas de transitions de synchronisation.
+
+// Places de communication
+node 'cp1' is COMM_PLACE
+   where (attribute NAME => 'channel1',
+          attribute NB_IN_TOKENS => 0);
+
+node 'cp2' is COMM_PLACE
+   where (attribute NAME => 'channel2',
+          attribute NB_IN_TOKENS => 0);
+
+node 'cp3' is COMM_PLACE
+   where (attribute NAME => 'channel3',
+          attribute NB_IN_TOKENS => 0);
+
+node 'cp4' is COMM_PLACE
+   where (attribute NAME => 'channel4',
+          attribute NB_IN_TOKENS => 0);
+
+node 'cp5' is COMM_PLACE
+   where (attribute NAME => 'channel5',
+          attribute NB_IN_TOKENS => 0);
+
+node 'cp6' is COMM_PLACE
+   where (attribute NAME => 'channel6',
+          attribute NB_IN_TOKENS => 0);
+
+// Processus Cons1
+
+node 'proc_cons1' is PROCESS
+   where (attribute NAME => 'processus_cons_1',
+          attribute INSTANCES => sy_node (INSTANCE_LIST:
+                                    sy_node (ONE_INSTANCE:
+                                       sy_leaf ('CONS1_1'))
+				));
+
+
+node 'p1p1' is STT_PLACE
+   where (attribute NAME => 'CONS1_1');
+
+node 'p1t1' is LOC_TRANS
+   where (attribute NAME => 'CONS1_T1');
+
+link 'p1bl1' is BELONG
+	where (none)
+	relate together	STT_PLACE:'p1p1',
+		   	LOC_TRANS:'p1t1',  
+			PROCESS:'proc_cons1';
+
+link 'p1l1' is ARC
+	where (none)
+	relate STT_PLACE:'p1p1' to LOC_TRANS:'p1t1';
+
+link 'p1l2' is ARC
+	where (none)
+	relate LOC_TRANS:'p1t1' to STT_PLACE:'p1p1';
+
+link 'commp1l1' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp1' to LOC_TRANS:'p1t1';
+
+link 'commp1l2' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp2' to LOC_TRANS:'p1t1';
+
+link 'commp1l3' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp3' to LOC_TRANS:'p1t1';
+
+// Processus Cons2
+
+node 'proc_cons2' is PROCESS
+   where (attribute NAME => 'processus__cons2',
+          attribute INSTANCES => sy_node (INSTANCE_LIST:
+                                    sy_node (ONE_INSTANCE:
+                                       sy_leaf ('CONS2_1'))
+				));
+
+
+node 'p2p1' is STT_PLACE
+   where (attribute NAME => 'CONS2_1');
+
+node 'p2t1' is LOC_TRANS
+   where (attribute NAME => 'CONS2_T1');
+
+link 'p2bl1' is BELONG
+	where (none)
+	relate together	STT_PLACE:'p2p1',
+		   	LOC_TRANS:'p2t1',  
+			PROCESS:'proc_cons2';
+
+link 'p2l1' is ARC
+	where (none)
+	relate STT_PLACE:'p2p1' to LOC_TRANS:'p2t1';
+
+link 'p2l2' is ARC
+	where (none)
+	relate LOC_TRANS:'p2t1' to STT_PLACE:'p2p1';
+
+link 'commp2l1' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp3' to LOC_TRANS:'p2t1';
+
+// Processus Cons3
+
+node 'proc_cons3' is PROCESS
+   where (attribute NAME => 'processus_cons3',
+          attribute INSTANCES => sy_node (INSTANCE_LIST:
+                                    sy_node (ONE_INSTANCE:
+                                       sy_leaf ('CONS3_1'))
+				));
+
+node 'p3p1' is STT_PLACE
+   where (attribute NAME => 'CONS3_1');
+
+node 'p3t1' is LOC_TRANS
+   where (attribute NAME => 'CONS3_T1');
+
+link 'p3bl1' is BELONG
+	where (none)
+	relate together	STT_PLACE:'p3p1',
+		   	LOC_TRANS:'p3t1',  
+			PROCESS:'proc3';
+
+link 'p3l1' is ARC
+	where (none)
+	relate STT_PLACE:'p3p1' to LOC_TRANS:'p3t1';
+
+link 'p3l2' is ARC
+	where (none)
+	relate LOC_TRANS:'p3t1' to STT_PLACE:'p3p1';
+
+link 'commp3l1' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp6' to LOC_TRANS:'p3t1';
+
+link 'commp3l2' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp5' to LOC_TRANS:'p3t1';
+
+
+// Processus Cons4
+
+node 'proc_cons4' is PROCESS
+   where (attribute NAME => 'processus__cons4',
+          attribute INSTANCES => sy_node (INSTANCE_LIST:
+                                    sy_node (ONE_INSTANCE:
+                                       sy_leaf ('CONS4_1'))
+				));
+
+node 'p4p1' is STT_PLACE
+   where (attribute NAME => 'CONS4_1');
+
+node 'p4t1' is LOC_TRANS
+   where (attribute NAME => 'CONS4_T1');
+
+link 'p4bl1' is BELONG
+	where (none)
+	relate together	STT_PLACE:'p4p1',
+		   	LOC_TRANS:'p4t1',  
+			PROCESS:'proc_cons4';
+
+link 'p4l1' is ARC
+	where (none)
+	relate STT_PLACE:'p4p1' to LOC_TRANS:'p4t1';
+
+link 'p4l2' is ARC
+	where (none)
+	relate LOC_TRANS:'p4t1' to STT_PLACE:'p4p1';
+
+link 'commp4l1' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp5' to LOC_TRANS:'p4t1';
+
+link 'commp4l2' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp4' to LOC_TRANS:'p4t1';
+
+// Processus Prod1
+
+node 'proc_prod1' is PROCESS
+   where (attribute NAME => 'processus__prod1',
+          attribute INSTANCES => sy_node (INSTANCE_LIST:
+                                    sy_node (ONE_INSTANCE:
+                                       sy_leaf ('PROD1_1'))
+				));
+
+node 'p5p1' is STT_PLACE
+   where (attribute NAME => 'PROD1_1');
+
+node 'p5t1' is LOC_TRANS
+   where (attribute NAME => 'PROD1_T1');
+
+link 'p5bl1' is BELONG
+	where (none)
+	relate together	STT_PLACE:'p5p1',
+		   	LOC_TRANS:'p5t1',  
+			PROCESS:'proc_prod1';
+
+link 'p5l1' is ARC
+	where (none)
+	relate STT_PLACE:'p5p1' to LOC_TRANS:'p5t1';
+
+link 'p5l2' is ARC
+	where (none)
+	relate LOC_TRANS:'p5t1' to STT_PLACE:'p5p1';
+
+link 'commp5l1' is COMM_ARC
+	where (none)
+	relate LOC_TRANS:'p5t1' to COMM_PLACE:'cp2';
+
+link 'commp5l2' is COMM_ARC
+	where (none)
+	relate LOC_TRANS:'p5t1' to COMM_PLACE:'cp5';
+
+// Processus Prod2
+
+node 'proc_prod2' is PROCESS
+   where (attribute NAME => 'processus__prod2',
+          attribute INSTANCES => sy_node (INSTANCE_LIST:
+                                    sy_node (ONE_INSTANCE:
+                                       sy_leaf ('PROD2_1'))
+				));
+
+node 'p6p1' is STT_PLACE
+   where (attribute NAME => 'PROD2_1');
+
+node 'p6t1' is LOC_TRANS
+   where (attribute NAME => 'PROD2_T1');
+
+link 'p6bl1' is BELONG
+	where (none)
+	relate together	STT_PLACE:'p6p1',
+		   	LOC_TRANS:'p6t1',  
+			PROCESS:'proc_prod2';
+
+link 'p6l1' is ARC
+	where (none)
+	relate STT_PLACE:'p6p1' to LOC_TRANS:'p6t1';
+
+link 'p6l2' is ARC
+	where (none)
+	relate LOC_TRANS:'p6t1' to STT_PLACE:'p6p1';
+
+link 'commp6l1' is COMM_ARC
+	where (none)
+	relate LOC_TRANS:'p6t1' to COMM_PLACE:'cp1';
+
+link 'commp6l2' is COMM_ARC
+	where (none)
+	relate LOC_TRANS:'p6t1' to COMM_PLACE:'cp3';
+
+// Processus Prod3
+
+node 'proc_prod3' is PROCESS
+   where (attribute NAME => 'processus__prod3',
+          attribute INSTANCES => sy_node (INSTANCE_LIST:
+                                    sy_node (ONE_INSTANCE:
+                                       sy_leaf ('PROD3_1'))
+				));
+
+node 'p7p1' is STT_PLACE
+   where (attribute NAME => 'PROD3_1');
+
+node 'p7t1' is LOC_TRANS
+   where (attribute NAME => 'PROD3_T1');
+
+link 'p7bl1' is BELONG
+	where (none)
+	relate together	STT_PLACE:'p7p1',
+		   	LOC_TRANS:'p7t1',  
+			PROCESS:'proc_prod3';
+
+link 'p7l1' is ARC
+	where (none)
+	relate STT_PLACE:'p7p1' to LOC_TRANS:'p7t1';
+
+link 'p7l2' is ARC
+	where (none)
+	relate LOC_TRANS:'p7t1' to STT_PLACE:'p7p1';
+
+link 'commp7l1' is COMM_ARC
+	where (none)
+	relate LOC_TRANS:'p7t1' to COMM_PLACE:'cp4';
+
+link 'commp7l2' is COMM_ARC
+	where (none)
+	relate LOC_TRANS:'p7t1' to COMM_PLACE:'cp6';

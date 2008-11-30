@@ -515,6 +515,7 @@ semantic_rule CREATE_TRANS (nameTrans : string) return semantic_tree is
 	LP_OUT : semantic_tree;
 	nameIN : string;
 	nameOUT : string;
+	tmpValue : integer;
 begin
 	RETV := create_sm_tree([LOCAL_TRANS # $str(nameTrans) #]);
 	CP_IN := create_sm_tree ([COMM_PLACE_IN # {'COMM_PLACE_IN_' & $str(nameTrans)} #]);
@@ -566,9 +567,16 @@ begin
 				//  COMM_PLACE ----> LT
 				// Source place is a communication place
 
+				// Testing wether the attribute value is defined
+				if is_atr_defined(attribute VALUE from get_link_reference(COMM_ARC,$int (CA))) then
+					tmpValue := $atrv_int (attribute VALUE from get_link_reference(COMM_ARC,$int (CA))) ;
+				else
+					tmpValue := 1;
+				end if ;
+
 				CP_IN := add_sm_son ($smt (CP_IN),
 									sm_tree ONE_COMM_PLACE_IN(SOURCE_NAME => $str (nameIN),
-																VALUE => 1)); //$atrv_int (attribute VALUE from get_link_reference(COMM_ARC,$int (CA)))));
+																VALUE => $int (tmpValue)));
 
 			elsif $str (nameIN) = $str (nameTrans) then
 
@@ -578,14 +586,20 @@ begin
 				//  LT ----> COMM_PLACE
 				// Target place is a communication place
 
+				// Testing wether the attribute value is defined
+				if is_atr_defined(attribute VALUE from get_link_reference(COMM_ARC,$int (CA))) then
+					tmpValue := $atrv_int (attribute VALUE from get_link_reference(COMM_ARC,$int (CA))) ;
+				else
+					tmpValue := 1;
+				end if ;
+
 				CP_OUT := add_sm_son ($smt (CP_OUT),
 									sm_tree ONE_COMM_PLACE_OUT(TARGET_NAME => $str (nameOUT),
-																VALUE => 1)); //$atrv_int (attribute VALUE from get_link_reference(COMM_ARC,$int (CA)))));
+																VALUE => $int (tmpValue)));
 
 			end if;
 		end for;
 	end if;
-
 
 	RETV := add_sm_son ($smt (RETV), $smt (CP_IN));
 	RETV := add_sm_son ($smt (RETV), $smt (CP_OUT));

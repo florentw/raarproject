@@ -41,6 +41,7 @@ begin
     put_line ('#include <stdio.h>');
     put_line ('#include <unistd.h>');
     put_line ('#include <string.h>');
+    put_line ('#include <time.h>');
     put_line ('#include <mpi.h>');
     new_line (1);
     put_line ('#define TAG_END 0');
@@ -54,7 +55,6 @@ begin
 
     new_line (1);
     put_line ('#define EXEC_DURATION 30');
-    put_line ('#define EXEC_STEP 1');
     new_line (1);
     put_line ('#define PROTO_MANAGER 0');
     put_line ('#define SYNCT_MANAGER 1');
@@ -136,6 +136,7 @@ begin
     put_line ('// Launching each PNProcess instance') ;
     put_line ('if (my_rank > 2) {') ;
     increase_marging;
+    put_line ('initRandomSeed();');
     put_line ('instanceArray[my_rank-3]->code(instanceArray[my_rank-3]->startState, my_rank, nb_proc) ;') ;
     decrease_marging;
     put_line ('}') ;
@@ -574,6 +575,28 @@ begin
 	put_line ('}') ;
 
 	new_line(1) ;
+
+	put_line ('void initRandomSeed (void)') ;
+	put_line ('{') ;
+	increase_marging;
+		put_line ('time_t t1;') ;
+		put_line ('(void) time(&t1);') ;
+		put_line ('srand(t1); /* use time in seconds to set seed */') ;
+	decrease_marging;
+	put_line ('}') ;
+	
+	new_line(1) ;
+	
+	put_line ('void randomSleep (void)') ;
+	put_line ('{') ;
+	increase_marging;
+		put_line ('int sleep = (1 + (int) (9.0 * (rand() / (RAND_MAX + 1.0)))) * 100000 ;') ;
+		new_line(1) ;
+		put_line ('// printf ("Sleeping : %d microseconds\n", sleep) ;') ;
+		put_line ('usleep(sleep) ;') ;
+	decrease_marging;
+	put_line ('}') ;
+	
 end;
 
 syntactic_rule GLOBAL_LIST_CP_COUNT is
@@ -635,8 +658,6 @@ begin
 		put_line (' ;') ;
 
 		if $# > 1 then
-			new_line(1) ;
-
 			apply HEAD_INIT_LIST_COMM_PLACE ($2*);
 		end if;
 
@@ -652,7 +673,7 @@ begin
 
 	put_line ('MPI_Status status;');
 	put_line ('int i, buf[CP_COUNT];');
-
+	new_line(1) ;
 	apply INIT_GLOBAL_LIST_COMM_PLACE ($0) ;
 	new_line(1);
 
@@ -753,19 +774,21 @@ begin
 		decrease_marging;
 		new_line (1) ;
 		put_line ('CP_QUEUE_NODE * tmpProc ;') ;
-		put_line ('tmpProc = find_tab(cpArray, &cpQueue, CP_COUNT) ;') ;
-		new_line (1) ;
-		put_line ('if (!tmpProc) break ;') ;
-
+		
+		put_line ('while ((tmpProc = find_tab(cpArray, &cpQueue, CP_COUNT)))') ;
+		put_line ('{') ;
+		increase_marging;
 		put_line ('for (i = 0; i<CP_COUNT; i++)') ;
 		increase_marging;
-			put_line ('cpArray[i] -= tmpProc->tokenMask[i] ;') ;
+		put_line ('cpArray[i] -= tmpProc->tokenMask[i] ;') ;
 		decrease_marging;
 		new_line (1) ;
 		put_line ('MPI_Send(&buf, 1, MPI_INT, tmpProc->rank, TAG_CP_ANS, MPI_COMM_WORLD) ;') ;
-
 		put_line ('free(tmpProc) ;') ;
+		decrease_marging;
+		put_line ('}') ;
 		new_line (1) ;
+		
 		put_line ('break ;') ;
 		new_line(1);
 
@@ -895,8 +918,8 @@ begin
     put_line ('while (1) {');
     increase_marging;
 
-    put_line('//Sleeping EXEC_STEP seconds');
-    put_line('sleep(EXEC_STEP);');
+    put_line('//Sleeping a random duration');
+    put_line('randomSleep();');
     new_line(1);
 
     put_line('//Checking if Prototype manager request END');
@@ -989,24 +1012,25 @@ end;
 
 syntactic_rule LOC_TRANS_OUT is
 begin
-    increase_marging;
-
-    apply COMM_TRANS_IN ($1);
-    apply COMM_TRANS_OUT ($2);
-
-    put_line('//Going to next place...');
-    put('state = ');
-    apply INTERNAL_LOC_TRANS_OUT ($3);
-    put (';');
-    new_line(1);
-
-    put('printf("My rank is %d and I am firing the ');
-    put ($STR(0));
-    put (' transition.",my_rank);');
-    new_line(1);
-    put_line ('printf("\n");');
-    put_line('break;');
-    decrease_marging;
+	increase_marging;
+	
+	apply COMM_TRANS_IN ($1);
+	apply COMM_TRANS_OUT ($2);
+	
+	new_line(1);
+	put_line('//Going to next place...');
+	put('state = ');
+	apply INTERNAL_LOC_TRANS_OUT ($3);
+	put (';');
+	new_line(1);
+	
+	put('printf("My rank is %d and I am firing the ');
+	put ($STR(0));
+	put (' transition.",my_rank);');
+	new_line(1);
+	put_line ('printf("\n");');
+	put_line('break;');
+	decrease_marging;
 end;
 
 
@@ -1017,8 +1041,10 @@ begin
 
 		put_line ('memset(bufCP, 0, CP_COUNT*sizeof(int)) ;') ;
 		apply INTERNAL_COMM_TRANS_IN ($0);
+		new_line(1);
 		put_line ('MPI_Send(bufCP, CP_COUNT, MPI_INT, COMMP_MANAGER, TAG_CP_GET, MPI_COMM_WORLD) ;');
-
+		
+		new_line(1);
 		put_line ('//Blocking wait for a message');
 		put_line ('MPI_Recv(bufCP, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
 		new_line(1);
@@ -1035,58 +1061,50 @@ end;
 
 syntactic_rule INTERNAL_COMM_TRANS_IN is
 begin
-    put('//Arc from communication place ');
-    put_line ($STR(1));
-
-    put ('bufCP[__') ;
-    put_upper ($STR(1)) ;
+	put ('bufCP[__') ;
+	put_upper ($STR(1)) ;
 	put ('] = ');
-    put (to_string($INT(1))) ;
-    put_line (';') ;
-
-    if $# > 1 then
-        apply INTERNAL_COMM_TRANS_IN ($2*);
-    end if;
-    new_line(1);
+	put (to_string($INT(1))) ;
+	put_line (';') ;
+	
+	if $# > 1 then
+		apply INTERNAL_COMM_TRANS_IN ($2*);
+	end if;
 end;
 
 syntactic_rule COMM_TRANS_OUT is
 begin
-    put_line ('//Out arcs to communication places');
-    if $# > 0 then
-
-    	put_line ('memset(bufCP, 0, CP_COUNT*sizeof(int)) ;') ;
-
-        apply INTERNAL_COMM_TRANS_OUT ($0);
-
+	put_line ('//Out arcs to communication places');
+	if $# > 0 then
+	
+		put_line ('memset(bufCP, 0, CP_COUNT*sizeof(int)) ;') ;
+	
+		apply INTERNAL_COMM_TRANS_OUT ($0);
+	
+		new_line(1);
 		put_line ('MPI_Send(bufCP, CP_COUNT, MPI_INT, COMMP_MANAGER, TAG_CP_PUT, MPI_COMM_WORLD) ;');
-    end if;
+	end if;
 end;
 
 
 syntactic_rule INTERNAL_COMM_TRANS_OUT is
 begin
-    put ('//Arc to communication place ');
-    put ($STR(1));
-    new_line(1);
-
-    put ('bufCP[__') ;
-    put_upper ($STR(1)) ;
+	put ('bufCP[__') ;
+	put_upper ($STR(1)) ;
 	put ('] = ');
-    put (to_string($INT(1))) ;
-    put_line (';') ;
-
-    if $# > 1 then
-        apply INTERNAL_COMM_TRANS_OUT ($2*);
-    end if;
-    new_line(1);
+	put (to_string($INT(1))) ;
+	put_line (';') ;
+	
+	if $# > 1 then
+		apply INTERNAL_COMM_TRANS_OUT ($2*);
+	end if;
 end;
 
 
 syntactic_rule INTERNAL_LOC_TRANS_OUT is
 begin
-    put ('__') ;
-    put_upper ($STR(1));
+	put ('__') ;
+	put_upper ($STR(1));
 end;
 
 

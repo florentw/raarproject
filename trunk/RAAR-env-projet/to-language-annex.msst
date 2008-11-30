@@ -182,7 +182,7 @@ syntactic_rule INTERNAL_GLOBAL_LIST_SYNC_TRANS is
 begin
 
 	if $# > 0 then
-		put(',');
+		put_line(',');
 		put ('__') ;
 		put_upper ($STR(1)) ;
 
@@ -197,11 +197,11 @@ end ;
 syntactic_rule INTERNAL_GLOBAL_LIST_ELEMENTS is
 begin
     apply INTERNAL_PROCESS_PLACES($1) ;
-    put(',');
+    put_line(',');
     apply INTERNAL_PROCESS_TRANSITIONS($1) ;
 
     if $# > 1 then
-        put(',');
+        put_line(',');
     	apply INTERNAL_GLOBAL_LIST_ELEMENTS ($2*);
     end if;
 end;
@@ -243,7 +243,7 @@ begin
 		put_upper ($STR(1));
 
 		if $# > 1 then
-			put (',') ;
+			put_line (',') ;
 
 			apply GLOBAL_ENUM_SYNC_TRANS ($2*);
 		end if;

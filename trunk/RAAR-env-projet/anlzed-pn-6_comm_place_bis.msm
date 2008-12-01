@@ -75,7 +75,7 @@ link 'commp1l3' is COMM_ARC
 // Processus Cons2
 
 node 'proc_cons2' is PROCESS
-   where (attribute NAME => 'processus__cons2',
+   where (attribute NAME => 'processus_cons2',
           attribute INSTANCES => sy_node (INSTANCE_LIST:
                                     sy_node (ONE_INSTANCE:
                                        sy_leaf ('CONS2_1'))
@@ -125,7 +125,7 @@ link 'p3bl1' is BELONG
 	where (none)
 	relate together	STT_PLACE:'p3p1',
 		   	LOC_TRANS:'p3t1',  
-			PROCESS:'proc3';
+			PROCESS:'proc_cons3';
 
 link 'p3l1' is ARC
 	where (none)
@@ -147,7 +147,7 @@ link 'commp3l2' is COMM_ARC
 // Processus Cons4
 
 node 'proc_cons4' is PROCESS
-   where (attribute NAME => 'processus__cons4',
+   where (attribute NAME => 'processus_cons4',
           attribute INSTANCES => sy_node (INSTANCE_LIST:
                                     sy_node (ONE_INSTANCE:
                                        sy_leaf ('CONS4_1'))
@@ -184,7 +184,7 @@ link 'commp4l2' is COMM_ARC
 // Processus Prod1
 
 node 'proc_prod1' is PROCESS
-   where (attribute NAME => 'processus__prod1',
+   where (attribute NAME => 'processus_prod1',
           attribute INSTANCES => sy_node (INSTANCE_LIST:
                                     sy_node (ONE_INSTANCE:
                                        sy_leaf ('PROD1_1'))
@@ -221,7 +221,7 @@ link 'commp5l2' is COMM_ARC
 // Processus Prod2
 
 node 'proc_prod2' is PROCESS
-   where (attribute NAME => 'processus__prod2',
+   where (attribute NAME => 'processus_prod2',
           attribute INSTANCES => sy_node (INSTANCE_LIST:
                                     sy_node (ONE_INSTANCE:
                                        sy_leaf ('PROD2_1'))
@@ -258,7 +258,7 @@ link 'commp6l2' is COMM_ARC
 // Processus Prod3
 
 node 'proc_prod3' is PROCESS
-   where (attribute NAME => 'processus__prod3',
+   where (attribute NAME => 'processus_prod3',
           attribute INSTANCES => sy_node (INSTANCE_LIST:
                                     sy_node (ONE_INSTANCE:
                                        sy_leaf ('PROD3_1'))

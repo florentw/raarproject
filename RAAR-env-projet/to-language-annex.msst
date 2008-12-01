@@ -636,7 +636,7 @@ begin
 		put_upper ($STR(1));
 
 		if $# > 1 then
-			put (',') ;
+			put_line (',') ;
 
 			apply HEAD_ENUM_COMM_PLACE ($2*);
 		end if;
@@ -735,8 +735,6 @@ end;
 
 syntactic_rule COMM_PLACES is
 begin
-    put ('//Communication place ');
-    put_line ($STR(0));
 
 	put_line('case TAG_CP_GET:') ;
     increase_marging;
@@ -884,7 +882,7 @@ syntactic_rule HEAD_LIST_PROCESS is
     put ('__');
     put_upper ($STR(1));
     if $# > 1 then
-        put (',');
+        put_line (',');
         apply HEAD_LIST_PROCESS ($2*);
     end if;
 end;

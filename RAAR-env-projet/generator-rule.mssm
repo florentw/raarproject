@@ -406,6 +406,7 @@ semantic_rule CREATE_PLACE (namePL : string) return semantic_tree is
 	ST_IN : semantic_tree;
 	ST_OUT : semantic_tree;
 	LT_OUT : semantic_tree;
+	LST_OUT : semantic_tree;
 	nameIN : string;
 	nameOUT : string;
 begin
@@ -413,6 +414,7 @@ begin
 	ST_IN := create_sm_tree ([SYNC_TRANS_IN # {'SYNC_TRANS_IN' & $str(namePL) } #]);
 	ST_OUT := create_sm_tree ([SYNC_TRANS_OUT # {'SYNC_TRANS_OUT' & $str(namePL) } #]);
 	LT_OUT := create_sm_tree ([LOC_TRANS_OUT # {'LOC_TRANS_OUT' & $str(namePL) } #]);
+	LST_OUT := create_sm_tree ([LOCSYNC_TRANS_OUT # {'LOCSYNC_TRANS_OUT' & $str(namePL) } #]);
 
 	message({ 'CREATE_PLACE Place : ' & $str(namePL) }) ;
 
@@ -439,10 +441,16 @@ begin
 					ST_OUT := add_sm_son ($smt (ST_OUT),
 										sm_tree ONE_SYNC_TRANS_OUT(TARGET_NAME => $str (nameOUT)));
 
+					LST_OUT := add_sm_son ($smt (LST_OUT),
+										sm_tree ONE_LOC_TRANS_OUT(TARGET_NAME => $str (nameOUT)));
+
 				// OUT transition is a Local transition
 				elsif nb_neighbour_out_having_class(get_link_reference(ARC,$int(AR)), LOC_TRANS) > 0 then
 
 					LT_OUT := add_sm_son ($smt (LT_OUT),
+										sm_tree ONE_LOC_TRANS_OUT(TARGET_NAME => $str (nameOUT)));
+					
+					LST_OUT := add_sm_son ($smt (LST_OUT),
 										sm_tree ONE_LOC_TRANS_OUT(TARGET_NAME => $str (nameOUT)));
 
 				end if;
@@ -468,6 +476,7 @@ begin
 	RETV := add_sm_son ($smt (RETV), $smt (ST_IN));
 	RETV := add_sm_son ($smt (RETV), $smt (ST_OUT));
 	RETV := add_sm_son ($smt (RETV), $smt (LT_OUT));
+	RETV := add_sm_son ($smt (RETV), $smt (LST_OUT));
 
 	return $smt (RETV);
 end;

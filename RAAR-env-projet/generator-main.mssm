@@ -103,7 +103,9 @@ constructor_list is C_MPI,
 					NB_TYPES_PROC,
 					INTERNAL_ST_LOC_PLACE_OUT,
 					GLOBAL_LIST_CP_COUNT,
-					GLOBAL_LIST_INSTANCE_COUNT;
+					GLOBAL_LIST_INSTANCE_COUNT,
+					LOCSYNC_TRANS_OUT,
+					INTERNAL_RANDOM_OUT;
 
 //The list of all global variables
 global_variables none end;

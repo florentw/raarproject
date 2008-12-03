@@ -1017,9 +1017,10 @@ begin
     new_line(1);
 
     //Main loop
-    put_line ('int bufCP[CP_COUNT], buf, flag, lastState, isTimedTrans ;');
+    put_line ('int bufCP[CP_COUNT], buf, flag, lastState, isTimedTrans, lastRandIndex ;');
 	put_line ('lastState = state ;') ;
 	put_line ('isTimedTrans = 0 ;') ;
+	put_line ('lastRandIndex = 0 ;') ;
 	new_line(1);
 
     put_line ('while (1) {');
@@ -1298,13 +1299,18 @@ begin
 		put ('int outArray[') ;
 		put (to_string($#)) ;
 		put_line ('] ;') ;
-		put_line ('int outIndex = 0 ;') ;
+		put_line ('int outIndex = 0, randIndex = 0 ;') ;
 		
 		apply INTERNAL_RANDOM_OUT ($0) ;
 		
-		put ('state = outArray[randomIndex(') ;
+		new_line(1) ;
+		put_line ('// Get a random index different from the last one') ;
+		put ('while ((randIndex = randomIndex(') ;
 		put (to_string($#)) ;
-		put_line (')] ;') ;
+		put_line (')) == lastRandIndex) ;') ;
+		
+		put_line ('state = outArray[randIndex] ;') ;
+		put_line ('lastRandIndex = randIndex ;') ;
 		
 		new_line(1) ;
 		put_line ('isTimedTrans = 1 ;') ;

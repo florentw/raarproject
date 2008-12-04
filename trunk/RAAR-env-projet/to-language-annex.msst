@@ -45,12 +45,10 @@ begin
     put_line ('#include <mpi.h>');
     new_line (1);
     put_line ('#define TAG_END 0');
-    put_line ('#define TAG_COMMP_PUT 1');
-    put_line ('#define TAG_COMMP_GET 2');
-    put_line ('#define TAG_SYNCT_ASK 3');
-    put_line ('#define TAG_SYNCT_ACK 4');
-    put_line ('#define TAG_SYNCT_CAN 5');
-    put_line ('#define TAG_SYNCT_CCK 6');
+    put_line ('#define TAG_SYNCT_ASK 1');
+    put_line ('#define TAG_SYNCT_ACK 2');
+    put_line ('#define TAG_SYNCT_CAN 3');
+    put_line ('#define TAG_SYNCT_CCK 4');
     put_line ('#define TAG_CP_ACK  5') ;
     put_line ('#define TAG_CP_NACK 6') ;
     put_line ('#define TAG_CP_GET  7') ;
@@ -70,20 +68,22 @@ begin
 
     // Declare the number of types PN-process
     apply NB_TYPES_PROC ($1) ;
+    new_line (1);
 
     // Declare instanceArray global var
     apply GLOBAL_LIST_INSTANCE ($4) ;
+    new_line (1);
 
     //Declare the global enum for local places
     apply GLOBAL_LIST_ELEMENTS($0) ;
     new_line (1);
 
-    //Declare the global enum for communication places
-    apply GLOBAL_LIST_COMM_PLACE($0) ;
-    new_line (1);
-
     //Declare the global enum for sync transitions
     apply GLOBAL_LIST_SYNC_TRANS($0) ;
+    new_line (1);
+
+    //Declare the global enum for communication places
+    apply GLOBAL_LIST_COMM_PLACE($0) ;
     new_line (1);
 
     //Calling the LIST_PROCESS syntactic rule
@@ -148,6 +148,7 @@ begin
     put_line ('}') ;
 
     new_line (1);
+    put_line ('// Barrier for synchronisation before ending') ;
     put_line ('if (my_rank != 0) {');
     increase_marging;
     put_line ('MPI_Barrier(MPI_COMM_WORLD);');
@@ -233,13 +234,11 @@ end;
 
 syntactic_rule GLOBAL_LIST_SYNC_TRANS is
 begin
-	new_line(1) ;
-
+	put_line ('//Global enum for synchronisation transitions') ;
 	put_line ('enum SYNC_TRANS_T {') ;
 	apply GLOBAL_ENUM_SYNC_TRANS ($2) ;
 	new_line(1) ;
 	put_line ('} ;') ;
-
 end ;
 
 syntactic_rule GLOBAL_ENUM_SYNC_TRANS is
@@ -344,7 +343,9 @@ begin
 	put_line('if (status.MPI_SOURCE == PROTO_MANAGER) {') ;
         increase_marging;
         put_line ('printf("My rank is %d and I received a TAG_END from PROTOTYPE_MANAGER\n",my_rank);');
+        if $# > 0 then
         put_line ('free(&syncTab);');
+        end if;
         new_line(1);
         put_line('return;');
         decrease_marging;
@@ -448,6 +449,7 @@ begin
 
 	new_line(1);
 
+	put_line ('//Global enum for comm. places') ;
 	put_line ('enum COMM_PLACES_T {') ;
 	increase_marging;
 
@@ -1061,7 +1063,6 @@ begin
     put_line('MPI_Iprobe(PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&flag,&status);');
     put_line('if (flag) {');
     increase_marging;
-    put_line('int buf;');
     put_line('MPI_Recv(&buf,1,MPI_INT,PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&status);');
     put_line ('printf("My rank is %d and I received a TAG_END from PROTOTYPE_MANAGER\n",my_rank);');
     put_line('break;');
@@ -1842,11 +1843,6 @@ begin
 end;
 
 syntactic_rule ST_LOC_PLACE_OUT is
-begin
-    put ($STR(0));
-end;
-
-syntactic_rule INTERNAL_PROCESS_TABLE is
 begin
     put ($STR(0));
 end;

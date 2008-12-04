@@ -45,7 +45,7 @@ tengine-generator: generator_to_language.ads
 
 # On lance les tests
 test-generator:
-	./generator_to_language anlzed-pn-main.msf anlzed-pn-3.msm
+	./generator_to_language anlzed-pn-main.msf anlzed-pn-2.msm
 	@echo -e "\n\nThis is the code generated:"
 	cat hello.c
 	@echo -e "\n\nLaunching LAM..."

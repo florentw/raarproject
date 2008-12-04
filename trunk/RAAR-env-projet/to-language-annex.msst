@@ -139,7 +139,6 @@ begin
     //Calling the LIST_COMM_PLACE syntactic rule
     apply($3);
     new_line (1);
-
     put_line ('// Launching each PNProcess instance') ;
     put_line ('if (my_rank > 2 && my_rank < INSTANCE_COUNT + 3) {') ;
     increase_marging;
@@ -265,28 +264,36 @@ syntactic_rule INIT_LIST_SYNC_TRANS is
 begin
         put_line('typedef struct SYNC_PROC {');
 	increase_marging;
-        put_line('int cmp;');
+        put_line('int *cmp;');
+        put_line('int current;');
         put_line('int last;');
+        put_line('int size;');
         put_line('int *tab;');
-        put_line('struct SYNC_PROC* next;');
 	decrease_marging;
         put_line('} SYNC_PROC_T;');
 	new_line(2) ;
 
         put_line('//This function returns a struct SYNC_PROC_T');
-        put_line('SYNC_PROC_T newSyncProc (int nbTypeProc, int size) {');
+        put_line('SYNC_PROC_T* newSyncProc (int nbTypeProc, int size) {');
         increase_marging;
-        put_line ('SYNC_PROC_T nsp;');
-        put_line ('nsp.tab = malloc(nbTypeProc * sizeof(int));');
-        put_line ('nsp.next = NULL;');
-        put_line ('nsp.last = 1;');
-        put_line ('nsp.cmp = size;');
+        put_line ('SYNC_PROC_T* nsp = malloc(sizeof(SYNC_PROC_T));');
+        put_line ('nsp->tab = malloc(NB_TYPE_PROC * INSTANCE_COUNT * sizeof(int));');
+        put_line ('nsp->cmp = malloc(INSTANCE_COUNT * sizeof(int));');
+        put_line ('nsp->current = 0;');
+        put_line ('nsp->last = 1;');
+        put_line ('nsp->size = size;');
 	new_line(1) ;
 
         put_line ('int i;');
-        put_line ('for(i = 0; i < NB_TYPE_PROC; i++)');
+        put_line ('for(i = 0; i < NB_TYPE_PROC * INSTANCE_COUNT; i++)');
         increase_marging;
-        put_line ('nsp.tab[i] = -1;');
+        put_line ('nsp->tab[i] = -1;');
+        decrease_marging;
+	new_line(1) ;
+
+        put_line ('for(i = 0; i < INSTANCE_COUNT; i++)');
+        increase_marging;
+        put_line ('nsp->cmp[i] = size;');
         decrease_marging;
 	new_line(1) ;
 
@@ -322,7 +329,7 @@ begin
         put ('; i++)');
         new_line(1);
         increase_marging;
-        put_line ('syncTab[i] = newSyncProc(NB_TYPE_PROC,sizeTab[i]);');
+        put_line ('syncTab[i] = *(newSyncProc(NB_TYPE_PROC,sizeTab[i]));');
         decrease_marging;
         new_line(1);
 
@@ -335,8 +342,10 @@ begin
 	increase_marging;
 	put_line('MPI_Recv(&syncID,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status);');
 	put_line('if (status.MPI_SOURCE == PROTO_MANAGER) {') ;
-        put_line ('printf("My rank is %d and I received a TAG_END from PROTOTYPE_MANAGER\n",my_rank);');
         increase_marging;
+        put_line ('printf("My rank is %d and I received a TAG_END from PROTOTYPE_MANAGER\n",my_rank);');
+        put_line ('free(&syncTab);');
+        new_line(1);
         put_line('return;');
         decrease_marging;
         put_line('} else {');
@@ -1693,42 +1702,32 @@ begin
     new_line(1);
     increase_marging;
 
-    put_line('if (syncTab[syncID].tab[instanceArray[source-3]->PNProcess] == -1) {');
+    put_line('if (syncTab[syncID].tab[(syncTab[syncID].current * syncTab[syncID].size) + instanceArray[source-3]->PNProcess] == -1) {');
     increase_marging;
 
-    put_line('syncTab[syncID].cmp--;');
-    put_line('syncTab[syncID].tab[instanceArray[source-3]->PNProcess] = source;');
+    put_line('syncTab[syncID].cmp[syncTab[syncID].current]--;');
+    put_line('syncTab[syncID].tab[(syncTab[syncID].current * syncTab[syncID].size) + instanceArray[source-3]->PNProcess] = source;');
 
-    put_line('if (syncTab[syncID].cmp == 0) {');
+    put_line('if (syncTab[syncID].cmp[syncTab[syncID].current] == 0) {');
     increase_marging;
 
     //Sending ACK to all PN-processes
     put_line('int i;');
-    put_line('for(i = 0; i < NB_TYPE_PROC; i++)');
+    put_line('for(i = syncTab[syncID].current * syncTab[syncID].size; i < (syncTab[syncID].current * syncTab[syncID].size) + NB_TYPE_PROC; i++)');
     increase_marging;
 
     put_line('if (syncTab[syncID].tab[i] != -1) {');
     increase_marging;
     put_line('MPI_Send(&syncID,1,MPI_INT,syncTab[syncID].tab[i],TAG_SYNCT_ACK,MPI_COMM_WORLD);');
     put_line('printf("My rank is %d and I send a TAG_SYNCT_ACK to process %d\n",my_rank,syncTab[syncID].tab[i]);');
+    put_line('syncTab[syncID].tab[i] = -1;');
     decrease_marging;
     put_line('}');
 
     decrease_marging;
     //End for
-
-    //If not next
-    put_line('if (syncTab[syncID].last == 1) {');
-    increase_marging;
-    put_line('SYNC_PROC_T nsp = newSyncProc(NB_TYPE_PROC,sizeTab[syncID]);');
-    put_line('SYNC_PROC_T* ptr_nsp = &nsp;');
-    put_line('syncTab[syncID].next = ptr_nsp;');
-    put_line('syncTab[syncID].last = 0;');
-    decrease_marging;
-    put_line('}');
-    //End if
-
-    put_line('syncTab[syncID] = *(syncTab[syncID].next);');
+    put_line('syncTab[syncID].cmp[syncTab[syncID].current] = syncTab[syncID].size;');
+    put_line('if ((syncTab[syncID].current + 1) % INSTANCE_COUNT != syncTab[syncID].last ) syncTab[syncID].current = (syncTab[syncID].current + 1) % INSTANCE_COUNT;');
 
     decrease_marging;
     put_line('}');
@@ -1737,25 +1736,21 @@ begin
     put_line ('} else {');
     increase_marging;
 
-    put_line('int level = 2;');
     put_line('int found = 0;');
-    put_line('SYNC_PROC_T last_nsp = syncTab[syncID];');
-    put_line('SYNC_PROC_T* nsp_ptr3 = syncTab[syncID].next;');
-    put_line('while(! last_nsp.last) {');
+    put_line('int level = syncTab[syncID].current + 1;');
+    put_line('while(level != syncTab[syncID].last) {');
     increase_marging;
-    put_line('if(nsp_ptr3->tab[instanceArray[source-3]->PNProcess] == -1) {');
+    put_line('if(syncTab[syncID].tab[(level * syncTab[syncID].size) + instanceArray[source-3]->PNProcess] == -1) {');
     increase_marging;
-    put_line('nsp_ptr3->tab[instanceArray[source-3]->PNProcess] = source;');
-    put_line('nsp_ptr3->cmp--;');
+    put_line('syncTab[syncID].tab[(level * syncTab[syncID].size) + instanceArray[source-3]->PNProcess] = source;');
+    put_line('syncTab[syncID].cmp[level]--;');
     put_line('found = 1;');
     put_line('break;');
     decrease_marging;
     put_line('} else {');
     increase_marging;
-    put_line('level++;');
-    put_line('sleep(1);');
-    put_line('last_nsp = *(nsp_ptr3);');
-    put_line('nsp_ptr3 = nsp_ptr3->next;');
+    put_line('level = (level + 1) % INSTANCE_COUNT;');
+
     decrease_marging;
     put_line('}');
     new_line(1);
@@ -1765,12 +1760,10 @@ begin
 
     put_line('if (!found) {');
     increase_marging;
-    put_line('SYNC_PROC_T nspt = newSyncProc(NB_TYPE_PROC,sizeTab[syncID]);');
-    put_line('nspt.tab[instanceArray[source-3]->PNProcess] = source;');
-    put_line('nspt.cmp--;');
-    put_line('nspt.next = NULL;');
-    put_line('last_nsp.next = &(nspt);');
-    put_line('last_nsp.last = 0;');
+    put_line('syncTab[syncID].tab[(level * syncTab[syncID].size) + instanceArray[source-3]->PNProcess] = source;');
+    put_line('syncTab[syncID].cmp[level]--;');
+    put_line('syncTab[syncID].last = (syncTab[syncID].last + 1) % INSTANCE_COUNT;');
+
     decrease_marging;
     put_line('}');
     new_line(1);
@@ -1788,32 +1781,36 @@ begin
     new_line(1);
     increase_marging;
 
-    put_line('SYNC_PROC_T* nsp2_ptr = &(syncTab[syncID]);');
-    put_line('while(nsp2_ptr != NULL) {');
+    put_line('int lev = syncTab[syncID].current;');
+    put_line('while(lev != syncTab[syncID].last) {');
     increase_marging;
     new_line(1);
 
-    put_line('if (nsp2_ptr->tab[instanceArray[source-3]->PNProcess] == source) {');
+    put_line('if (syncTab[syncID].tab[(lev * syncTab[syncID].size) + instanceArray[source-3]->PNProcess] == source) {');
     increase_marging;
     new_line(1);
 
-    put_line('while(nsp2_ptr->next != NULL) {');
+    put_line('int sublev = lev + 1;');
+    put_line('while(syncTab[syncID].tab[(sublev * syncTab[syncID].size) + instanceArray[source-3]->PNProcess] != -1) {');
     increase_marging;
-    put_line('nsp2_ptr->tab[instanceArray[source-3]->PNProcess] = (nsp2_ptr->next)->tab[instanceArray[source-3]->PNProcess];');
-    put_line('nsp2_ptr->cmp--;');
+    put_line('syncTab[syncID].tab[(lev * syncTab[syncID].size) + instanceArray[source-3]->PNProcess] = syncTab[syncID].tab[(sublev * syncTab[syncID].size) + instanceArray[source-3]->PNProcess];');
+    put_line('lev = (lev + 1) % INSTANCE_COUNT;');
+    put_line('sublev = (sublev + 1) % INSTANCE_COUNT;');
     decrease_marging;
     put_line('}');
-    put_line('nsp2_ptr->tab[instanceArray[source-3]->PNProcess] = -1;');
-    put_line('nsp2_ptr->cmp--;');
+
+    put_line('syncTab[syncID].tab[(lev * syncTab[syncID].size) + instanceArray[source-3]->PNProcess] = -1;');
+    put_line('syncTab[syncID].cmp[lev]--;');
     new_line(1);
+
     put_line('MPI_Send(&syncID,1,MPI_INT,source,TAG_SYNCT_CCK,MPI_COMM_WORLD);');
     put_line('printf("My rank is %d and I send a TAG_SYNCT_CCK to process %d\n",my_rank,source);');
-
+    put_line('break;');
 
     decrease_marging;
     put_line ('} else {');
     increase_marging;
-    put_line ('nsp2_ptr = nsp2_ptr->next;');
+    put_line ('lev = (lev + 1) % INSTANCE_COUNT;');
     decrease_marging;
     put_line ('}');
     new_line(1);

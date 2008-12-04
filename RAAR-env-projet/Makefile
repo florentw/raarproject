@@ -53,7 +53,7 @@ test-generator:
 	@echo -e "\n\nCompiling the code..."
 	mpicc -Wall -o hello hello.c
 	@echo -e "\n\nExecuting the program..."
-	mpirun -v -c 7 hello
+	mpirun -v -c 15 hello
 	@echo -e "\n\nClosing LAM..."
 	lamwipe -v bhost
 	@echo -e "\n\nDone!"

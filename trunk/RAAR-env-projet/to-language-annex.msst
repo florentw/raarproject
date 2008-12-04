@@ -49,6 +49,8 @@ begin
     put_line ('#define TAG_COMMP_GET 2');
     put_line ('#define TAG_SYNCT_ASK 3');
     put_line ('#define TAG_SYNCT_ACK 4');
+    put_line ('#define TAG_SYNCT_CAN 5');
+    put_line ('#define TAG_SYNCT_CCK 6');
     put_line ('#define TAG_CP_ACK  5') ;
     put_line ('#define TAG_CP_NACK 6') ;
     put_line ('#define TAG_CP_GET  7') ;
@@ -59,6 +61,7 @@ begin
     put_line ('#define EXEC_DURATION 30');
     put_line ('#define DEFAULT_TIMEOUT 1') ;
     put_line ('#define CP_STEP 250000') ;
+    put_line ('#define ST_STEP 250000') ;
     new_line (1);
     put_line ('#define PROTO_MANAGER 0');
     put_line ('#define SYNCT_MANAGER 1');
@@ -138,7 +141,7 @@ begin
     new_line (1);
 
     put_line ('// Launching each PNProcess instance') ;
-    put_line ('if (my_rank > 2) {') ;
+    put_line ('if (my_rank > 2 && my_rank < INSTANCE_COUNT + 3) {') ;
     increase_marging;
     put_line ('initRandomSeed();');
     put_line ('instanceArray[my_rank-3]->code(instanceArray[my_rank-3]->startState, my_rank, nb_proc) ;') ;
@@ -263,6 +266,7 @@ begin
         put_line('typedef struct SYNC_PROC {');
 	increase_marging;
         put_line('int cmp;');
+        put_line('int last;');
         put_line('int *tab;');
         put_line('struct SYNC_PROC* next;');
 	decrease_marging;
@@ -275,6 +279,7 @@ begin
         put_line ('SYNC_PROC_T nsp;');
         put_line ('nsp.tab = malloc(nbTypeProc * sizeof(int));');
         put_line ('nsp.next = NULL;');
+        put_line ('nsp.last = 1;');
         put_line ('nsp.cmp = size;');
 	new_line(1) ;
 
@@ -330,14 +335,26 @@ begin
 	increase_marging;
 	put_line('MPI_Recv(&syncID,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status);');
 	put_line('if (status.MPI_SOURCE == PROTO_MANAGER) {') ;
+        put_line ('printf("My rank is %d and I received a TAG_END from PROTOTYPE_MANAGER\n",my_rank);');
         increase_marging;
         put_line('return;');
         decrease_marging;
         put_line('} else {');
         increase_marging;
         put_line ('int source = status.MPI_SOURCE;');
+        put_line ('int tag = status.MPI_TAG;');
+        put_line('if (tag == TAG_SYNCT_ASK) {');
+        increase_marging;
         put_line ('printf("My rank is %d and I received a TAG_SYNCT_ASK in synchronization ID %d from PN-process %d\n",my_rank, syncID, source);');
-	new_line(1) ;
+        decrease_marging;
+        put_line('}');
+        new_line(1) ;
+        put_line('if (tag == TAG_SYNCT_CAN) {');
+        increase_marging;
+        put_line ('printf("My rank is %d and I received a TAG_SYNCT_CAN in synchronization ID %d from PN-process %d\n",my_rank, syncID, source);');
+        decrease_marging;
+        put_line('}');
+        new_line(1) ;
 
         put_line('switch(syncID) {');
         increase_marging;
@@ -606,10 +623,11 @@ begin
 
 	new_line(1) ;
 
-	put_line ('int randomIndex (int range)') ;
+	put_line ('int randomIndex (int rank, int range)') ;
 	put_line ('{') ;
 	increase_marging;
 		put_line ('int index = (int) (range * (rand() / (RAND_MAX + 1.0))) ;') ;
+                put_line ('index = (index + rank) % range;');
 		new_line(1) ;
 		put_line ('printf ("Random index : %d, Range : 0-%d\n", index, range) ;') ;
 		new_line(1) ;
@@ -627,9 +645,9 @@ begin
 		put_line ('srand(t1); /* use time in seconds to set seed */') ;
 	decrease_marging;
 	put_line ('}') ;
-	
+
 	new_line(1) ;
-	
+
 	put_line ('void randomSleep (void)') ;
 	put_line ('{') ;
 	increase_marging;
@@ -639,7 +657,7 @@ begin
 		put_line ('usleep(sleep) ;') ;
 	decrease_marging;
 	put_line ('}') ;
-	
+
 end;
 
 syntactic_rule GLOBAL_LIST_CP_COUNT is
@@ -746,13 +764,13 @@ begin
 			put_line ('}') ;
 			decrease_marging;
 		put_line ('}') ;
-		
+
 		new_line(1);
 
 		put_line('usleep(CP_STEP) ;') ;
 
 		new_line(1);
-		
+
 		put_line('MPI_Iprobe (MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status) ;');
 		new_line(1);
 		put_line('if (flag) {');
@@ -877,7 +895,7 @@ begin
 		decrease_marging;
 		new_line (1) ;
 		put_line ('CP_QUEUE_NODE * tmpProc ;') ;
-		
+
 		put_line ('while ((tmpProc = findProcessToServe(cpArray, &cpQueue, CP_COUNT)))') ;
 		put_line ('{') ;
 		increase_marging;
@@ -892,7 +910,7 @@ begin
 		decrease_marging;
 		put_line ('}') ;
 		new_line (1) ;
-		
+
 		put_line ('break ;') ;
 		new_line(1);
 
@@ -923,7 +941,6 @@ begin
 end;
 
 
-//WARNING:  This works if only one communication place
 syntactic_rule ONE_COMM_PLACE_PROC_OUT is
 begin
     put ('//');
@@ -1037,6 +1054,7 @@ begin
     increase_marging;
     put_line('int buf;');
     put_line('MPI_Recv(&buf,1,MPI_INT,PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&status);');
+    put_line ('printf("My rank is %d and I received a TAG_END from PROTOTYPE_MANAGER\n",my_rank);');
     put_line('break;');
     decrease_marging;
     put_line('}');
@@ -1122,19 +1140,19 @@ end;
 syntactic_rule LOC_TRANS_OUT is
 begin
 	increase_marging;
-	
+
 	new_line(1);
-	
+
 	put_line('//Going to next place...');
 	put('state = ');
 	apply INTERNAL_LOC_TRANS_OUT ($3);
 	put (';');
-	
+
 	new_line(1);
 	apply COMM_TRANS_IN ($1);
 	apply COMM_TRANS_OUT ($2);
 	new_line(1);
-	
+
 	put('printf("My rank is %d and I am firing the ');
 	put ($STR(0));
 	put (' transition.",my_rank);');
@@ -1152,7 +1170,7 @@ begin
 		put_line ('memset(bufCP, 0, CP_COUNT*sizeof(int)) ;') ;
 		apply INTERNAL_COMM_TRANS_IN ($0);
 		new_line(1);
-		
+
 		put_line ('if (isTimedTrans)');
 		increase_marging;
 			put_line ('MPI_Send(bufCP, CP_COUNT, MPI_INT, COMMP_MANAGER, TAG_CP_TGET, MPI_COMM_WORLD) ;');
@@ -1161,16 +1179,17 @@ begin
 		increase_marging;
 			put_line ('MPI_Send(bufCP, CP_COUNT, MPI_INT, COMMP_MANAGER, TAG_CP_GET, MPI_COMM_WORLD) ;');
 		decrease_marging;
-		
+
 		new_line(1);
 		put_line ('//Blocking wait for a message');
 		put_line ('MPI_Recv(bufCP, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
 		new_line(1);
 
 		put_line ('//If END request from prototype manager');
-		put_line ('if (status.MPI_SOURCE == PROTO_MANAGER)');
+		put_line ('if (status.MPI_SOURCE == PROTO_MANAGER) {');
 		increase_marging;
-		put_line('return ;') ;
+                put_line ('printf("My rank is %d and I received a TAG_END from PROTOTYPE_MANAGER\n",my_rank);');
+		put_line('return ;  }') ;
 		decrease_marging;
 		new_line(1);
 
@@ -1193,7 +1212,7 @@ begin
 	put ('] = ');
 	put (to_string($INT(1))) ;
 	put_line (';') ;
-	
+
 	if $# > 1 then
 		apply INTERNAL_COMM_TRANS_IN ($2*);
 	end if;
@@ -1203,11 +1222,11 @@ syntactic_rule COMM_TRANS_OUT is
 begin
 	put_line ('//Out arcs to communication places');
 	if $# > 0 then
-	
+
 		put_line ('memset(bufCP, 0, CP_COUNT*sizeof(int)) ;') ;
-	
+
 		apply INTERNAL_COMM_TRANS_OUT ($0);
-	
+
 		new_line(1);
 		put_line ('MPI_Send(bufCP, CP_COUNT, MPI_INT, COMMP_MANAGER, TAG_CP_PUT, MPI_COMM_WORLD) ;');
 	end if;
@@ -1221,7 +1240,7 @@ begin
 	put ('] = ');
 	put (to_string($INT(1))) ;
 	put_line (';') ;
-	
+
 	if $# > 1 then
 		apply INTERNAL_COMM_TRANS_OUT ($2*);
 	end if;
@@ -1300,18 +1319,18 @@ begin
 		put (to_string($#)) ;
 		put_line ('] ;') ;
 		put_line ('int outIndex = 0, randIndex = 0 ;') ;
-		
+
 		apply INTERNAL_RANDOM_OUT ($0) ;
-		
+
 		new_line(1) ;
 		put_line ('// Get a random index different from the last one') ;
-		put ('while ((randIndex = randomIndex(') ;
+		put ('while ((randIndex = randomIndex(my_rank,') ;
 		put (to_string($#)) ;
 		put_line (')) == lastRandIndex) ;') ;
-		
+
 		put_line ('state = outArray[randIndex] ;') ;
 		put_line ('lastRandIndex = randIndex ;') ;
-		
+
 		new_line(1) ;
 		put_line ('isTimedTrans = 1 ;') ;
 	else
@@ -1319,7 +1338,7 @@ begin
 		put('state = __') ;
 		put_upper ($str(1)) ;
 		put_line (';') ;
-		
+
 		new_line(1) ;
 		put_line ('isTimedTrans = 0 ;') ;
 	end if;
@@ -1398,18 +1417,52 @@ begin
         put('MPI_Send(&buf,1,MPI_INT,SYNCT_MANAGER,TAG_SYNCT_ASK,MPI_COMM_WORLD);');
 	new_line(1);
 
+        put_line('if (isTimedTrans) {');
+
+        increase_marging;
+        put_line('time_t ti,ct;');
+        put_line('(void) time(&ti);');
+        put_line('//Timed wait for firing the transition');
+        put_line ('while (1) {');
+
+        increase_marging;
+	put_line ('MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status) ;');
+	put_line ('if (flag)');
+        increase_marging;
+	put_line ('break;');
+        decrease_marging;
+	put_line('usleep(ST_STEP);');
+        put_line('(void) time(&ct);');
+        put_line('if (ct - ti > DEFAULT_TIMEOUT) break;');
+        decrease_marging;
+	put_line('}');
+	new_line(1);
+
+        put_line('//Timer expired');
+        put_line('if (!flag) {');
+        increase_marging;
+            put_line('MPI_Send(&buf,1,MPI_INT,SYNCT_MANAGER,TAG_SYNCT_CAN,MPI_COMM_WORLD);');
+        decrease_marging;
+	put_line('}');
+
+        decrease_marging;
+	put_line('}');
+	new_line(1);
+
+
 	put_line ('//Blocking wait for a message');
 	put_line ('MPI_Recv(&buf, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
 	new_line(1);
 
 	put_line ('//If END request from prototype manager');
-	put_line ('if (status.MPI_SOURCE == PROTO_MANAGER)');
+	put_line ('if (status.MPI_SOURCE == PROTO_MANAGER) {');
 	increase_marging;
-	put_line('return ;') ;
+        put_line ('printf("My rank is %d and I received a TAG_END from PROTOTYPE_MANAGER\n",my_rank);');
+	put_line('return ;  }') ;
 	decrease_marging;
 	new_line(1);
 
-	put_line ('//If answer from synchronization transitions manager');
+	put_line ('//If ACK answer from synchronization transitions manager');
 	put_line ('if (status.MPI_SOURCE == SYNCT_MANAGER && status.MPI_TAG == TAG_SYNCT_ACK) {');
 	increase_marging;
 
@@ -1425,10 +1478,26 @@ begin
 
         put_line('break;');
         decrease_marging;
-
-	decrease_marging;
 	put_line ('}');
+        new_line(1);
 
+	put_line ('//If CCK answer from synchronization transitions manager');
+	put_line ('if (status.MPI_SOURCE == SYNCT_MANAGER && status.MPI_TAG == TAG_SYNCT_CCK) {');
+	increase_marging;
+
+        put ('printf("My rank is %d and I could not fire the synchronized transition ');
+        put ($STR(1));
+        put ('.\n", my_rank);');
+        new_line(1);
+        put_line('//Coming back to the last place');
+        put('state = lastState;');
+        new_line(1);
+
+        put_line('break;');
+        decrease_marging;
+	put_line ('}');
+	decrease_marging;
+        new_line(1);
 
         if $# > 1 then
             apply LOC_SYNC_TRANSITION ($2*);
@@ -1563,13 +1632,64 @@ end;
 
 syntactic_rule PROC_IN is
 begin
-    put('//__');
     put_upper ($STR(1));
+    new_line (1);
+end;
+
+syntactic_rule ONE_SYNC_TRANS_PROC_IN is
+begin
+    put (' (instanceArray[source-3])->PNProcess == __');
+    apply PROC_IN ($1);
+
+    if $# > 1 then
+        put (' ||');
+        apply ONE_SYNC_TRANS_PROC_IN ($2*);
+    end if;
+end;
+
+syntactic_rule LIST_STT_PLACE is
+begin
+    new_line (1);
+end;
+
+syntactic_rule INSTANCES is
+begin
+    put ($STR(0));
+end;
+
+syntactic_rule SYNC_TRANSITIONS is
+begin
+    apply INTERNAL_SYNC($1);
+    if $# > 1 then
+        put(',');
+        apply SYNC_TRANSITIONS ($2*);
+    end if;
+end;
+
+syntactic_rule INTERNAL_SYNC is
+begin
+    apply INTERNAL_SYNC_IN ($1);
+    if $# > 1 then
+        put(',');
+        apply INTERNAL_SYNC ($2*);
+    end if;
+end;
+
+syntactic_rule INTERNAL_SYNC_IN is
+begin
+    put(to_string($#));
+end;
+
+syntactic_rule SYNC_TRANS_IN is
+begin
+    put ('//');
+    put ($STR(0));
     new_line(1);
 
-    put ('if ((instanceArray[source-3])->PNProcess == __');
-    put_upper ($STR(1));
-    put (') {');
+    put ('if ( (tag == TAG_SYNCT_ASK) && (');
+    apply ONE_SYNC_TRANS_PROC_IN ($1);
+    put (')) {');
+
     new_line(1);
     increase_marging;
 
@@ -1598,11 +1718,12 @@ begin
     //End for
 
     //If not next
-    put_line('if (syncTab[syncID].next == NULL) {');
+    put_line('if (syncTab[syncID].last == 1) {');
     increase_marging;
     put_line('SYNC_PROC_T nsp = newSyncProc(NB_TYPE_PROC,sizeTab[syncID]);');
-    put_line('SYNC_PROC_T* nsp_ptr = &nsp;');
-    put_line('syncTab[syncID].next = nsp_ptr;');
+    put_line('SYNC_PROC_T* ptr_nsp = &nsp;');
+    put_line('syncTab[syncID].next = ptr_nsp;');
+    put_line('syncTab[syncID].last = 0;');
     decrease_marging;
     put_line('}');
     //End if
@@ -1615,66 +1736,97 @@ begin
     decrease_marging;
     put_line ('} else {');
     increase_marging;
-    put_line('SYNC_PROC_T nsp = newSyncProc(NB_TYPE_PROC,sizeTab[syncID]);');
-    put_line('SYNC_PROC_T* nsp_ptr = &nsp;');
-    put_line('syncTab[syncID].next = nsp_ptr;');
-    put_line('(syncTab[syncID].next)->tab[instanceArray[source-3]->PNProcess] = source;');
-    put_line('(syncTab[syncID].next)->cmp--;');
+
+    put_line('int level = 2;');
+    put_line('int found = 0;');
+    put_line('SYNC_PROC_T last_nsp = syncTab[syncID];');
+    put_line('SYNC_PROC_T* nsp_ptr3 = syncTab[syncID].next;');
+    put_line('while(! last_nsp.last) {');
+    increase_marging;
+    put_line('if(nsp_ptr3->tab[instanceArray[source-3]->PNProcess] == -1) {');
+    increase_marging;
+    put_line('nsp_ptr3->tab[instanceArray[source-3]->PNProcess] = source;');
+    put_line('nsp_ptr3->cmp--;');
+    put_line('found = 1;');
+    put_line('break;');
+    decrease_marging;
+    put_line('} else {');
+    increase_marging;
+    put_line('level++;');
+    put_line('sleep(1);');
+    put_line('last_nsp = *(nsp_ptr3);');
+    put_line('nsp_ptr3 = nsp_ptr3->next;');
+    decrease_marging;
+    put_line('}');
+    new_line(1);
+    decrease_marging;
+    put_line('}');
+    new_line(1);
+
+    put_line('if (!found) {');
+    increase_marging;
+    put_line('SYNC_PROC_T nspt = newSyncProc(NB_TYPE_PROC,sizeTab[syncID]);');
+    put_line('nspt.tab[instanceArray[source-3]->PNProcess] = source;');
+    put_line('nspt.cmp--;');
+    put_line('nspt.next = NULL;');
+    put_line('last_nsp.next = &(nspt);');
+    put_line('last_nsp.last = 0;');
+    decrease_marging;
+    put_line('}');
+    new_line(1);
+
     decrease_marging;
     put_line ('}');
-
 
     decrease_marging;
     put_line ('}');
     new_line(1);
 
-end;
-
-syntactic_rule ONE_SYNC_TRANS_PROC_IN is
-begin
-    apply PROC_IN ($1);
-
-    if $# > 1 then
-        apply ONE_SYNC_TRANS_PROC_IN ($2*);
-    end if;
-end;
-
-syntactic_rule LIST_STT_PLACE is
-begin
-    new_line (1);
-end;
-
-syntactic_rule INSTANCES is
-begin
-    put ($STR(0));
-end;
-
-syntactic_rule SYNC_TRANSITIONS is
-begin
-    apply INTERNAL_SYNC($1);
-    if $# > 1 then
-        put(',');
-        apply SYNC_TRANSITIONS ($2*);
-    end if;
-end;
-
-syntactic_rule INTERNAL_SYNC is
-begin
-    apply INTERNAL_SYNC_IN ($1);
-end;
-
-syntactic_rule INTERNAL_SYNC_IN is
-begin
-    put(to_string($#));
-end;
-
-syntactic_rule SYNC_TRANS_IN is
-begin
-    put ('//');
-    put ($STR(0));
-    new_line(1);
-
+    put ('if ( (tag == TAG_SYNCT_CAN) && (');
     apply ONE_SYNC_TRANS_PROC_IN ($1);
+    put (')) {');
+    new_line(1);
+    increase_marging;
+
+    put_line('SYNC_PROC_T* nsp2_ptr = &(syncTab[syncID]);');
+    put_line('while(nsp2_ptr != NULL) {');
+    increase_marging;
+    new_line(1);
+
+    put_line('if (nsp2_ptr->tab[instanceArray[source-3]->PNProcess] == source) {');
+    increase_marging;
+    new_line(1);
+
+    put_line('while(nsp2_ptr->next != NULL) {');
+    increase_marging;
+    put_line('nsp2_ptr->tab[instanceArray[source-3]->PNProcess] = (nsp2_ptr->next)->tab[instanceArray[source-3]->PNProcess];');
+    put_line('nsp2_ptr->cmp--;');
+    decrease_marging;
+    put_line('}');
+    put_line('nsp2_ptr->tab[instanceArray[source-3]->PNProcess] = -1;');
+    put_line('nsp2_ptr->cmp--;');
+    new_line(1);
+    put_line('MPI_Send(&syncID,1,MPI_INT,source,TAG_SYNCT_CCK,MPI_COMM_WORLD);');
+    put_line('printf("My rank is %d and I send a TAG_SYNCT_CCK to process %d\n",my_rank,source);');
+
+
+    decrease_marging;
+    put_line ('} else {');
+    increase_marging;
+    put_line ('nsp2_ptr = nsp2_ptr->next;');
+    decrease_marging;
+    put_line ('}');
+    new_line(1);
+    //END IF
+
+    decrease_marging;
+    put_line ('}');
+    new_line(1);
+    //END WHILE
+
+    decrease_marging;
+    put_line ('}');
+    new_line(1);
 end;
 
 syntactic_rule SYNC_TRANS_OUT is

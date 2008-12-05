@@ -71,7 +71,7 @@ begin
 	put_line ('int i, my_rank, nb_proc;');
 	new_line (1);
 
-	// Instanciate the instanceArray global var
+	// Instanciate the instanceArray global var. Calling the LIST_INSTANCE syntactic rule
 	apply ($4) ;
 
 	new_line (1);
@@ -135,9 +135,11 @@ begin
 	put_line ('}');
 end;
 
+
 //***************************************************
 //******       Global declarations             ******
 //***************************************************
+
 
 syntactic_rule GLOBALS_H is
 begin
@@ -145,6 +147,7 @@ begin
 	apply INTERNAL_GLOBALS_H($1) ;
 
 end;
+
 
 syntactic_rule INTERNAL_GLOBALS_H is
 begin
@@ -226,6 +229,43 @@ begin
 
 end;
 
+syntactic_rule NB_TYPES_PROC is
+begin
+	put('#define NB_TYPE_PROC ');
+	put(to_string($#));
+	new_line(2);
+end;
+
+syntactic_rule GLOBAL_PROCESS is
+begin
+	if $# > 0 then
+
+		//Creation of a string array to distribute the PN-process
+		put_line ('enum PROCESSES_T {');
+		increase_marging;
+		apply HEAD_LIST_PROCESS ($0);
+		decrease_marging;
+		put_line ('};');
+		new_line(1);
+
+	end if;
+end;
+
+//Internal header syntactic rule for PT-processes
+syntactic_rule HEAD_LIST_PROCESS is
+	begin
+
+	//Creation of a string array with the name of each process
+	put ('__');
+	put_upper ($STR(1));
+	if $# > 1 then
+		put_line (',');
+		apply HEAD_LIST_PROCESS ($2*);
+	else
+		new_line(1) ;
+	end if;
+end;
+
 
 //***************************************************
 //******       List of elements                ******
@@ -244,6 +284,48 @@ begin
 	decrease_marging;
 	put_line ('} ;') ;
 	new_line(1) ;
+end;
+
+syntactic_rule INTERNAL_GLOBAL_LIST_ELEMENTS is
+begin
+	apply INTERNAL_PROCESS_PLACES($1) ;
+	put_line(',');
+	apply INTERNAL_PROCESS_TRANSITIONS($1) ;
+
+	if $# > 1 then
+		put_line(',');
+		apply INTERNAL_GLOBAL_LIST_ELEMENTS ($2*);
+	end if;
+end;
+
+syntactic_rule INTERNAL_PROCESS_PLACES is
+begin
+	apply LOCAL_PLACES($1) ;
+end;
+
+syntactic_rule LOCAL_PLACES is
+begin
+	put('__');
+	put_upper($STR(1));
+	if $# > 1 then
+		put(',');
+		apply LOCAL_PLACES ($2*);
+	end if;
+end;
+
+syntactic_rule INTERNAL_PROCESS_TRANSITIONS is
+begin
+	apply LOCAL_TRANSITIONS ($2) ;
+end;
+
+syntactic_rule LOCAL_TRANSITIONS is
+begin
+	put('__') ;
+	put_upper($STR(1));
+	if $# > 1 then
+	put(',');
+		apply LOCAL_TRANSITIONS ($2*);
+	end if;
 end;
 
 
@@ -265,35 +347,24 @@ begin
 end ;
 
 
-syntactic_rule INTERNAL_GLOBAL_LIST_ELEMENTS is
-begin
-	apply INTERNAL_PROCESS_PLACES($1) ;
-	put_line(',');
-	apply INTERNAL_PROCESS_TRANSITIONS($1) ;
-
-	if $# > 1 then
-		put_line(',');
-		apply INTERNAL_GLOBAL_LIST_ELEMENTS ($2*);
-	end if;
-end;
-
-
-syntactic_rule INTERNAL_PROCESS_TRANSITIONS is
-begin
-	apply LOCAL_TRANSITIONS ($2) ;
-end;
-
-
-syntactic_rule INTERNAL_PROCESS_PLACES is
-begin
-	apply LOCAL_PLACES($1) ;
-end;
-
-
-
 //***************************************************
-//******       Synchronisation transitions      ******
+//******       Synchronisation transitions      *****
 //***************************************************
+
+
+syntactic_rule LIST_SYNC_TRANS is
+begin
+	put ('//There are ');
+	put ($STR_INT (0));
+	put_line (' synchronisation transitions');
+	put_line('if (my_rank == SYNCT_MANAGER) {');
+	increase_marging;
+	put_line('syncTransMngr(my_rank, nb_proc);') ;
+	decrease_marging;
+	put_line('}');
+	new_line(2);
+end;
+
 
 syntactic_rule GLOBAL_LIST_SYNC_TRANS is
 begin
@@ -441,19 +512,19 @@ begin
 
 end ;
 
-syntactic_rule LIST_SYNC_TRANS is
+syntactic_rule INTERNAL_SYNC is
 begin
-	put ('//There are ');
-	put ($STR_INT (0));
-	put_line (' synchronisation transitions');
-	put_line('if (my_rank == SYNCT_MANAGER) {');
-	increase_marging;
-	put_line('syncTransMngr(my_rank, nb_proc);') ;
-	decrease_marging;
-	put_line('}');
-	new_line(2);
+	apply INTERNAL_SYNC_IN ($1);
+	if $# > 1 then
+		put(',');
+		apply INTERNAL_SYNC ($2*);
+	end if;
 end;
 
+syntactic_rule INTERNAL_SYNC_IN is
+begin
+	put(to_string($#));
+end;
 
 syntactic_rule INTERNAL_LIST_SYNC_TRANS is
 	begin
@@ -478,11 +549,87 @@ syntactic_rule INTERNAL_LIST_SYNC_TRANS is
 	end if;
 end;
 
+syntactic_rule SYNC_TRANS_IN is
+begin
+	put ('//');
+	put ($STR(0));
+	new_line(1);
+
+	put ('if ( (tag == TAG_SYNCT_ASK) && (');
+	apply ONE_SYNC_TRANS_PROC_IN ($1);
+	put (')) {');
+
+	new_line(1);
+	increase_marging;
+        put_line('treatACK(syncTab[syncID], source, syncID, my_rank);');
+	decrease_marging;
+	put_line ('}');
+	new_line(1);
+
+	put ('if ( (tag == TAG_SYNCT_CAN) && (');
+	apply ONE_SYNC_TRANS_PROC_IN ($1);
+	put (')) {');
+	new_line(1);
+	increase_marging;
+        put_line('treatCAN(syncTab[syncID], source, syncID, my_rank);');
+	decrease_marging;
+	put_line ('}');
+	new_line(1);
+end;
+
+syntactic_rule ONE_SYNC_TRANS_PROC_IN is
+begin
+	put (' (instanceArray[source-3])->PNProcess == __');
+	apply PROC_IN ($1);
+
+	if $# > 1 then
+		put (' ||');
+		apply ONE_SYNC_TRANS_PROC_IN ($2*);
+	end if;
+end;
+
+syntactic_rule PROC_IN is
+begin
+	put_upper ($STR(1));
+	new_line (1);
+end;
+
+
+syntactic_rule SYNC_TRANSITIONS is
+begin
+	apply INTERNAL_SYNC($1);
+	if $# > 1 then
+		put(',');
+		apply SYNC_TRANSITIONS ($2*);
+	end if;
+end;
+
 
 
 //***************************************************
 //******       Communication places            ******
 //***************************************************
+
+syntactic_rule LIST_COMM_PLACE is
+begin
+	put_line('//Communication places manager');
+	put ('//There are ');
+	put ($STR_INT (0));
+	put_line (' communication places');
+	put_line('if (my_rank == COMMP_MANAGER) {');
+	increase_marging;
+	put_line('commPlaceMngr(my_rank, nb_proc);');
+	decrease_marging;
+	put_line('}');
+	new_line(2);
+end;
+
+syntactic_rule GLOBAL_LIST_COMM_PLACE is
+begin
+	new_line(1);
+	put_line ('CP_QUEUE_NODE * cpQueue = NULL ;') ;
+	new_line(1);
+end;
 
 syntactic_rule GLOBAL_COMM_PLACE is
 begin
@@ -510,12 +657,7 @@ begin
 	put_line ('} ;') ;
 end;
 
-syntactic_rule GLOBAL_LIST_COMM_PLACE is
-begin
-	new_line(1);
-	put_line ('CP_QUEUE_NODE * cpQueue = NULL ;') ;
-	new_line(1);
-end;
+
 
 syntactic_rule GLOBAL_LIST_CP_COUNT is
 begin
@@ -525,28 +667,6 @@ begin
 		else
 			put_line (to_string($#));
 		end if;
-end;
-
-syntactic_rule INIT_GLOBAL_LIST_COMM_PLACE is
-begin
-	if $# > 0 then
-		put_line ('int cpArray[CP_COUNT] ;') ;
-
-		apply HEAD_INIT_LIST_COMM_PLACE($0) ;
-	end if;
-end;
-
-syntactic_rule GLOBAL_LIST_INSTANCE_COUNT is
-begin
-	put (to_string($#)) ;
-end;
-
-syntactic_rule FREE_GLOBAL_LIST_COMM_PLACE is
-begin
-
-	put_line ('freeQueue (&cpQueue) ;') ;
-	new_line (1) ;
-
 end;
 
 syntactic_rule HEAD_ENUM_COMM_PLACE is
@@ -567,22 +687,11 @@ begin
 	end if;
 end;
 
-syntactic_rule HEAD_INIT_LIST_COMM_PLACE is
+
+
+syntactic_rule GLOBAL_LIST_INSTANCE_COUNT is
 begin
-	if $# > 0 then
-
-		put ('cpArray[') ;
-		put ('__') ;
-		put_upper ($STR(1));
-		put ('] = ') ;
-		put (to_string($int(1))) ;
-		put_line (' ;') ;
-
-		if $# > 1 then
-			apply HEAD_INIT_LIST_COMM_PLACE ($2*);
-		end if;
-
-	end if;
+	put (to_string($#)) ;
 end;
 
 syntactic_rule INIT_LIST_COMM_PLACE is
@@ -668,19 +777,33 @@ begin
 
 end ;
 
-syntactic_rule LIST_COMM_PLACE is
+syntactic_rule INIT_GLOBAL_LIST_COMM_PLACE is
 begin
-	put_line('//Communication places manager');
-	put ('//There are ');
-	put ($STR_INT (0));
-	put_line (' communication places');
-	put_line('if (my_rank == COMMP_MANAGER) {');
-	increase_marging;
-	put_line('commPlaceMngr(my_rank, nb_proc);');
-	decrease_marging;
-	put_line('}');
-	new_line(2);
+	if $# > 0 then
+		put_line ('int cpArray[CP_COUNT] ;') ;
+
+		apply HEAD_INIT_LIST_COMM_PLACE($0) ;
+	end if;
 end;
+
+syntactic_rule HEAD_INIT_LIST_COMM_PLACE is
+begin
+	if $# > 0 then
+
+		put ('cpArray[') ;
+		put ('__') ;
+		put_upper ($STR(1));
+		put ('] = ') ;
+		put (to_string($int(1))) ;
+		put_line (' ;') ;
+
+		if $# > 1 then
+			apply HEAD_INIT_LIST_COMM_PLACE ($2*);
+		end if;
+
+	end if;
+end;
+
 
 syntactic_rule INTERNAL_LIST_COMM_PLACE is
 begin
@@ -779,6 +902,14 @@ begin
 	new_line(1);
 end;
 
+syntactic_rule FREE_GLOBAL_LIST_COMM_PLACE is
+begin
+
+	put_line ('freeQueue (&cpQueue) ;') ;
+	new_line (1) ;
+
+end;
+
 syntactic_rule ONE_COMM_PLACE_PROC_IN is
 begin
 	put ('//');
@@ -829,21 +960,6 @@ end;
 //******          PN-processes                 ******
 //***************************************************
 
-syntactic_rule GLOBAL_PROCESS is
-begin
-	if $# > 0 then
-
-		//Creation of a string array to distribute the PN-process
-		put_line ('enum PROCESSES_T {');
-		increase_marging;
-		apply HEAD_LIST_PROCESS ($0);
-		decrease_marging;
-		put_line ('};');
-		new_line(1);
-
-	end if;
-end;
-
 syntactic_rule LIST_PROCESS is
 begin
 	put ('//There are ');
@@ -860,23 +976,6 @@ begin
 		new_line(1);
 	end if;
 end;
-
-
-//Internal header syntactic rule for PT-processes
-syntactic_rule HEAD_LIST_PROCESS is
-	begin
-
-	//Creation of a string array with the name of each process
-	put ('__');
-	put_upper ($STR(1));
-	if $# > 1 then
-		put_line (',');
-		apply HEAD_LIST_PROCESS ($2*);
-	else
-		new_line(1) ;
-	end if;
-end;
-
 
 //Internal body syntactic rule for PT-processes
 syntactic_rule INTERNAL_LIST_PROCESS is
@@ -944,7 +1043,6 @@ begin
 	end if;
 end;
 
-
 syntactic_rule PNPROCESS is
 begin
 	new_line(1);
@@ -968,22 +1066,10 @@ begin
 end;
 
 
-
 //***************************************************
-//******       PN-processes : Transitions      ******
+//******    PN-processes : Local Transitions   ******
 //***************************************************
 
-
-
-syntactic_rule LOCAL_TRANSITIONS is
-begin
-	put('__') ;
-	put_upper($STR(1));
-	if $# > 1 then
-	put(',');
-		apply LOCAL_TRANSITIONS ($2*);
-	end if;
-end;
 
 
 syntactic_rule LOCAL_TRANS is
@@ -1030,6 +1116,12 @@ begin
 	put_line ('printf("\n");');
 	put_line('break;');
 	decrease_marging;
+end;
+
+syntactic_rule INTERNAL_LOC_TRANS_OUT is
+begin
+	put ('__') ;
+	put_upper ($STR(1));
 end;
 
 syntactic_rule COMM_TRANS_IN is
@@ -1117,30 +1209,9 @@ begin
 end;
 
 
-syntactic_rule INTERNAL_LOC_TRANS_OUT is
-begin
-	put ('__') ;
-	put_upper ($STR(1));
-end;
-
-
-
 //***************************************************
 //******       PN-processes : Places           ******
 //***************************************************
-
-
-
-syntactic_rule LOCAL_PLACES is
-begin
-	put('__');
-	put_upper($STR(1));
-	if $# > 1 then
-		put(',');
-		apply LOCAL_PLACES ($2*);
-	end if;
-end;
-
 
 syntactic_rule LOCAL_PLACE is
 begin
@@ -1175,10 +1246,10 @@ end;
 
 syntactic_rule LOC_PLACE_OUT is
 begin
-	apply LOCSYNC_TRANS_OUT ($4) ;
+	apply LOC_SYNC_TRANS_OUT ($4) ;
 end;
 
-syntactic_rule LOCSYNC_TRANS_OUT is
+syntactic_rule LOC_SYNC_TRANS_OUT is
 begin
 	put_line ('// Remember the current state') ;
 	put_line ('lastState = state ;') ;
@@ -1248,21 +1319,6 @@ end;
 //***************************************************
 //******    PN-processes : Synch. transitions  ******
 //***************************************************
-
-
-
-syntactic_rule ONE_SYNC_TRANS_PROC_OUT is
-begin
-	put('__');
-	put_upper($STR(1));
-end;
-
-
-syntactic_rule LOC_SYNC_TRANSITIONS is
-begin
-	apply ONE_SYNC_TRANS_PROC_OUT ($1);
-end;
-
 
 syntactic_rule LOC_SYNC_TRANSITION is
 begin
@@ -1376,6 +1432,18 @@ begin
 end;
 
 
+syntactic_rule LOC_SYNC_TRANSITIONS is
+begin
+	apply ONE_SYNC_TRANS_PROC_OUT ($1);
+end;
+
+syntactic_rule ONE_SYNC_TRANS_PROC_OUT is
+begin
+	put('__');
+	put_upper($STR(1));
+end;
+
+
 
 
 
@@ -1383,8 +1451,6 @@ end;
 //***************************************************
 //******       List of instances               ******
 //***************************************************
-
-
 
 syntactic_rule GLOBAL_LIST_INSTANCE is
 begin
@@ -1426,6 +1492,7 @@ end;
 
 syntactic_rule INTERNAL_LIST_INSTANCE is
 begin
+	//Calling the ONE_INSTANCE syntactic rule
 	apply ($1) ;
 	if $# > 1 then
 		apply INTERNAL_LIST_INSTANCE ($2*);
@@ -1456,126 +1523,13 @@ end;
 
 
 //***************************************************
-//******       Functions to do...              ******
+//******         Get Name Functions            ******
 //***************************************************
 
-
-syntactic_rule LIST_BELONG is
-begin
-new_line (1);
-end;
-
-syntactic_rule LIST_ARC is
-begin
-new_line (1);
-end;
-
-syntactic_rule LIST_COMM_ARC is
-begin
-new_line (1);
-end;
-
-syntactic_rule ONE_BELONG is
-begin
-new_line (1);
-end;
-
-syntactic_rule ONE_ARC is
-begin
-new_line (1);
-end;
-
-syntactic_rule ONE_COMM_ARC is
-begin
-new_line (1);
-end;
-
-syntactic_rule OBJECT_NAME is
-begin
-put ($STR(0));
-end;
 
 syntactic_rule PROC_OUT is
 begin
 	put ($STR(0));
-end;
-
-syntactic_rule PROC_IN is
-begin
-	put_upper ($STR(1));
-	new_line (1);
-end;
-
-syntactic_rule ONE_SYNC_TRANS_PROC_IN is
-begin
-	put (' (instanceArray[source-3])->PNProcess == __');
-	apply PROC_IN ($1);
-
-	if $# > 1 then
-		put (' ||');
-		apply ONE_SYNC_TRANS_PROC_IN ($2*);
-	end if;
-end;
-
-syntactic_rule LIST_STT_PLACE is
-begin
-	new_line (1);
-end;
-
-syntactic_rule INSTANCES is
-begin
-	put ($STR(0));
-end;
-
-syntactic_rule SYNC_TRANSITIONS is
-begin
-	apply INTERNAL_SYNC($1);
-	if $# > 1 then
-		put(',');
-		apply SYNC_TRANSITIONS ($2*);
-	end if;
-end;
-
-syntactic_rule INTERNAL_SYNC is
-begin
-	apply INTERNAL_SYNC_IN ($1);
-	if $# > 1 then
-		put(',');
-		apply INTERNAL_SYNC ($2*);
-	end if;
-end;
-
-syntactic_rule INTERNAL_SYNC_IN is
-begin
-	put(to_string($#));
-end;
-
-syntactic_rule SYNC_TRANS_IN is
-begin
-	put ('//');
-	put ($STR(0));
-	new_line(1);
-
-	put ('if ( (tag == TAG_SYNCT_ASK) && (');
-	apply ONE_SYNC_TRANS_PROC_IN ($1);
-	put (')) {');
-
-	new_line(1);
-	increase_marging;
-        put_line('treatACK(syncTab[syncID], source, syncID, my_rank);');
-	decrease_marging;
-	put_line ('}');
-	new_line(1);
-
-	put ('if ( (tag == TAG_SYNCT_CAN) && (');
-	apply ONE_SYNC_TRANS_PROC_IN ($1);
-	put (')) {');
-	new_line(1);
-	increase_marging;
-        put_line('treatCAN(syncTab[syncID], source, syncID, my_rank);');
-	decrease_marging;
-	put_line ('}');
-	new_line(1);
 end;
 
 syntactic_rule SYNC_TRANS_OUT is
@@ -1598,12 +1552,11 @@ begin
 	put ($STR(0));
 end;
 
-syntactic_rule NB_TYPES_PROC is
+syntactic_rule OBJECT_NAME is
 begin
-	put('#define NB_TYPE_PROC ');
-	put(to_string($#));
-	new_line(2);
+	put ($STR(0));
 end;
+
 
 
 

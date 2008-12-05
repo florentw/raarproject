@@ -37,6 +37,7 @@ end;
 constructor_list is C_MPI,
 					OBJECT_NAME,
 					LIST_PROCESS,
+					GLOBAL_PROCESS,
 					INTERNAL_LIST_PROCESS,
 					HEAD_LIST_PROCESS,
 					LIST_COMM_PLACE,
@@ -95,6 +96,7 @@ constructor_list is C_MPI,
 					FREE_GLOBAL_LIST_COMM_PLACE,
 					INIT_LIST_SYNC_TRANS,
 					GLOBAL_LIST_SYNC_TRANS,
+					GLOBAL_LIST_SYNC_TRANS_COUNT,
 					GLOBAL_ENUM_SYNC_TRANS,
 					INTERNAL_SYNC,
 					INTERNAL_SYNC_IN,
@@ -103,7 +105,10 @@ constructor_list is C_MPI,
 					GLOBAL_LIST_CP_COUNT,
 					GLOBAL_LIST_INSTANCE_COUNT,
 					LOCSYNC_TRANS_OUT,
-					INTERNAL_RANDOM_OUT;
+					INTERNAL_RANDOM_OUT,
+					GLOBAL_COMM_PLACE,
+					GLOBALS_H,
+					INTERNAL_GLOBALS_H;
 
 //The list of all global variables
 global_variables none end;

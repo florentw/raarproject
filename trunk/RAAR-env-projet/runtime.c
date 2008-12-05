@@ -107,14 +107,14 @@ CP_QUEUE_NODE* findProcessToServe (int* tab_ref, CP_QUEUE_NODE** pqueue, int siz
 	while (tmp)
 	{
 		tmpMax = tab_cmp(tab_ref, tmp->tokenMask, size) ;
-	
+
 		if (tmpMax > max)
 		{
 			max = tmpMax ;
 			maxProc = tmp ;
 			maxProcBefore = tmp2;
 		}
-	
+
 		tmp2 = tmp ;
 		tmp = tmp->next;
 	}
@@ -123,7 +123,7 @@ CP_QUEUE_NODE* findProcessToServe (int* tab_ref, CP_QUEUE_NODE** pqueue, int siz
 	{
 		if (!maxProcBefore) *pqueue = maxProc->next ;
 		else maxProcBefore->next = maxProc->next ;
-	
+
 		return maxProc ;
 	}
 
@@ -142,11 +142,11 @@ void deleteNodeByRank (CP_QUEUE_NODE ** pqueue, int rank)
 		{
 			if (tmp2) tmp2->next = tmp->next;
 			else *pqueue = tmp->next ;
-		
+
 			free(tmp);
 			return ;
 		}
-	
+
 		tmp2 = tmp ;
 		tmp = tmp->next;
 	}
@@ -196,4 +196,80 @@ void randomSleep (void)
 // printf ("Sleeping : %d microseconds\n", sleep) ;
 	usleep(sleep) ;
 }
+
+void treatACK(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank)
+{
+    if (syncElement->tab[(syncElement->current * syncElement->size) + instanceArray[source-3]->PNProcess] == -1)
+    {
+        syncElement->cmp[syncElement->current]--;
+        syncElement->tab[(syncElement->current * syncElement->size) + instanceArray[source-3]->PNProcess] = source;
+        if (syncElement->cmp[syncElement->current] == 0)
+        {
+            int i;
+            for(i = syncElement->current * syncElement->size; i < (syncElement->current * syncElement->size) + NB_TYPE_PROC; i++)
+            {
+                if (syncElement->tab[i] != -1) {
+                    MPI_Send(&syncID,1,MPI_INT,syncElement->tab[i],TAG_SYNCT_ACK,MPI_COMM_WORLD);
+                    printf("My rank is %d and I send a TAG_SYNCT_ACK to process %d\n",my_rank,syncElement->tab[i]);
+                    syncElement->tab[i] = -1;
+                }
+            }
+            syncElement->cmp[syncElement->current] = syncElement->size;
+
+            if ((syncElement->current + 1) % INSTANCE_COUNT != syncElement->last )
+                syncElement->current = (syncElement->current + 1) % INSTANCE_COUNT;
+        }
+    }
+    else
+    {
+        int found = 0;
+        int level = syncElement->current + 1;
+        while(level != syncElement->last)
+        {
+            if(syncElement->tab[(level * syncElement->size) + instanceArray[source-3]->PNProcess] == -1)
+            {
+                syncElement->tab[(level * syncElement->size) + instanceArray[source-3]->PNProcess] = source;
+                syncElement->cmp[level]--;
+                found = 1;
+                break;
+            }
+            else
+                level = (level + 1) % INSTANCE_COUNT;
+        }
+
+        if (!found)
+        {
+            syncElement->tab[(level * syncElement->size) + instanceArray[source-3]->PNProcess] = source;
+            syncElement->cmp[level]--;
+            syncElement->last = (syncElement->last + 1) % INSTANCE_COUNT;
+        }
+    }
+}
+
+
+void treatCAN(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank)
+{
+    int lev = syncElement->current;
+    while(lev != syncElement->last)
+    {
+        if (syncElement->tab[(lev * syncElement->size) + instanceArray[source-3]->PNProcess] == source)
+        {
+            int sublev = lev + 1;
+            while(syncElement->tab[(sublev * syncElement->size) + instanceArray[source-3]->PNProcess] != -1)
+            {
+                syncElement->tab[(lev * syncElement->size) + instanceArray[source-3]->PNProcess] = syncElement->tab[(sublev * syncElement->size) + instanceArray[source-3]->PNProcess];
+                lev = (lev + 1) % INSTANCE_COUNT;
+                sublev = (sublev + 1) % INSTANCE_COUNT;
+            }
+            syncElement->tab[(lev * syncElement->size) + instanceArray[source-3]->PNProcess] = -1;
+            syncElement->cmp[lev]--;
+
+            MPI_Send(&syncID,1,MPI_INT,source,TAG_SYNCT_CCK,MPI_COMM_WORLD);
+            printf("My rank is %d and I send a TAG_SYNCT_CCK to process %d\n",my_rank,source);
+            break;
+        } else
+            lev = (lev + 1) % INSTANCE_COUNT;
+    }
+}
+
 

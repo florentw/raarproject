@@ -43,12 +43,12 @@ begin
 	put_line ('#include <string.h>');
 	put_line ('#include <time.h>');
 	put_line ('#include <mpi.h>');
-	
+
 	new_line (1);
-	
+
 	put_line ('#include "globals.h"');
 	put_line ('#include "runtime.h"');
-	
+
 	new_line (1);
 
 	//Declare the global enum for communication places
@@ -303,7 +303,7 @@ begin
 	apply GLOBAL_ENUM_SYNC_TRANS ($2) ;
 	decrease_marging;
 	put_line ('} ;') ;
-	
+
 	put ('#define ST_COUNT ') ;
 	apply GLOBAL_LIST_SYNC_TRANS_COUNT($2) ;
 	new_line(2) ;
@@ -318,7 +318,7 @@ begin
 	decrease_marging;
 	put_line('} SYNC_PROC_T;');
 	new_line(2) ;
-	
+
 end ;
 
 syntactic_rule GLOBAL_LIST_SYNC_TRANS_COUNT is
@@ -387,7 +387,7 @@ begin
 		increase_marging;
 		put_line ('printf("My rank is %d and I received a TAG_END from PROTOTYPE_MANAGER\n",my_rank);');
 		if $# > 0 then
-		
+
 		put_line ('for (i = 0; i<ST_COUNT; i++)');
 		put_line ('{');
 		increase_marging;
@@ -396,7 +396,7 @@ begin
 		put_line ('free(syncTab[i]);');
 		decrease_marging;
 		put_line ('}');
-		
+
 		end if;
 		new_line(1);
 		put_line('return;');
@@ -531,7 +531,7 @@ syntactic_rule INIT_GLOBAL_LIST_COMM_PLACE is
 begin
 	if $# > 0 then
 		put_line ('int cpArray[CP_COUNT] ;') ;
-	
+
 		apply HEAD_INIT_LIST_COMM_PLACE($0) ;
 	end if;
 end;
@@ -832,7 +832,7 @@ end;
 syntactic_rule GLOBAL_PROCESS is
 begin
 	if $# > 0 then
-	
+
 		//Creation of a string array to distribute the PN-process
 		put_line ('enum PROCESSES_T {');
 		increase_marging;
@@ -840,7 +840,7 @@ begin
 		decrease_marging;
 		put_line ('};');
 		new_line(1);
-		
+
 	end if;
 end;
 
@@ -850,13 +850,13 @@ begin
 	put ($STR_INT (0));
 	put (' processes');
 	new_line(1);
-	
+
 	//If more than zero PN-process
 	if $# > 0 then
-	
+
 		//Apply sub-tree rule
 		apply INTERNAL_LIST_PROCESS ($0);
-	
+
 		new_line(1);
 	end if;
 end;
@@ -902,7 +902,7 @@ begin
 
 	//Main loop
 	put_line ('int buf, flag, lastState, isTimedTrans, lastRandIndex ;');
-	
+
 	put_line ('#ifndef NO_CP') ;
 	put_line ('int bufCP[CP_COUNT] ;') ;
 	put_line ('#endif') ;
@@ -1562,76 +1562,7 @@ begin
 
 	new_line(1);
 	increase_marging;
-
-	put_line('if (syncTab[syncID]->tab[(syncTab[syncID]->current * syncTab[syncID]->size) + instanceArray[source-3]->PNProcess] == -1) {');
-	increase_marging;
-
-	put_line('syncTab[syncID]->cmp[syncTab[syncID]->current]--;');
-	put_line('syncTab[syncID]->tab[(syncTab[syncID]->current * syncTab[syncID]->size) + instanceArray[source-3]->PNProcess] = source;');
-
-	put_line('if (syncTab[syncID]->cmp[syncTab[syncID]->current] == 0) {');
-	increase_marging;
-
-	//Sending ACK to all PN-processes
-	put_line('int i;');
-	put_line('for(i = syncTab[syncID]->current * syncTab[syncID]->size; i < (syncTab[syncID]->current * syncTab[syncID]->size) + NB_TYPE_PROC; i++)');
-	increase_marging;
-
-	put_line('if (syncTab[syncID]->tab[i] != -1) {');
-	increase_marging;
-	put_line('MPI_Send(&syncID,1,MPI_INT,syncTab[syncID]->tab[i],TAG_SYNCT_ACK,MPI_COMM_WORLD);');
-	put_line('printf("My rank is %d and I send a TAG_SYNCT_ACK to process %d\n",my_rank,syncTab[syncID]->tab[i]);');
-	put_line('syncTab[syncID]->tab[i] = -1;');
-	decrease_marging;
-	put_line('}');
-
-	decrease_marging;
-	//End for
-	put_line('syncTab[syncID]->cmp[syncTab[syncID]->current] = syncTab[syncID]->size;');
-	put_line('if ((syncTab[syncID]->current + 1) % INSTANCE_COUNT != syncTab[syncID]->last ) syncTab[syncID]->current = (syncTab[syncID]->current + 1) % INSTANCE_COUNT;');
-
-	decrease_marging;
-	put_line('}');
-
-	decrease_marging;
-	put_line ('} else {');
-	increase_marging;
-
-	put_line('int found = 0;');
-	put_line('int level = syncTab[syncID]->current + 1;');
-	put_line('while(level != syncTab[syncID]->last) {');
-	increase_marging;
-	put_line('if(syncTab[syncID]->tab[(level * syncTab[syncID]->size) + instanceArray[source-3]->PNProcess] == -1) {');
-	increase_marging;
-	put_line('syncTab[syncID]->tab[(level * syncTab[syncID]->size) + instanceArray[source-3]->PNProcess] = source;');
-	put_line('syncTab[syncID]->cmp[level]--;');
-	put_line('found = 1;');
-	put_line('break;');
-	decrease_marging;
-	put_line('} else {');
-	increase_marging;
-	put_line('level = (level + 1) % INSTANCE_COUNT;');
-
-	decrease_marging;
-	put_line('}');
-	new_line(1);
-	decrease_marging;
-	put_line('}');
-	new_line(1);
-
-	put_line('if (!found) {');
-	increase_marging;
-	put_line('syncTab[syncID]->tab[(level * syncTab[syncID]->size) + instanceArray[source-3]->PNProcess] = source;');
-	put_line('syncTab[syncID]->cmp[level]--;');
-	put_line('syncTab[syncID]->last = (syncTab[syncID]->last + 1) % INSTANCE_COUNT;');
-
-	decrease_marging;
-	put_line('}');
-	new_line(1);
-
-	decrease_marging;
-	put_line ('}');
-
+        put_line('treatACK(syncTab[syncID], source, syncID, my_rank);');
 	decrease_marging;
 	put_line ('}');
 	new_line(1);
@@ -1641,47 +1572,7 @@ begin
 	put (')) {');
 	new_line(1);
 	increase_marging;
-
-	put_line('int lev = syncTab[syncID]->current;');
-	put_line('while(lev != syncTab[syncID]->last) {');
-	increase_marging;
-	new_line(1);
-
-	put_line('if (syncTab[syncID]->tab[(lev * syncTab[syncID]->size) + instanceArray[source-3]->PNProcess] == source) {');
-	increase_marging;
-	new_line(1);
-
-	put_line('int sublev = lev + 1;');
-	put_line('while(syncTab[syncID]->tab[(sublev * syncTab[syncID]->size) + instanceArray[source-3]->PNProcess] != -1) {');
-	increase_marging;
-	put_line('syncTab[syncID]->tab[(lev * syncTab[syncID]->size) + instanceArray[source-3]->PNProcess] = syncTab[syncID]->tab[(sublev * syncTab[syncID]->size) + instanceArray[source-3]->PNProcess];');
-	put_line('lev = (lev + 1) % INSTANCE_COUNT;');
-	put_line('sublev = (sublev + 1) % INSTANCE_COUNT;');
-	decrease_marging;
-	put_line('}');
-
-	put_line('syncTab[syncID]->tab[(lev * syncTab[syncID]->size) + instanceArray[source-3]->PNProcess] = -1;');
-	put_line('syncTab[syncID]->cmp[lev]--;');
-	new_line(1);
-
-	put_line('MPI_Send(&syncID,1,MPI_INT,source,TAG_SYNCT_CCK,MPI_COMM_WORLD);');
-	put_line('printf("My rank is %d and I send a TAG_SYNCT_CCK to process %d\n",my_rank,source);');
-	put_line('break;');
-
-	decrease_marging;
-	put_line ('} else {');
-	increase_marging;
-	put_line ('lev = (lev + 1) % INSTANCE_COUNT;');
-	decrease_marging;
-	put_line ('}');
-	new_line(1);
-	//END IF
-
-	decrease_marging;
-	put_line ('}');
-	new_line(1);
-	//END WHILE
-
+        put_line('treatCAN(syncTab[syncID], source, syncID, my_rank);');
 	decrease_marging;
 	put_line ('}');
 	new_line(1);
@@ -1713,3 +1604,7 @@ begin
 	put(to_string($#));
 	new_line(2);
 end;
+
+
+
+

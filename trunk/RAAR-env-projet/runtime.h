@@ -34,3 +34,7 @@ SYNC_PROC_T* newSyncProc (int size) ;
 int randomIndex (int rank, int range) ;
 void initRandomSeed (void) ;
 void randomSleep (void) ;
+void treatACK(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank);
+void treatCAN(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank);
+
+

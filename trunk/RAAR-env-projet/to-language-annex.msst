@@ -43,43 +43,12 @@ begin
 	put_line ('#include <string.h>');
 	put_line ('#include <time.h>');
 	put_line ('#include <mpi.h>');
+	
 	new_line (1);
-	put_line ('#define TAG_END 0');
-	put_line ('#define TAG_SYNCT_ASK 1');
-	put_line ('#define TAG_SYNCT_ACK 2');
-	put_line ('#define TAG_SYNCT_CAN 3');
-	put_line ('#define TAG_SYNCT_CCK 4');
-	put_line ('#define TAG_CP_ACK  5') ;
-	put_line ('#define TAG_CP_NACK 6') ;
-	put_line ('#define TAG_CP_GET  7') ;
-	put_line ('#define TAG_CP_TGET 8') ;
-	put_line ('#define TAG_CP_PUT  9') ;
-
-	new_line (1);
-	put_line ('#define EXEC_DURATION 30');
-	put_line ('#define DEFAULT_TIMEOUT 1') ;
-	put_line ('#define CP_STEP 250000') ;
-	put_line ('#define ST_STEP 250000') ;
-	new_line (1);
-	put_line ('#define PROTO_MANAGER 0');
-	put_line ('#define SYNCT_MANAGER 1');
-	put_line ('#define COMMP_MANAGER 2');
-	new_line (1);
-
-	// Declare the number of types PN-process
-	apply NB_TYPES_PROC ($1) ;
-	new_line (1);
-
-	// Declare instanceArray global var
-	apply GLOBAL_LIST_INSTANCE ($4) ;
-	new_line (1);
-
-	//Declare the global enum for local places
-	apply GLOBAL_LIST_ELEMENTS($0) ;
-	new_line (1);
-
-	//Declare the global enum for sync transitions
-	apply GLOBAL_LIST_SYNC_TRANS($0) ;
+	
+	put_line ('#include "globals.h"');
+	put_line ('#include "runtime.h"');
+	
 	new_line (1);
 
 	//Declare the global enum for communication places
@@ -166,6 +135,96 @@ begin
 	put_line ('}');
 end;
 
+//***************************************************
+//******       Global declarations             ******
+//***************************************************
+
+syntactic_rule GLOBALS_H is
+begin
+
+	apply INTERNAL_GLOBALS_H($1) ;
+
+end;
+
+syntactic_rule INTERNAL_GLOBALS_H is
+begin
+
+	put_line ('/*');
+	put_line ('##=======================================================================');
+	put_line ('##Copyright (C) 2007-2008 C_MPI Generator');
+	put_line ('##This program is free software; you can redistribute it and/or modify');
+	put_line ('##it under the terms of the GNU General Public License (GPL) as published');
+	put_line ('##of the License, or (at your option) any later version.');
+	put_line ('##');
+	put_line ('##This program is distributed in the hope that it will be useful,');
+	put_line ('##but WITHOUT ANY WARRANTY; without even the implied warranty of');
+	put_line ('##MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the');
+	put_line ('##GNU General Public License for more details.');
+	put_line ('##');
+	put_line ('##To read the license please visit http://www.gnu.org/copyleft/gpl.html');
+	put_line ('##=======================================================================');
+	put_line ('##');
+	put_line ('## File          : hello.c');
+	put_line ('## Authors       : Leonardo BAUTISTA GOMEZ <leobago@gmail.com>');
+	put_line ('##               : Florent WEBER <florent.weber@gmail.com>');
+	put_line ('##               : Julien CLEMENT <julien.jclement@gmail.com>');
+	put_line ('##               : Felix MACH <felix.mach@gmail.com>');
+	put_line ('##               : Henry LAY <lay.henri83@gmail.com>');
+	put_line ('##               : Remi VILLE <raymooz@gmail.com>');
+	put_line ('##               : Shi-Hon CHAN <syone7@gmail.com>');
+	put_line ('##');
+	put_line ('##');
+	put_line ('*/');
+
+	new_line(1) ;
+
+	put_line ('#define TAG_END 0');
+	put_line ('#define TAG_SYNCT_ASK 1');
+	put_line ('#define TAG_SYNCT_ACK 2');
+	put_line ('#define TAG_SYNCT_CAN 3');
+	put_line ('#define TAG_SYNCT_CCK 4');
+	put_line ('#define TAG_CP_ACK  5') ;
+	put_line ('#define TAG_CP_NACK 6') ;
+	put_line ('#define TAG_CP_GET  7') ;
+	put_line ('#define TAG_CP_TGET 8') ;
+	put_line ('#define TAG_CP_PUT  9') ;
+
+	new_line (1);
+	put_line ('#define EXEC_DURATION 30');
+	put_line ('#define DEFAULT_TIMEOUT 1') ;
+	put_line ('#define CP_STEP 250000') ;
+	put_line ('#define ST_STEP 250000') ;
+	new_line (1);
+	put_line ('#define PROTO_MANAGER 0');
+	put_line ('#define SYNCT_MANAGER 1');
+	put_line ('#define COMMP_MANAGER 2');
+	new_line (1);
+
+	// Declare the number of types PN-process
+	apply NB_TYPES_PROC ($1) ;
+	new_line (1);
+
+	// Declare instanceArray global var
+	apply GLOBAL_LIST_INSTANCE ($4) ;
+	new_line (1);
+
+	//Declare the global enum for local places
+	apply GLOBAL_LIST_ELEMENTS($0) ;
+	new_line (1);
+
+	//Declare the global enum for sync transitions
+	apply GLOBAL_LIST_SYNC_TRANS($0) ;
+	new_line (1);
+
+	//Declare the global definitions for communication places
+	apply GLOBAL_COMM_PLACE($0) ;
+	new_line (1);
+
+	//Declare the global enum for processes
+	apply GLOBAL_PROCESS($1) ;
+	new_line (1);
+
+end;
 
 
 //***************************************************
@@ -244,7 +303,29 @@ begin
 	apply GLOBAL_ENUM_SYNC_TRANS ($2) ;
 	decrease_marging;
 	put_line ('} ;') ;
+	
+	put ('#define ST_COUNT ') ;
+	apply GLOBAL_LIST_SYNC_TRANS_COUNT($2) ;
+	new_line(2) ;
+
+	put_line('typedef struct SYNC_PROC {');
+	increase_marging;
+		put_line('int *cmp;');
+		put_line('int current;');
+		put_line('int last;');
+		put_line('int size;');
+		put_line('int *tab;');
+	decrease_marging;
+	put_line('} SYNC_PROC_T;');
+	new_line(2) ;
+	
 end ;
+
+syntactic_rule GLOBAL_LIST_SYNC_TRANS_COUNT is
+begin
+	put (to_string($#));
+end;
+
 
 syntactic_rule GLOBAL_ENUM_SYNC_TRANS is
 begin
@@ -268,50 +349,6 @@ end ;
 
 syntactic_rule INIT_LIST_SYNC_TRANS is
 begin
-
-		put ('#define ST_COUNT ') ;
-		put_line (to_string($#));
-		new_line(1) ;
-
-		put_line('typedef struct SYNC_PROC {');
-	increase_marging;
-		put_line('int *cmp;');
-		put_line('int current;');
-		put_line('int last;');
-		put_line('int size;');
-		put_line('int *tab;');
-	decrease_marging;
-		put_line('} SYNC_PROC_T;');
-	new_line(2) ;
-
-		put_line('//This function returns a struct SYNC_PROC_T');
-		put_line('SYNC_PROC_T* newSyncProc (int nbTypeProc, int size) {');
-		increase_marging;
-		put_line ('SYNC_PROC_T* nsp = malloc(sizeof(SYNC_PROC_T));');
-		put_line ('nsp->tab = malloc(NB_TYPE_PROC * INSTANCE_COUNT * sizeof(int));');
-		put_line ('nsp->cmp = malloc(INSTANCE_COUNT * sizeof(int));');
-		put_line ('nsp->current = 0;');
-		put_line ('nsp->last = 1;');
-		put_line ('nsp->size = size;');
-	new_line(1) ;
-
-		put_line ('int i;');
-		put_line ('for(i = 0; i < NB_TYPE_PROC * INSTANCE_COUNT; i++)');
-		increase_marging;
-		put_line ('nsp->tab[i] = -1;');
-		decrease_marging;
-	new_line(1) ;
-
-		put_line ('for(i = 0; i < INSTANCE_COUNT; i++)');
-		increase_marging;
-		put_line ('nsp->cmp[i] = size;');
-		decrease_marging;
-	new_line(1) ;
-
-		put_line ('return nsp;');
-		decrease_marging;
-		put_line('}');
-
 		put_line('void syncTransMngr (int my_rank, int nb_proc)') ;
 	put_line('{') ;
 	increase_marging;
@@ -334,7 +371,7 @@ begin
 		put ('for(i = 0; i < ST_COUNT; i++)');
 		new_line(1);
 		increase_marging;
-		put_line ('syncTab[i] = newSyncProc(NB_TYPE_PROC,sizeTab[i]);');
+		put_line ('syncTab[i] = newSyncProc(sizeTab[i]);');
 		decrease_marging;
 		new_line(1);
 
@@ -447,9 +484,8 @@ end;
 //******       Communication places            ******
 //***************************************************
 
-syntactic_rule GLOBAL_LIST_COMM_PLACE is
+syntactic_rule GLOBAL_COMM_PLACE is
 begin
-
 	put ('#define CP_COUNT ') ;
 	apply GLOBAL_LIST_CP_COUNT($3) ;
 	new_line(1);
@@ -472,218 +508,13 @@ begin
 	new_line(1);
 	decrease_marging;
 	put_line ('} ;') ;
+end;
 
+syntactic_rule GLOBAL_LIST_COMM_PLACE is
+begin
 	new_line(1);
-
-	put ('CP_QUEUE_NODE * cpQueue = NULL ;') ;
-
-	new_line(2);
-
-	put_line ('void appendToQueue (CP_QUEUE_NODE ** pqueue, int rank, int * tokenMask, int arraySize)') ;
-	put_line ('{') ;
-
-	increase_marging;
-	put_line ('int i ;') ;
-
-	put_line ('if (!(*pqueue))') ;
-	put_line ('{') ;
-	increase_marging;
-	put_line ('*pqueue = (CP_QUEUE_NODE *) malloc(sizeof(CP_QUEUE_NODE)) ;') ;
-	put_line ('(*pqueue)->next = NULL ;') ;
-	put_line ('(*pqueue)->rank = rank ;') ;
-
-	put ('for (i = 0; i<arraySize; i++)') ;
-	increase_marging;
-		put_line ('(*pqueue)->tokenMask[i] = tokenMask[i] ;') ;
-	decrease_marging;
-	put_line ('printf("Added a process to queue, rank=%d\n", rank) ;') ;
-	put_line ('return ;') ;
-	decrease_marging;
-	put_line ('}') ;
-	new_line(1) ;
-	put_line ('CP_QUEUE_NODE * tmp = *pqueue ;') ;
-	new_line(1) ;
-	put_line ('while (tmp->next) tmp = tmp->next ;') ;
-	new_line(1) ;
-	put_line ('tmp->next = (CP_QUEUE_NODE *) malloc(sizeof(CP_QUEUE_NODE)) ;') ;
-	put_line ('tmp->next->next = NULL ;') ;
-	put_line ('tmp->next->rank = rank ;') ;
-	put ('for (i = 0; i<arraySize; i++)') ;
-	increase_marging;
-		put_line ('(*pqueue)->tokenMask[i] = tokenMask[i] ;') ;
-	decrease_marging;
-	put_line ('printf("Added a process to queue, rank=%d\n", rank) ;') ;
-	decrease_marging;
-	put_line ('}') ;
-
-	new_line(1) ;
-
-	put_line ('void freeQueue (CP_QUEUE_NODE ** pqueue)') ;
-	put_line ('{') ;
-	increase_marging;
-		put_line ('CP_QUEUE_NODE * tmp2, * tmp = *pqueue ;') ;
-		new_line(1) ;
-		put_line ('while (tmp)') ;
-		put_line ('{') ;
-		increase_marging;
-			put_line ('tmp2 = tmp ;') ;
-			put_line ('tmp = tmp->next ;') ;
-			put_line ('free(tmp2) ;') ;
-		decrease_marging;
-		put_line ('}') ;
-	decrease_marging;
-	put_line ('}') ;
-
-	new_line(1) ;
-
-	put_line ('int tab_cmp(int* tab1, int* tab2, int size)') ;
-	put_line ('{') ;
-	increase_marging;
-		put_line ('int i;') ;
-		put_line ('int top=0;') ;
-		put_line ('int point=0;') ;
-		new_line(1) ;
-		put_line ('for(i=0;i<size;i++)') ;
-		put_line ('{') ;
-		increase_marging;
-		put_line ('if (*(tab1+i) > top)') ;
-		increase_marging;
-		put_line ('top = *(tab1+i);') ;
-		decrease_marging;
-		decrease_marging;
-		put_line ('}') ;
-		new_line(1) ;
-		put_line ('top = top*size ;') ;
-		new_line(1) ;
-		put_line ('for (i=0;i<size;i++)') ;
-		put_line ('{') ;
-		increase_marging;
-		put_line ('if (*(tab1+i) != 0)') ;
-		put_line ('{') ;
-		increase_marging;
-		put_line ('if (*(tab2+i) > 0)') ;
-		increase_marging;
-		put_line ('point+=top+(*(tab1+i)<=*(tab2+i)?*(tab1+i):*(tab2+i));') ;
-		decrease_marging;
-		decrease_marging;
-		put_line ('}') ;
-		decrease_marging;
-		put_line ('}') ;
-		put_line ('return point;') ;
-		decrease_marging;
-	put_line ('}') ;
-
-	new_line(1) ;
-
-	put_line ('CP_QUEUE_NODE* findProcessToServe (int* tab_ref, CP_QUEUE_NODE** pqueue, int size)') ;
-	put_line ('{') ;
-	increase_marging;
-		put_line ('if (!(*pqueue)) return NULL ;') ;
-		new_line(1) ;
-		put_line ('CP_QUEUE_NODE * tmp2=NULL, * tmp = *pqueue ;') ;
-		put_line ('int max = 0, tmpMax ;') ;
-		put_line ('CP_QUEUE_NODE * maxProc = NULL, *maxProcBefore = NULL ;') ;
-		new_line(1) ;
-		put_line ('while (tmp)') ;
-		put_line ('{') ;
-		increase_marging;
-			put_line ('tmpMax = tab_cmp(tab_ref, tmp->tokenMask, size) ;') ;
-			new_line(1) ;
-			put_line ('if (tmpMax > max)') ;
-			put_line ('{') ;
-			increase_marging;
-				put_line ('max = tmpMax ;') ;
-				put_line ('maxProc = tmp ;') ;
-				put_line ('maxProcBefore = tmp2;') ;
-			decrease_marging;
-			put_line ('}') ;
-			new_line(1) ;
-			put_line ('tmp2 = tmp ;') ;
-			put_line ('tmp = tmp->next;') ;
-		decrease_marging;
-		put_line ('}') ;
-		new_line(1) ;
-		put_line ('if (maxProc)') ;
-		put_line ('{') ;
-		increase_marging;
-			put_line ('if (!maxProcBefore) *pqueue = maxProc->next ;') ;
-			put_line ('else maxProcBefore->next = maxProc->next ;') ;
-			new_line(1) ;
-			put_line ('return maxProc ;') ;
-		decrease_marging;
-		put_line ('}') ;
-		new_line(1) ;
-		put_line ('return NULL ;') ;
-	decrease_marging;
-	put_line ('}') ;
-
-	new_line(1) ;
-
-	put_line ('void deleteNodeByRank (CP_QUEUE_NODE ** pqueue, int rank)') ;
-	put_line ('{') ;
-	increase_marging;
-		put_line ('if (!(*pqueue)) return ;') ;
-		new_line(1) ;
-		put_line ('CP_QUEUE_NODE * tmp2=NULL, * tmp = *pqueue ;') ;
-		new_line(1) ;
-		put_line ('while (tmp)') ;
-		put_line ('{') ;
-		increase_marging;
-			put_line ('if (tmp->rank == rank)') ;
-			put_line ('{') ;
-			increase_marging;
-				put_line ('if (tmp2) tmp2->next = tmp->next;') ;
-				put_line ('else *pqueue = tmp->next ;') ;
-				new_line(1) ;
-				put_line ('free(tmp);') ;
-				put_line ('return ;') ;
-			decrease_marging;
-			put_line ('}') ;
-			new_line(1) ;
-			put_line ('tmp2 = tmp ;') ;
-			put_line ('tmp = tmp->next;') ;
-		decrease_marging;
-		put_line ('}') ;
-	decrease_marging;
-	put_line ('}') ;
-
-	new_line(1) ;
-
-	put_line ('int randomIndex (int rank, int range)') ;
-	put_line ('{') ;
-	increase_marging;
-		put_line ('int index = (int) (range * (rand() / (RAND_MAX + 1.0))) ;') ;
-				put_line ('index = (index + rank) % range;');
-		new_line(1) ;
-		put_line ('printf ("Random index : %d, Range : 0-%d\n", index, range) ;') ;
-		new_line(1) ;
-		put_line ('return index ;') ;
-	decrease_marging;
-	put_line ('}') ;
-
-	new_line(1) ;
-
-	put_line ('void initRandomSeed (void)') ;
-	put_line ('{') ;
-	increase_marging;
-		put_line ('time_t t1;') ;
-		put_line ('(void) time(&t1);') ;
-		put_line ('srand(t1); /* use time in seconds to set seed */') ;
-	decrease_marging;
-	put_line ('}') ;
-
-	new_line(1) ;
-
-	put_line ('void randomSleep (void)') ;
-	put_line ('{') ;
-	increase_marging;
-		put_line ('int sleep = (1 + (int) (9.0 * (rand() / (RAND_MAX + 1.0)))) * 100000 ;') ;
-		new_line(1) ;
-		put_line ('// printf ("Sleeping : %d microseconds\n", sleep) ;') ;
-		put_line ('usleep(sleep) ;') ;
-	decrease_marging;
-	put_line ('}') ;
-
+	put_line ('CP_QUEUE_NODE * cpQueue = NULL ;') ;
+	new_line(1);
 end;
 
 syntactic_rule GLOBAL_LIST_CP_COUNT is
@@ -998,7 +829,20 @@ end;
 //******          PN-processes                 ******
 //***************************************************
 
-
+syntactic_rule GLOBAL_PROCESS is
+begin
+	if $# > 0 then
+	
+		//Creation of a string array to distribute the PN-process
+		put_line ('enum PROCESSES_T {');
+		increase_marging;
+		apply HEAD_LIST_PROCESS ($0);
+		decrease_marging;
+		put_line ('};');
+		new_line(1);
+		
+	end if;
+end;
 
 syntactic_rule LIST_PROCESS is
 begin
@@ -1009,14 +853,6 @@ begin
 	
 	//If more than zero PN-process
 	if $# > 0 then
-	
-		//Creation of a string array to distribute the PN-process
-		put_line ('enum PROCESSES_T {');
-		increase_marging;
-		apply HEAD_LIST_PROCESS ($0);
-		decrease_marging;
-		put_line ('};');
-		new_line(1);
 	
 		//Apply sub-tree rule
 		apply INTERNAL_LIST_PROCESS ($0);

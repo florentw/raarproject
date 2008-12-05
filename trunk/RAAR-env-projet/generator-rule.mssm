@@ -3,10 +3,14 @@ annex_file
 //The main semantic rule
 semantic_rule DO_THE_WORK (none) return void is
 THE_TREE : semantic_tree;
+THE_GLOBALS : semantic_tree;
 begin
 
 	//Creating the main tree
 	THE_TREE := create_sm_tree ([C_MPI# # ]);
+	
+	//Creating the main tree
+	THE_GLOBALS := create_sm_tree ([GLOBALS_H# # ]);
 
 	//Creating the subtrees
 	message ('Working on process...');
@@ -17,9 +21,15 @@ begin
 	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_COMM_PLACE ());
 	message ('Working on instances...');
 	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_INSTANCES ());
+	
+	THE_GLOBALS := add_sm_son ($smt (THE_GLOBALS), $smt(THE_TREE));
 
 	//Generating the tree
-	generate $smt (THE_TREE) in 'hello.c';
+	generate $smt (THE_TREE) in 'generated.c';
+	
+	//Generating the globals tree
+	generate $smt (THE_GLOBALS) in 'globals.h';
+	
 	message ('Done...');
 	return;
 end;

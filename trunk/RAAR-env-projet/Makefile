@@ -45,15 +45,17 @@ tengine-generator: generator_to_language.ads
 
 # On lance les tests
 test-generator:
-	./generator_to_language anlzed-pn-main.msf anlzed-pn-2.msm
+	./generator_to_language anlzed-pn-main.msf anlzed-pn-5.msm
 	@echo -e "\n\nThis is the code generated:"
-	cat hello.c
+	cat generated.c
 	@echo -e "\n\nLaunching LAM..."
 	lamboot -v bhost
 	@echo -e "\n\nCompiling the code..."
-	mpicc -Wall -o hello hello.c
+	mpicc -Wall -c runtime.c -o runtime.o
+	mpicc -Wall -c generated.c -o generated.o
+	mpicc -Wall -o generated generated.o runtime.o
 	@echo -e "\n\nExecuting the program..."
-	mpirun -v -c 15 hello
+	mpirun -v -c 15 generated
 	@echo -e "\n\nClosing LAM..."
 	lamwipe -v bhost
 	@echo -e "\n\nDone!"
@@ -82,12 +84,12 @@ clean:
 # Supprimer les fichiers generes par la compilation
 bigclean:
 	make clean
-	rm -f *.ads *.adb hello.c
+	rm -f *.ads *.adb generated.c globals.h
 
 # supprimer aussi le generateur de code produit par metascribe ainsi que les
 superclean:
 	make bigclean
-	rm -f generator_to_language hello *.xml *.dtd rapport.pdf
+	rm -f generator_to_language generated *.xml *.dtd rapport.pdf
 
 # exporte le format MSM en un format XML avec sa DTD pour l'exemple donne
 # (regardez l'equivalence entre MSM et XML)

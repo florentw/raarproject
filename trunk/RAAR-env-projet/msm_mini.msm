@@ -1,0 +1,39 @@
+main_file
+formalism ( 'ANLZED_PN' ) ;
+// Attributs globaux
+where (attribute NAME => 'msm_mini_model') ;
+
+// Pas de transitions de synchronisation
+
+// Pas de places de communication
+
+// Processus P1
+
+node 'proc_P1' is PROCESS
+  where (attribute NAME => 'processus_P1',
+    attribute INSTANCES => sy_node (INSTANCE_LIST:
+      sy_node (ONE_INSTANCE:
+      sy_leaf ('P1_1'))));
+
+node 'P1p1' is STT_PLACE
+  where (attribute NAME => 'P1_1');
+
+node 'P1t1' is LOC_TRANS
+  where (attribute NAME => 'P1_T1');
+
+link 'P1bl1' is BELONG
+  where(none)
+  relate together STT_PLACE:'P1p1',
+                       LOC_TRANS:'P1t1',
+                       PROCESS:'proc_P1';
+
+// Nombre d'arcs = 2
+
+link 'P1l1' is ARC
+  where(none)
+  relate LOC_TRANS:'P1t1' to STT_PLACE:'P1p1';
+
+link 'P1l2' is ARC
+  where(none)
+  relate STT_PLACE:'P1p1' to LOC_TRANS:'P1t1';
+

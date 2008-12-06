@@ -1,0 +1,57 @@
+annex_file
+
+semantic_tree ONE_INSTANCE (START_PLACE : string, PROCNAME : string) is
+	semantic_node ([ONE_INSTANCE # { $str (PROCNAME) & $str (START_PLACE) } # ]:
+			semantic_leaf ([OBJECT_NAME #$str (START_PLACE) #]),
+			semantic_leaf ([OBJECT_NAME #$str (PROCNAME) #]))
+end;
+
+semantic_tree ONE_COMM_PLACE_PROC_IN (NAME : string, SOURCE_TRANS : string, VALUE : integer) is
+	semantic_node ([ONE_COMM_PLACE_PROC_IN # { $str (NAME) & $str (SOURCE_TRANS) } # ]:
+			semantic_leaf ([OBJECT_NAME #$str (NAME) #  $int(VALUE)]),
+			semantic_leaf ([OBJECT_NAME #$str (SOURCE_TRANS) # ]))
+end;
+
+semantic_tree ONE_COMM_PLACE_PROC_OUT (NAME : string, TARGET_TRANS : string, VALUE : integer) is
+	semantic_node ([ONE_COMM_PLACE_PROC_OUT # { $str (NAME) & $str (TARGET_TRANS) } # ]:
+			semantic_leaf ([OBJECT_NAME #$str (NAME) # $int(VALUE)]),
+			semantic_leaf ([OBJECT_NAME #$str (TARGET_TRANS) # ]))
+end;
+
+semantic_tree ONE_SYNC_TRANS_PROC_IN (NAME : string, SOURCE_PLACE : string) is
+	semantic_node ([ONE_SYNC_TRANS_PROC_IN # { $str (NAME) & $str (SOURCE_PLACE) } # ]:
+			semantic_leaf ([OBJECT_NAME #$str (NAME) # ]),
+			semantic_leaf ([OBJECT_NAME #$str (SOURCE_PLACE) # ]))
+end;
+
+semantic_tree ONE_SYNC_TRANS_PROC_OUT (NAME : string, TARGET_PLACE : string) is
+	semantic_node ([ONE_SYNC_TRANS_PROC_OUT # { $str (NAME) & $str (TARGET_PLACE) } # ]:
+			semantic_leaf ([OBJECT_NAME #$str (NAME) # ]),
+			semantic_leaf ([OBJECT_NAME #$str (TARGET_PLACE) # ]))
+end;
+
+semantic_tree ONE_SYNC_TRANS_IN (SOURCE_NAME : string) is
+	semantic_leaf ([OBJECT_NAME #$str (SOURCE_NAME) # ])
+end;
+
+semantic_tree ONE_SYNC_TRANS_OUT (TARGET_NAME : string) is
+	semantic_leaf ([OBJECT_NAME #$str (TARGET_NAME) # ])
+end;
+
+semantic_tree ONE_LOC_TRANS_OUT (TARGET_NAME : string) is
+	semantic_leaf ([OBJECT_NAME #$str (TARGET_NAME) # ])
+end;
+
+semantic_tree ONE_COMM_PLACE_IN (SOURCE_NAME : string, VALUE : integer) is
+	semantic_leaf ([OBJECT_NAME #$str (SOURCE_NAME) # $int(VALUE)])
+end;
+
+semantic_tree ONE_COMM_PLACE_OUT (TARGET_NAME : string, VALUE : integer) is
+	semantic_leaf ([OBJECT_NAME #$str (TARGET_NAME) # $int(VALUE)])
+end;
+
+semantic_tree ONE_LOC_PLACE_OUT (TARGET_NAME : string) is
+	semantic_leaf ([OBJECT_NAME #$str (TARGET_NAME) # ])
+end;
+
+

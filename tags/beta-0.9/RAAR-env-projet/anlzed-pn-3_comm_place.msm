@@ -1,0 +1,229 @@
+main_file
+formalism ( 'ANLZED_PN' ) ;
+// Attributs globaux
+where (attribute NAME => '3_comm_place_modele') ;
+
+// Pas de Transitions de synchronisation.
+
+// Places de communication
+node 'cp1' is COMM_PLACE
+   where (attribute NAME => 'Mutex1',
+          attribute NB_IN_TOKENS => 1);
+
+node 'cp2' is COMM_PLACE
+   where (attribute NAME => 'Mutex2',
+          attribute NB_IN_TOKENS => 1);
+
+node 'cp3' is COMM_PLACE
+   where (attribute NAME => 'Mutex3',
+          attribute NB_IN_TOKENS => 1);
+
+// Processus 1
+
+node 'proc1' is PROCESS
+   where (attribute NAME => 'processus_1',
+          attribute INSTANCES => sy_node (INSTANCE_LIST:
+                                    sy_node (ONE_INSTANCE:
+                                       sy_leaf ('P1_1'))
+				));
+
+// Places locales
+
+node 'p1p1' is STT_PLACE
+   where (attribute NAME => 'P1_1');
+
+node 'p1p2' is STT_PLACE
+   where (attribute NAME => 'P1_2');
+
+node 'p1p3' is STT_PLACE
+   where (attribute NAME => 'P1_3');
+
+// Transitions locales
+
+node 'p1t1' is LOC_TRANS
+   where (attribute NAME => 'P1_T1');
+
+node 'p1t2' is LOC_TRANS
+   where (attribute NAME => 'P1_T2');
+
+node 'p1t3' is LOC_TRANS
+   where (attribute NAME => 'P1_T3');
+
+link 'p1bl1' is BELONG
+	where (none)
+	relate together	STT_PLACE:'p1p1', STT_PLACE:'p1p2', STT_PLACE:'p1p3', 
+		   	LOC_TRANS:'p1t1', LOC_TRANS:'p1t2', LOC_TRANS:'p1t3',
+			PROCESS:'proc1';
+
+// Arcs
+
+link 'p1l1' is ARC
+	where (none)
+	relate STT_PLACE:'p1p1' to LOC_TRANS:'p1t3';
+
+link 'p1l2' is ARC
+	where (none)
+	relate LOC_TRANS:'p1t3' to STT_PLACE:'p1p3';
+
+link 'p1l3' is ARC
+	where (none)
+	relate STT_PLACE:'p1p3' to LOC_TRANS:'p1t2';
+
+link 'p1l4' is ARC
+	where (none)
+	relate LOC_TRANS:'p1t2' to STT_PLACE:'p1p2';
+
+link 'p1l5' is ARC
+	where (none)
+	relate STT_PLACE:'p1p2' to LOC_TRANS:'p1t1';
+
+link 'p1l6' is ARC
+	where (none)
+	relate LOC_TRANS:'p1t1' to STT_PLACE:'p1p1';
+
+// Arcs vers Mutex1
+
+link 'commp1l1' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp1' to LOC_TRANS:'p1t1';
+
+link 'commp1l2' is COMM_ARC
+	where (none)
+	relate LOC_TRANS:'p1t1' to COMM_PLACE:'cp1';
+
+// Arcs vers Mutex2
+
+link 'commp1l3' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp2' to LOC_TRANS:'p1t2';
+
+link 'commp1l4' is COMM_ARC
+	where (none)
+	relate LOC_TRANS:'p1t2' to COMM_PLACE:'cp2';
+
+// Arcs vers Mutex3
+
+link 'commp1l5' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp3' to LOC_TRANS:'p1t3';
+
+link 'commp1l6' is COMM_ARC
+	where (none)
+	relate LOC_TRANS:'p1t3' to COMM_PLACE:'cp3';
+
+
+// Processus 2
+
+node 'proc2' is PROCESS
+   where (attribute NAME => 'processus_2',
+          attribute INSTANCES => sy_node (INSTANCE_LIST:
+                                    sy_node (ONE_INSTANCE:
+                                       sy_leaf ('P2_1')),
+				    sy_node (ONE_INSTANCE:
+                                       sy_leaf ('P2_1')),
+				    sy_node (ONE_INSTANCE:
+                                       sy_leaf ('P2_1'))
+				));
+
+// Places locales
+
+node 'p2p1' is STT_PLACE
+   where (attribute NAME => 'P2_1');
+
+node 'p2p2' is STT_PLACE
+   where (attribute NAME => 'P2_2');
+
+node 'p2p3' is STT_PLACE
+   where (attribute NAME => 'P2_3');
+
+// Transitions locales
+
+node 'p2t1' is LOC_TRANS
+   where (attribute NAME => 'P2_T1');
+
+node 'p2t2' is LOC_TRANS
+   where (attribute NAME => 'P2_T2');
+
+node 'p2t3' is LOC_TRANS
+   where (attribute NAME => 'P2_T3');
+
+node 'p2t4' is LOC_TRANS
+   where (attribute NAME => 'P2_T4');
+
+link 'p2bl1' is BELONG
+	where (none)
+	relate together	STT_PLACE:'p2p1', STT_PLACE:'p2p2', STT_PLACE:'p2p3', 
+		   	LOC_TRANS:'p2t1', LOC_TRANS:'p2t2', LOC_TRANS:'p2t3', LOC_TRANS:'p2t4',
+			PROCESS:'proc2';
+
+// Arcs
+
+link 'p2l1' is ARC
+	where (none)
+	relate STT_PLACE:'p2p1' to LOC_TRANS:'p2t1';
+
+link 'p2l2' is ARC
+	where (none)
+	relate LOC_TRANS:'p2t1' to STT_PLACE:'p2p2';
+
+link 'p2l3' is ARC
+	where (none)
+	relate STT_PLACE:'p2p2' to LOC_TRANS:'p2t2';
+
+link 'p2l4' is ARC
+	where (none)
+	relate LOC_TRANS:'p2t2' to STT_PLACE:'p2p3';
+
+link 'p2l5' is ARC
+	where (none)
+	relate STT_PLACE:'p2p3' to LOC_TRANS:'p2t3';
+
+link 'p2l6' is ARC
+	where (none)
+	relate STT_PLACE:'p2p3' to LOC_TRANS:'p2t4';
+
+link 'p2l7' is ARC
+	where (none)
+	relate LOC_TRANS:'p2t3' to STT_PLACE:'p2p1';
+
+link 'p2l8' is ARC
+	where (none)
+	relate LOC_TRANS:'p2t4' to STT_PLACE:'p2p1';
+
+// Arcs vers Mutex1
+
+link 'commp2l1' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp1' to LOC_TRANS:'p2t1';
+
+link 'commp2l2' is COMM_ARC
+	where (none)
+	relate LOC_TRANS:'p2t1' to COMM_PLACE:'cp1';
+
+// Arcs vers Mutex2
+
+link 'commp2l3' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp2' to LOC_TRANS:'p2t2';
+
+link 'commp2l4' is COMM_ARC
+	where (none)
+	relate LOC_TRANS:'p2t2' to COMM_PLACE:'cp2';
+
+// Arcs vers Mutex3
+
+link 'commp2l5' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp3' to LOC_TRANS:'p2t3';
+
+link 'commp2l6' is COMM_ARC
+	where (none)
+	relate LOC_TRANS:'p2t3' to COMM_PLACE:'cp3';
+
+link 'commp2l7' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp3' to LOC_TRANS:'p2t4';
+
+link 'commp2l8' is COMM_ARC
+	where (none)
+	relate LOC_TRANS:'p2t4' to COMM_PLACE:'cp3';

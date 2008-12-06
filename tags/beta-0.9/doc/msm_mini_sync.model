@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<model xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='http://coloane.lip6.fr/resources/schemas/model.xsd' formalism='Place/Transition Net' xposition='0' yposition='0'>
+<attributes>
+<attribute name='note' xposition='0' yposition='0'>Designed with Coloane</attribute>
+<attribute name='version' xposition='0' yposition='0'>0,0</attribute>
+</attributes>
+<nodes>
+<node nodetype='place' id='4' xposition='384' yposition='205' scale='100' foreground='#000000' background='#ffffff'>
+<attributes>
+<attribute name='marking' xposition='404' yposition='185'>1</attribute>
+<attribute name='name' xposition='384' yposition='227'>P1_1</attribute>
+</attributes>
+</node>
+<node nodetype='transition' id='3' xposition='467' yposition='209' scale='100' foreground='#000000' background='#ffffff'>
+<attributes>
+<attribute name='name' xposition='487' yposition='189'>sync</attribute>
+</attributes>
+</node>
+<node nodetype='place' id='5' xposition='556' yposition='205' scale='100' foreground='#000000' background='#ffffff'>
+<attributes>
+<attribute name='marking' xposition='576' yposition='185'>1</attribute>
+<attribute name='name' xposition='576' yposition='205'>P2_1</attribute>
+</attributes>
+</node>
+</nodes>
+<arcs>
+<arc arctype='arc' id='9' startid='5' endid='3' color='#000000'>
+<attributes>
+<attribute name='valuation' xposition='0' yposition='0'>1</attribute>
+</attributes>
+</arc>
+<arc arctype='arc' id='8' startid='3' endid='4' color='#000000'>
+<attributes>
+<attribute name='valuation' xposition='0' yposition='0'>1</attribute>
+</attributes>
+</arc>
+<arc arctype='arc' id='6' startid='4' endid='3' color='#000000'>
+<pi xposition='388' yposition='164'/>
+<pi xposition='479' yposition='164'/>
+<attributes>
+<attribute name='valuation' xposition='0' yposition='0'>1</attribute>
+</attributes>
+</arc>
+<arc arctype='arc' id='7' startid='3' endid='5' color='#000000'>
+<pi xposition='477' yposition='269'/>
+<pi xposition='564' yposition='265'/>
+<attributes>
+<attribute name='valuation' xposition='0' yposition='0'>1</attribute>
+</attributes>
+</arc>
+</arcs>
+<stickys>
+</stickys>
+</model>

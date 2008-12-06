@@ -80,6 +80,10 @@ begin
 	put_line ('MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);');
 	put_line ('MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);');
 	new_line (1);
+	
+	put_line ('if (!my_rank) startLogging() ;') ;
+	
+	new_line (1);
 	put_line ('//The prototype manager');
 	put_line ('if (my_rank == 0)');
 	put_line('{') ;
@@ -136,6 +140,9 @@ begin
 	new_line(1);
 
 	put_line ('MPI_Finalize();');
+	
+	put_line ('if (!my_rank) stopLogging() ;') ;
+	
 	put_line ('return 0;');
 	decrease_marging;
 	put_line ('}');
@@ -208,6 +215,13 @@ begin
 	put_line ('#define SYNCT_MANAGER 1');
 	put_line ('#define COMMP_MANAGER 2');
 	new_line (1);
+	
+	put_line ('#define LOG_TRANS_TYPE 0');
+	put_line ('#define LOG_PLACE_TYPE 1');
+	put_line ('#define LOG_ST_TYPE    2');
+	put_line ('#define LOG_CP_TYPE    3');
+	new_line (1);
+	put_line ('// #define LOG_TO_DOT');
 	put_line ('#define LOG_STD_DEST stdout');
 	new_line (1);
 
@@ -1039,11 +1053,12 @@ begin
 	put_line ('char curState[64] ;') ;
 	put_line ('strncpy (curState, "INIT", 63);');
 	
-	put_line ('int buf, flag, lastState, isTimedTrans, lastRandIndex ;');
+	put_line ('int buf, flag, lastState, isTimedTrans, lastRandIndex, curType ;');
 
 	put_line ('#ifndef NO_CP') ;
 	put_line ('int bufCP[CP_COUNT] ;') ;
 	put_line ('#endif') ;
+	put_line ('curType = LOG_TRANS_TYPE ;') ;
 	put_line ('lastState = state ;') ;
 	put_line ('isTimedTrans = 0 ;') ;
 	put_line ('lastRandIndex = 0 ;') ;
@@ -1150,10 +1165,11 @@ begin
 	apply COMM_TRANS_OUT ($2);
 	new_line(1);
 
-	put ('procLogEvt (my_rank, curState, "') ;
+	put ('procLogEvt (my_rank, curState, curType, "') ;
 	put ($STR(0));
-	put_line ('");');
+	put_line ('", LOG_TRANS_TYPE);');
 	
+	put_line ('curType = LOG_TRANS_TYPE ;') ;
 	put ('strncpy (curState, "') ;
 	put ($STR(0));
 	put_line ('", 63);');
@@ -1211,7 +1227,9 @@ begin
 			
 			put ('procLogEvtBack (my_rank, "') ;
 			put ($STR(1));
-			put_line ('", curState);');
+			put_line ('", LOG_CP_TYPE, curState, curType);');
+			
+			put_line ('curType = LOG_CP_TYPE ;') ;
 			put ('strncpy (curState, "') ;
 			put ($STR(1));
 			put_line ('", 63);');
@@ -1284,9 +1302,11 @@ begin
 
 	increase_marging;
 	
-	put ('procLogEvt (my_rank, curState, "') ;
+	put ('procLogEvt (my_rank, curState, curType, "') ;
 	put ($STR(1));
-	put_line ('");');
+	put_line ('", LOG_PLACE_TYPE);');
+	
+	put_line ('curType = LOG_PLACE_TYPE ;') ;
 	put ('strncpy (curState, "') ;
 	put ($STR(1));
 	put_line ('", 63);');
@@ -1458,9 +1478,11 @@ begin
 			put_line ('{') ;
 			increase_marging;
 	
-				put ('procLogEvt (my_rank, curState, "') ;
+				put ('procLogEvt (my_rank, curState, curType, "') ;
 				put ($STR(1));
-				put_line ('");');
+				put_line ('", LOG_ST_TYPE);');
+				
+				put_line ('curType = LOG_ST_TYPE ;') ;
 				put ('strncpy (curState, "') ;
 				put ($STR(1));
 				put_line ('", 63);');
@@ -1484,13 +1506,15 @@ begin
 		
 				put ('procLogEvtBack (my_rank, "') ;
 				put ($STR(1));
-				put_line ('", curState);');
+				put_line ('", LOG_ST_TYPE, curState, curType);');
+				
+				put_line ('curType = LOG_ST_TYPE ;') ;
 				put ('strncpy (curState, "') ;
 				put ($STR(1));
 				put_line ('", 63);');
 				put_line ('curState[63] = 0 ;') ;
 		
-				put_line('//Coming back to the last place');
+				put_line('//Going back to the last place');
 				put('state = lastState;');
 				new_line(1);
 		

@@ -62,7 +62,7 @@ void appendToQueue (CP_QUEUE_NODE ** pqueue, int rank, int * tokenMask, int arra
 	for (i = 0; i<arraySize; i++)
 		(*pqueue)->tokenMask[i] = tokenMask[i] ;
 	
-	snprintf(msgStr, 63, "Added a process to queue, rank=%d\n", rank) ;
+	snprintf(msgStr, 63, "Added a process to queue, rank=%d", rank) ;
 	procLogMsg(2, msgStr) ;
 }
 
@@ -301,26 +301,120 @@ void treatCAN(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank)
 
 /** Logging functions */
 
-void procLogEvt (int rank, const char * curState, const char * targetState)
+void startLogging(void)
 {
-	char msgBuf[64] ;
-	msgBuf[63] = 0 ;
-	
-	snprintf (msgBuf, 63, "[%s\t%d]\t", instanceArray[rank-3]->PNProcStr, rank) ;
-	fprintf (LOG_STD_DEST, "%sFrom %s going to %s\n", msgBuf, curState, targetState) ;
+#ifdef LOG_TO_DOT
+	fprintf (LOG_STD_DEST, "digraph G {\n") ;
+#endif
 }
 
-void procLogEvtBack (int rank, const char * curState, const char * targetState)
+void stopLogging(void)
 {
-	char msgBuf[64] ;
-	msgBuf[63] = 0 ;
+#ifdef LOG_TO_DOT
+	fprintf (LOG_STD_DEST, "}\n") ;
+#endif
+}
+
+void procLogEvt (int rank, const char * curState, int curType, const char * targetState, int targetType)
+{
+#ifdef LOG_TO_DOT
+
+	if (curType == LOG_PLACE_TYPE)
+	{
+		if (targetType == LOG_ST_TYPE)
+		{
+			fprintf (LOG_STD_DEST,
+					 "\t%s_%d [label=\"%s\"] ;\n",
+					 curState,
+					 rank,
+					 curState) ;
+			
+			fprintf (LOG_STD_DEST,
+					 "\t%s [shape=box,color=\"green\"] ;\n",
+					 targetState) ;
+			
+			fprintf (LOG_STD_DEST,
+					 "\t%s_%d -> %s ;\n",
+					 curState,
+					 rank,
+					 targetState) ;
+		}
+		else
+		{
+			fprintf (LOG_STD_DEST,
+					 "\t%s_%d [label=\"%s\"] ;\n",
+					 curState,
+					 rank,
+					 curState) ;
+			
+			fprintf (LOG_STD_DEST,
+					 "\t%s_%d [shape=box,label=\"%s\"] ;\n",
+					 targetState,
+					 rank,
+					 targetState) ;
+			
+			fprintf (LOG_STD_DEST,
+					"\t%s_%d -> %s_%d ;\n",
+					curState,
+					rank,
+					targetState,
+					rank) ;
+		}
+	}
+	else if (curType == LOG_ST_TYPE)
+	{
+		fprintf (LOG_STD_DEST,
+				 "\t%s [shape=box,color=\"green\"] ;\n",
+				 targetState) ;
+		
+		fprintf (LOG_STD_DEST,
+				 "\t%s -> %s_%d ;\n",
+				 curState,
+				 targetState,
+				 rank) ;
+	}
+	else
+	{
+		fprintf (LOG_STD_DEST,
+				 "\t%s_%d [label=\"%s\"] ;\n",
+				 curState,
+				 rank,
+				 curState) ;
+		
+		fprintf (LOG_STD_DEST,
+				 "\t%s_%d -> %s_%d ;\n",
+				 curState,
+				 rank,
+				 targetState,
+				 rank) ;
+	}
 	
-	snprintf (msgBuf, 63, "[%s\t%d]\t", instanceArray[rank-3]->PNProcStr, rank) ;
-	fprintf (LOG_STD_DEST, "%sFrom %s going back to %s\n", msgBuf, curState, targetState) ;
+#else
+	fprintf (LOG_STD_DEST,
+			 "[%s\t%d]\tFrom %s going to %s\n",
+			 instanceArray[rank-3]->PNProcStr,
+			 rank,
+			 curState,
+			 targetState) ;
+#endif
+}
+
+void procLogEvtBack (int rank, const char * curState, int curType, const char * targetState, int targetType)
+{
+#ifdef LOG_TO_DOT
+#else
+	fprintf (LOG_STD_DEST,
+			 "[%s\t%d]\tFrom %s going BACK to %s\n",
+			 instanceArray[rank-3]->PNProcStr,
+			 rank,
+			 curState,
+			 targetState) ;
+#endif
 }
 
 void procLogStart (int rank)
 {
+#ifndef LOG_TO_DOT
 	char msgBuf[64] ;
 	msgBuf[63] = 0 ;
 
@@ -334,10 +428,12 @@ void procLogStart (int rank)
 		snprintf (msgBuf, 63, "[CommPlaceMngr\t%d]\t", rank) ;
 	
 	fprintf (LOG_STD_DEST, "%sStarting\n", msgBuf) ;
+#endif
 }
 
 void procLogEnd (int rank)
 {
+#ifndef LOG_TO_DOT
 	char msgBuf[64] ;
 	msgBuf[63] = 0 ;
 	
@@ -354,10 +450,12 @@ void procLogEnd (int rank)
 		fprintf (LOG_STD_DEST, "%sSending TAG_END to all processes\n", msgBuf) ;
 	else
 		fprintf (LOG_STD_DEST, "%sReceived TAG_END, going down\n", msgBuf) ;
+#endif
 }
 
 void procLogMsg (int rank, const char * msg)
 {
+#ifndef LOG_TO_DOT
 	char msgBuf[64] ;
 	msgBuf[63] = 0 ;
 
@@ -371,6 +469,7 @@ void procLogMsg (int rank, const char * msg)
 		snprintf (msgBuf, 63, "[CommPlaceMngr\t%d]\t", rank) ;
 	
 	fprintf (LOG_STD_DEST, "%s%s\n", msgBuf, msg) ;
+#endif
 }
 
 

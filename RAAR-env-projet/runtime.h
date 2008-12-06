@@ -23,20 +23,29 @@
 					: Shi-Hon CHAN <syone7@gmail.com>
 */
 
+/** Communication places manager's queue functions */
 void appendToQueue (CP_QUEUE_NODE ** pqueue, int rank, int * tokenMask, int arraySize) ;
 void freeQueue (CP_QUEUE_NODE ** pqueue) ;
 int tab_cmp(int* tab1, int* tab2, int size) ;
 CP_QUEUE_NODE* findProcessToServe (int* tab_ref, CP_QUEUE_NODE** pqueue, int size) ;
 void deleteNodeByRank (CP_QUEUE_NODE ** pqueue, int rank) ;
+
+/** Synchronisation transition manager's functions */
 SYNC_PROC_T* newSyncProc (int size) ;
-int randomIndex (int rank, int range) ;
-void initRandomSeed (void) ;
-void randomSleep (void) ;
 void treatACK(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank);
 void treatCAN(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank);
 
-void procLogEvt (int rank, const char * curState, const char * targetState) ;
-void procLogEvtBack (int rank, const char * curState, const char * targetState) ;
+/** Random functions */
+int randomIndex (int rank, int range) ;
+void initRandomSeed (void) ;
+void randomSleep (void) ;
+
+/** Logging functions */
+void startLogging(void) ;
+void stopLogging(void) ;
+
+void procLogEvt (int rank, const char * curState, int curType, const char * targetState, int targetType) ;
+void procLogEvtBack (int rank, const char * curState, int curType, const char * targetState, int targetType) ;
 void procLogStart (int rank) ;
 void procLogEnd (int rank) ;
 void procLogMsg (int rank, const char * msg) ;

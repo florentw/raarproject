@@ -1584,7 +1584,7 @@ begin
 	put ($STR(2)) ;
 	put_line ('", 63) ;') ;
 	
-	put_line ('instanceArray[instIndex]->PNProcStr[64] = 0 ;') ;
+	put_line ('instanceArray[instIndex]->PNProcStr[63] = 0 ;') ;
 
 	put ('instanceArray[instIndex++]->startState = __') ;
 	put_upper ($STR(1)) ;

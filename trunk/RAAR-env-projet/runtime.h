@@ -37,4 +37,9 @@ void randomSleep (void) ;
 void treatACK(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank);
 void treatCAN(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank);
 
+void procLogEvt (int rank, const char * curState, const char * targetState) ;
+void procLogEvtBack (int rank, const char * curState, const char * targetState) ;
+void procLogStart (int rank) ;
+void procLogEnd (int rank) ;
+void procLogMsg (int rank, const char * msg) ;
 

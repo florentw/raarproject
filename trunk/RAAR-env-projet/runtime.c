@@ -38,13 +38,19 @@
 void appendToQueue (CP_QUEUE_NODE ** pqueue, int rank, int * tokenMask, int arraySize)
 {
 	int i ;
+	char msgStr[64] ;
+	msgStr[63] = 0 ;
+	
 	if (!(*pqueue))
 	{
 		*pqueue = (CP_QUEUE_NODE *) malloc(sizeof(CP_QUEUE_NODE)) ;
 		(*pqueue)->next = NULL ;
 		(*pqueue)->rank = rank ;
-		for (i = 0; i<arraySize; i++)(*pqueue)->tokenMask[i] = tokenMask[i] ;
-		printf("Added a process to queue, rank=%d\n", rank) ;
+		for (i = 0; i<arraySize; i++)
+			(*pqueue)->tokenMask[i] = tokenMask[i] ;
+		
+		snprintf(msgStr, 63, "Added a process to queue, rank=%d", rank) ;
+		procLogMsg(2, msgStr) ;
 		return ;
 	}
 
@@ -55,8 +61,11 @@ void appendToQueue (CP_QUEUE_NODE ** pqueue, int rank, int * tokenMask, int arra
 	tmp->next = (CP_QUEUE_NODE *) malloc(sizeof(CP_QUEUE_NODE)) ;
 	tmp->next->next = NULL ;
 	tmp->next->rank = rank ;
-	for (i = 0; i<arraySize; i++)(*pqueue)->tokenMask[i] = tokenMask[i] ;
-	printf("Added a process to queue, rank=%d\n", rank) ;
+	for (i = 0; i<arraySize; i++)
+		(*pqueue)->tokenMask[i] = tokenMask[i] ;
+	
+	snprintf(msgStr, 63, "Added a process to queue, rank=%d\n", rank) ;
+	procLogMsg(2, msgStr) ;
 }
 
 void freeQueue (CP_QUEUE_NODE ** pqueue)
@@ -174,11 +183,16 @@ SYNC_PROC_T* newSyncProc (int size)
 
 int randomIndex (int rank, int range)
 {
-	int index = (int) (range * (rand() / (RAND_MAX + 1.0))) ;
-	index = (index + rank) % range;
-
-	printf ("Random index : %d, Range : 0-%d\n", index, range) ;
-
+	char msgStr[64] ;
+	msgStr[63] = 0 ;
+	
+	int index = (int) (range * (random() / (RAND_MAX + 1.0))) ;
+	
+	//index = (index + rank) % range ;
+	
+	snprintf(msgStr, 63, "Random index : %d, Range : 0-%d", index, range) ;
+	procLogMsg(rank, msgStr) ;
+	
 	return index ;
 }
 
@@ -186,90 +200,179 @@ void initRandomSeed (void)
 {
 	time_t t1;
 	(void) time(&t1);
-	srand(t1); /* use time in seconds to set seed */
+	srandom(t1); /* use time in seconds to set seed */
 }
 
 void randomSleep (void)
 {
-	int sleep = (1 + (int) (9.0 * (rand() / (RAND_MAX + 1.0)))) * 100000 ;
+	int sleep = (1 + (int) (9.0 * (random() / (RAND_MAX + 1.0)))) * 100000 ;
 
-// printf ("Sleeping : %d microseconds\n", sleep) ;
 	usleep(sleep) ;
 }
 
 void treatACK(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank)
 {
-    if (syncElement->tab[(syncElement->current * syncElement->size) + instanceArray[source-3]->PNProcess] == -1)
-    {
-        syncElement->cmp[syncElement->current]--;
-        syncElement->tab[(syncElement->current * syncElement->size) + instanceArray[source-3]->PNProcess] = source;
-        if (syncElement->cmp[syncElement->current] == 0)
-        {
-            int i;
-            for(i = syncElement->current * syncElement->size; i < (syncElement->current * syncElement->size) + NB_TYPE_PROC; i++)
-            {
-                if (syncElement->tab[i] != -1) {
-                    MPI_Send(&syncID,1,MPI_INT,syncElement->tab[i],TAG_SYNCT_ACK,MPI_COMM_WORLD);
-                    printf("My rank is %d and I send a TAG_SYNCT_ACK to process %d\n",my_rank,syncElement->tab[i]);
-                    syncElement->tab[i] = -1;
-                }
-            }
-            syncElement->cmp[syncElement->current] = syncElement->size;
+	char msgStr[64] ;
+	msgStr[63] = 0 ;
+	
+	if (syncElement->tab[(syncElement->current * syncElement->size) + instanceArray[source-3]->PNProcess] == -1)
+	{
+		syncElement->cmp[syncElement->current]--;
+		syncElement->tab[(syncElement->current * syncElement->size) + instanceArray[source-3]->PNProcess] = source;
+		
+		if (syncElement->cmp[syncElement->current] == 0)
+		{
+			int i;
+			for(i = syncElement->current * syncElement->size; i < (syncElement->current * syncElement->size) + NB_TYPE_PROC; i++)
+			{
+				if (syncElement->tab[i] != -1)
+				{
+					MPI_Send(&syncID,1,MPI_INT,syncElement->tab[i],TAG_SYNCT_ACK,MPI_COMM_WORLD);
+					
+					snprintf(msgStr, 63, "Sent a TAG_SYNCT_ACK to process %d", syncElement->tab[i]) ;
+					procLogMsg(my_rank, msgStr) ;
+					
+					syncElement->tab[i] = -1;
+				}
+			}
+			syncElement->cmp[syncElement->current] = syncElement->size;
 
-            if ((syncElement->current + 1) % INSTANCE_COUNT != syncElement->last )
-                syncElement->current = (syncElement->current + 1) % INSTANCE_COUNT;
-        }
-    }
-    else
-    {
-        int found = 0;
-        int level = syncElement->current + 1;
-        while(level != syncElement->last)
-        {
-            if(syncElement->tab[(level * syncElement->size) + instanceArray[source-3]->PNProcess] == -1)
-            {
-                syncElement->tab[(level * syncElement->size) + instanceArray[source-3]->PNProcess] = source;
-                syncElement->cmp[level]--;
-                found = 1;
-                break;
-            }
-            else
-                level = (level + 1) % INSTANCE_COUNT;
-        }
+			if ((syncElement->current + 1) % INSTANCE_COUNT != syncElement->last )
+				syncElement->current = (syncElement->current + 1) % INSTANCE_COUNT;
+		}
+	}
+	else
+	{
+		int found = 0;
+		int level = syncElement->current + 1;
+		while(level != syncElement->last)
+		{
+			if(syncElement->tab[(level * syncElement->size) + instanceArray[source-3]->PNProcess] == -1)
+			{
+				syncElement->tab[(level * syncElement->size) + instanceArray[source-3]->PNProcess] = source;
+				syncElement->cmp[level]--;
+				found = 1;
+				break;
+			}
+			else
+				level = (level + 1) % INSTANCE_COUNT;
+		}
 
-        if (!found)
-        {
-            syncElement->tab[(level * syncElement->size) + instanceArray[source-3]->PNProcess] = source;
-            syncElement->cmp[level]--;
-            syncElement->last = (syncElement->last + 1) % INSTANCE_COUNT;
-        }
-    }
+		if (!found)
+		{
+			syncElement->tab[(level * syncElement->size) + instanceArray[source-3]->PNProcess] = source;
+			syncElement->cmp[level]--;
+			syncElement->last = (syncElement->last + 1) % INSTANCE_COUNT;
+		}
+	}
 }
 
 
 void treatCAN(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank)
 {
-    int lev = syncElement->current;
-    while(lev != syncElement->last)
-    {
-        if (syncElement->tab[(lev * syncElement->size) + instanceArray[source-3]->PNProcess] == source)
-        {
-            int sublev = lev + 1;
-            while(syncElement->tab[(sublev * syncElement->size) + instanceArray[source-3]->PNProcess] != -1)
-            {
-                syncElement->tab[(lev * syncElement->size) + instanceArray[source-3]->PNProcess] = syncElement->tab[(sublev * syncElement->size) + instanceArray[source-3]->PNProcess];
-                lev = (lev + 1) % INSTANCE_COUNT;
-                sublev = (sublev + 1) % INSTANCE_COUNT;
-            }
-            syncElement->tab[(lev * syncElement->size) + instanceArray[source-3]->PNProcess] = -1;
-            syncElement->cmp[lev]--;
+	int lev = syncElement->current;
+	char msgStr[64] ;
+	msgStr[63] = 0 ;
+	
+	while(lev != syncElement->last)
+	{
+		if (syncElement->tab[(lev * syncElement->size) + instanceArray[source-3]->PNProcess] == source)
+		{
+			int sublev = lev + 1;
+			while(syncElement->tab[(sublev * syncElement->size) + instanceArray[source-3]->PNProcess] != -1)
+			{
+				syncElement->tab[(lev * syncElement->size) + instanceArray[source-3]->PNProcess] = syncElement->tab[(sublev * syncElement->size) + instanceArray[source-3]->PNProcess];
+				lev = (lev + 1) % INSTANCE_COUNT;
+				sublev = (sublev + 1) % INSTANCE_COUNT;
+			}
+			syncElement->tab[(lev * syncElement->size) + instanceArray[source-3]->PNProcess] = -1;
+			syncElement->cmp[lev]--;
 
-            MPI_Send(&syncID,1,MPI_INT,source,TAG_SYNCT_CCK,MPI_COMM_WORLD);
-            printf("My rank is %d and I send a TAG_SYNCT_CCK to process %d\n",my_rank,source);
-            break;
-        } else
-            lev = (lev + 1) % INSTANCE_COUNT;
-    }
+			MPI_Send(&syncID,1,MPI_INT,source,TAG_SYNCT_CCK,MPI_COMM_WORLD);
+			
+			snprintf(msgStr, 63, "Sent a TAG_SYNCT_CCK to process %d", source) ;
+			procLogMsg(my_rank, msgStr) ;
+			
+			break;
+		}
+		else
+			lev = (lev + 1) % INSTANCE_COUNT;
+	}
+}
+
+
+/** Logging functions */
+
+void procLogEvt (int rank, const char * curState, const char * targetState)
+{
+	char msgBuf[64] ;
+	msgBuf[63] = 0 ;
+	
+	snprintf (msgBuf, 63, "[%s\t%d]\t", instanceArray[rank-3]->PNProcStr, rank) ;
+	fprintf (LOG_STD_DEST, "%sFrom %s going to %s\n", msgBuf, curState, targetState) ;
+}
+
+void procLogEvtBack (int rank, const char * curState, const char * targetState)
+{
+	char msgBuf[64] ;
+	msgBuf[63] = 0 ;
+	
+	snprintf (msgBuf, 63, "[%s\t%d]\t", instanceArray[rank-3]->PNProcStr, rank) ;
+	fprintf (LOG_STD_DEST, "%sFrom %s going back to %s\n", msgBuf, curState, targetState) ;
+}
+
+void procLogStart (int rank)
+{
+	char msgBuf[64] ;
+	msgBuf[63] = 0 ;
+
+	if (rank > 2)
+		snprintf (msgBuf, 63, "[%s\t%d]\t", instanceArray[rank-3]->PNProcStr, rank) ;
+	else if (rank == 0)
+		snprintf (msgBuf, 63, "[ProtoMngr\t%d]\t", rank) ;
+	else if (rank == 1)
+		snprintf (msgBuf, 63, "[SyncTransMngr\t%d]\t", rank) ;
+	else if (rank == 2)
+		snprintf (msgBuf, 63, "[CommPlaceMngr\t%d]\t", rank) ;
+	
+	fprintf (LOG_STD_DEST, "%sStarting\n", msgBuf) ;
+}
+
+void procLogEnd (int rank)
+{
+	char msgBuf[64] ;
+	msgBuf[63] = 0 ;
+	
+	if (rank > 2)
+		snprintf (msgBuf, 63, "[%s\t%d]\t", instanceArray[rank-3]->PNProcStr, rank) ;
+	else if (rank == 0)
+		snprintf (msgBuf, 63, "[ProtoMngr\t%d]\t", rank) ;
+	else if (rank == 1)
+		snprintf (msgBuf, 63, "[SyncTransMngr\t%d]\t", rank) ;
+	else if (rank == 2)
+		snprintf (msgBuf, 63, "[CommPlaceMngr\t%d]\t", rank) ;
+	
+	if (rank == 0)
+		fprintf (LOG_STD_DEST, "%sSending TAG_END to all processes\n", msgBuf) ;
+	else
+		fprintf (LOG_STD_DEST, "%sReceived TAG_END, going down\n", msgBuf) ;
+}
+
+void procLogMsg (int rank, const char * msg)
+{
+	char msgBuf[64] ;
+	msgBuf[63] = 0 ;
+
+	if (rank > 2)
+		snprintf (msgBuf, 63, "[%s\t%d]\t", instanceArray[rank-3]->PNProcStr, rank) ;
+	else if (rank == 0)
+		snprintf (msgBuf, 63, "[ProtoMngr\t%d]\t", rank) ;
+	else if (rank == 1)
+		snprintf (msgBuf, 63, "[SyncTransMngr\t%d]\t", rank) ;
+	else if (rank == 2)
+		snprintf (msgBuf, 63, "[CommPlaceMngr\t%d]\t", rank) ;
+	
+	fprintf (LOG_STD_DEST, "%s%s\n", msgBuf, msg) ;
 }
 
 

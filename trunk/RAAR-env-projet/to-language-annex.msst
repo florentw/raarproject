@@ -84,17 +84,17 @@ begin
 	put_line ('//The prototype manager');
 	put_line ('if (my_rank == 0) {');
 	increase_marging;
-	put_line ('printf(" My rank is %d and I am the prototype manager\n",my_rank);');
+	put_line ('procLogStart(my_rank) ;');
 	new_line (1);
 	put_line ('//Sleeping EXEC_DURATION seconds');
 	put_line ('sleep(EXEC_DURATION);');
 	new_line (1);
 	put_line ('//Killing all the process');
+	put_line ('procLogEnd(my_rank) ;') ;
 	put_line ('for(i = 1; i < nb_proc; i++) {');
 	increase_marging;
 	put_line('int buf = 0;');
 	put_line ('MPI_Isend(&buf,1,MPI_INT,i,TAG_END,MPI_COMM_WORLD,&request);');
-	put_line ('printf(" My rank is %d and I am sending END to %d\n",my_rank,i);');
 	decrease_marging;
 	put_line ('}');
 	put_line ('MPI_Barrier(MPI_COMM_WORLD);');
@@ -201,6 +201,8 @@ begin
 	put_line ('#define PROTO_MANAGER 0');
 	put_line ('#define SYNCT_MANAGER 1');
 	put_line ('#define COMMP_MANAGER 2');
+	new_line (1);
+	put_line ('#define LOG_STD_DEST stdout');
 	new_line (1);
 
 	// Declare the number of types PN-process
@@ -420,13 +422,15 @@ end ;
 
 syntactic_rule INIT_LIST_SYNC_TRANS is
 begin
-		put_line('void syncTransMngr (int my_rank, int nb_proc)') ;
+	put_line('void syncTransMngr (int my_rank, int nb_proc)') ;
 	put_line('{') ;
 	increase_marging;
 	put_line ('MPI_Status status;');
 	put_line('int syncID;');
+	put_line('char msgStr[64];');
+	put_line('msgStr[63] = 0;') ;
 
-		if $# > 0 then
+	if $# > 0 then
 
 		put ('int sizeTab[ST_COUNT] = {');
 
@@ -449,14 +453,14 @@ begin
 		end if;
 
 	new_line(1) ;
-	put_line('printf(" My rank is %d and I am the synchronisation transitions manager\n",my_rank);');
+	put_line('procLogStart(my_rank) ;');
 	new_line(1) ;
 	put_line('while (1) {') ;
 	increase_marging;
 	put_line('MPI_Recv(&syncID,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status);');
 	put_line('if (status.MPI_SOURCE == PROTO_MANAGER) {') ;
 		increase_marging;
-		put_line ('printf("My rank is %d and I received a TAG_END from PROTOTYPE_MANAGER\n",my_rank);');
+		put_line ('procLogEnd(my_rank) ;');
 		if $# > 0 then
 
 		put_line ('for (i = 0; i<ST_COUNT; i++)');
@@ -478,13 +482,19 @@ begin
 		put_line ('int tag = status.MPI_TAG;');
 		put_line('if (tag == TAG_SYNCT_ASK) {');
 		increase_marging;
-		put_line ('printf("My rank is %d and I received a TAG_SYNCT_ASK in synchronization ID %d from PN-process %d\n",my_rank, syncID, source);');
+		
+			put_line ('snprintf(msgStr, 63, "Received a TAG_SYNCT_ASK in synchronization ID %d from PN-process %d", syncID, source);') ;
+			put_line ('procLogMsg(my_rank, msgStr) ;') ;
+
 		decrease_marging;
 		put_line('}');
 		new_line(1) ;
 		put_line('if (tag == TAG_SYNCT_CAN) {');
 		increase_marging;
-		put_line ('printf("My rank is %d and I received a TAG_SYNCT_CAN in synchronization ID %d from PN-process %d\n",my_rank, syncID, source);');
+		
+			put_line ('snprintf(msgStr, 63, "Received a TAG_SYNCT_CAN in synchronization ID %d from PN-process %d", syncID, source);') ;
+			put_line ('procLogMsg(my_rank, msgStr) ;') ;
+		
 		decrease_marging;
 		put_line('}');
 		new_line(1) ;
@@ -702,6 +712,8 @@ begin
 	increase_marging;
 
 	put_line ('MPI_Status status;');
+	put_line ('char msgStr[64] ;') ;
+	put_line ('msgStr[63] = 0 ;') ;
 	put_line ('time_t t1, timerArray[INSTANCE_COUNT] ;') ;
 	put_line ('int i, buf[CP_COUNT], flag = 0 ;');
 	put_line ('memset(timerArray, 0, INSTANCE_COUNT*sizeof(time_t));') ;
@@ -709,7 +721,7 @@ begin
 	apply INIT_GLOBAL_LIST_COMM_PLACE ($0) ;
 	new_line(1);
 
-	put_line('printf(" My rank is %d and I am the communication places manager\n",my_rank);');
+	put_line('procLogStart(my_rank) ;');
 	new_line(1);
 
 	put_line ('while (1) {');
@@ -725,7 +737,10 @@ begin
 			put_line ('if ((timerArray[i] > 0) && ((t1 - timerArray[i]) >= DEFAULT_TIMEOUT))') ;
 			put_line ('{') ;
 				increase_marging;
-				put_line ('printf ("Removed process number : %d \n", i+3) ;') ;
+				
+				put_line ('snprintf(msgStr, 63, "Removed process from queue, rank=%d", i+3) ;') ;
+				put_line ('procLogMsg(my_rank, msgStr) ;') ;
+				
 				put_line ('MPI_Send(&buf, 1, MPI_INT, i+3, TAG_CP_NACK, MPI_COMM_WORLD) ;') ;
 				put_line ('deleteNodeByRank(&cpQueue, i+3) ;') ;
 				put_line ('timerArray[i] = 0 ;') ;
@@ -745,7 +760,14 @@ begin
 		put_line('if (flag) {');
 		increase_marging;
 		put_line('MPI_Recv(buf, CP_COUNT, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
-		put_line('if (status.MPI_SOURCE == PROTO_MANAGER) break ;') ;
+		put_line('if (status.MPI_SOURCE == PROTO_MANAGER)') ;
+		put_line('{') ;
+		increase_marging ;
+		put_line('procLogEnd(my_rank) ;') ;
+		put_line('break ;') ;
+		decrease_marging ;
+		put_line('}') ;
+		
 		decrease_marging;
 		put_line('} else {');
 		increase_marging;
@@ -912,48 +934,13 @@ end;
 
 syntactic_rule ONE_COMM_PLACE_PROC_IN is
 begin
-	put ('//');
-	put ($STR(1));
-	new_line(1);
-	put_line('MPI_Iprobe(MPI_ANY_SOURCE,TAG_COMMP_PUT,MPI_COMM_WORLD,&flag,&status);');
-	put_line('if (flag) {');
-	increase_marging;
-	put_line('int buf, source = status.MPI_SOURCE;');
-	put_line('MPI_Recv(&buf,1,MPI_INT,source,TAG_COMMP_PUT,MPI_COMM_WORLD,&status);');
-	put_line('cmp++;');
-	put_line('printf("My rank is %d and I received a new token in one of my communication places, the new value is %d.\n", my_rank, cmp);');
-	decrease_marging;
-	put_line('}');
-	new_line(1);
-
-	if $# > 1 then
-		apply ONE_COMM_PLACE_PROC_IN ($2*);
-	end if;
+	put ('');
 end;
-
 
 syntactic_rule ONE_COMM_PLACE_PROC_OUT is
 begin
-	put ('//');
-	put ($STR(1));
-	new_line(1);
-	put_line('MPI_Iprobe(MPI_ANY_SOURCE,TAG_COMMP_GET,MPI_COMM_WORLD,&flag,&status);');
-	put_line('if (flag && cmp > 0) {');
-	increase_marging;
-	put_line('int buf, source = status.MPI_SOURCE;');
-	put_line('MPI_Recv(&buf,1,MPI_INT,source,TAG_COMMP_GET,MPI_COMM_WORLD,&status);');
-	put_line('MPI_Ssend(&buf,1,MPI_INT,source,TAG_COMMP_GET,MPI_COMM_WORLD);');
-	put_line('cmp--;');
-	put_line('printf("My rank is %d and I sent a token from one of my communication places, the new value is %d.\n", my_rank, cmp);');
-	decrease_marging;
-	put_line('}');
-	new_line(1);
-
-	if $# > 1 then
-		apply ONE_COMM_PLACE_PROC_OUT ($2*);
-	end if;
+	put ('') ;
 end;
-
 
 
 //***************************************************
@@ -994,12 +981,13 @@ begin
 	new_line (1);
 
 	//Printing process information
-	put ('printf(" My rank is %d and I am ');
-	put ($STR(1));
-	put_line ('\n",my_rank);');
+	put_line ('procLogStart(my_rank) ;');
 	new_line(1);
 
 	//Main loop
+	put_line ('char curState[64] ;') ;
+	put_line ('strncpy (curState, "INIT", 63);');
+	
 	put_line ('int buf, flag, lastState, isTimedTrans, lastRandIndex ;');
 
 	put_line ('#ifndef NO_CP') ;
@@ -1014,7 +1002,6 @@ begin
 	increase_marging;
 
 	put_line('//Sleeping a random duration');
-	put_line ('initRandomSeed();');
 	put_line ('randomSleep();');
 	new_line(1);
 
@@ -1022,9 +1009,9 @@ begin
 	put_line('MPI_Iprobe(PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&flag,&status);');
 	put_line('if (flag) {');
 	increase_marging;
-	put_line('MPI_Recv(&buf,1,MPI_INT,PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&status);');
-	put_line ('printf("My rank is %d and I received a TAG_END from PROTOTYPE_MANAGER\n",my_rank);');
-	put_line('break;');
+		put_line('MPI_Recv(&buf,1,MPI_INT,PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&status);');
+		put_line('procLogEnd (my_rank) ;') ;
+		put_line('break;');
 	decrease_marging;
 	put_line('}');
 	new_line(1);
@@ -1109,11 +1096,16 @@ begin
 	apply COMM_TRANS_OUT ($2);
 	new_line(1);
 
-	put('printf("My rank is %d and I am firing the ');
+	put ('procLogEvt (my_rank, curState, "') ;
 	put ($STR(0));
-	put (' transition.",my_rank);');
+	put_line ('");');
+	
+	put ('strncpy (curState, "') ;
+	put ($STR(0));
+	put_line ('", 63);');
+	put_line ('curState[63] = 0 ;') ;
+	
 	new_line(1);
-	put_line ('printf("\n");');
 	put_line('break;');
 	decrease_marging;
 end;
@@ -1148,11 +1140,13 @@ begin
 		new_line(1);
 
 		put_line ('//If END request from prototype manager');
-		put_line ('if (status.MPI_SOURCE == PROTO_MANAGER) {');
+		put_line ('if (status.MPI_SOURCE == PROTO_MANAGER)') ;
+		put_line ('{');
 		increase_marging;
-				put_line ('printf("My rank is %d and I received a TAG_END from PROTOTYPE_MANAGER\n",my_rank);');
-		put_line('return ;  }') ;
+			put_line ('procLogEnd (my_rank);');
+			put_line('return ;') ;
 		decrease_marging;
+		put_line('}') ;
 		new_line(1);
 
 		put_line ('//If timed GET failed, go back to last state');
@@ -1160,7 +1154,15 @@ begin
 		put_line ('{') ;
 		increase_marging;
 			put_line ('state = lastState ;');
-			put_line ('printf ("My rank is %d and my timer expired -> go back to last state.\n", my_rank) ;') ;
+			
+			put ('procLogEvtBack (my_rank, "') ;
+			put ($STR(1));
+			put_line ('", curState);');
+			put ('strncpy (curState, "') ;
+			put ($STR(1));
+			put_line ('", 63);');
+			put_line ('curState[63] = 0 ;') ;
+			
 			put_line ('break;') ;
 		decrease_marging;
 		put_line ('}') ;
@@ -1227,10 +1229,15 @@ begin
 	new_line(1);
 
 	increase_marging;
-	put ('printf("My rank is %d and my state is ');
+	
+	put ('procLogEvt (my_rank, curState, "') ;
 	put ($STR(1));
-	put ('.\n", my_rank);');
-	new_line(1);
+	put_line ('");');
+	put ('strncpy (curState, "') ;
+	put ($STR(1));
+	put_line ('", 63);');
+	put_line ('curState[63] = 0 ;') ;
+
 	put_line('//Going to next transition');
 	apply LOC_PLACE_OUT ($1);
 	new_line(1);
@@ -1383,7 +1390,7 @@ begin
 	put_line ('//If END request from prototype manager');
 	put_line ('if (status.MPI_SOURCE == PROTO_MANAGER) {');
 	increase_marging;
-		put_line ('printf("My rank is %d and I received a TAG_END from PROTOTYPE_MANAGER\n",my_rank);');
+		put_line ('procLogEnd(my_rank) ;');
 	put_line('return ;  }') ;
 	decrease_marging;
 	new_line(1);
@@ -1392,10 +1399,14 @@ begin
 	put_line ('if (status.MPI_SOURCE == SYNCT_MANAGER && status.MPI_TAG == TAG_SYNCT_ACK) {');
 	increase_marging;
 
-		put ('printf("My rank is %d and I am firing the synchronized transition ');
+		put ('procLogEvt (my_rank, curState, "') ;
 		put ($STR(1));
-		put ('.\n", my_rank);');
-		new_line(1);
+		put_line ('");');
+		put ('strncpy (curState, "') ;
+		put ($STR(1));
+		put_line ('", 63);');
+		put_line ('curState[63] = 0 ;') ;
+
 		put_line('//Going to next place');
 		put('state = ');
 		apply LOC_SYNC_TRANSITIONS ($1);
@@ -1411,10 +1422,14 @@ begin
 	put_line ('if (status.MPI_SOURCE == SYNCT_MANAGER && status.MPI_TAG == TAG_SYNCT_CCK) {');
 	increase_marging;
 
-		put ('printf("My rank is %d and I could not fire the synchronized transition ');
+		put ('procLogEvtBack (my_rank, "') ;
 		put ($STR(1));
-		put ('.\n", my_rank);');
-		new_line(1);
+		put_line ('", curState);');
+		put ('strncpy (curState, "') ;
+		put ($STR(1));
+		put_line ('", 63);');
+		put_line ('curState[63] = 0 ;') ;
+
 		put_line('//Coming back to the last place');
 		put('state = lastState;');
 		new_line(1);
@@ -1465,6 +1480,7 @@ begin
 	increase_marging ;
 	put_line ('void (*code)(int, int, int) ;') ;
 	put_line ('int PNProcess ;') ;
+	put_line ('char PNProcStr[64] ;') ;
 	put_line ('int startState ;') ;
 	decrease_marging ;
 	put_line('} INSTANCE_T ;') ;
@@ -1510,6 +1526,12 @@ begin
 	put ('instanceArray[instIndex]->PNProcess = __') ;
 	put_upper ($STR(2)) ;
 	put_line (' ;') ;
+
+	put ('strncpy(instanceArray[instIndex]->PNProcStr, "') ;
+	put ($STR(2)) ;
+	put_line ('", 63) ;') ;
+	
+	put_line ('instanceArray[instIndex]->PNProcStr[64] = 0 ;') ;
 
 	put ('instanceArray[instIndex++]->startState = __') ;
 	put_upper ($STR(1)) ;

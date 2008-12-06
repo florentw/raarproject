@@ -6,35 +6,33 @@ annex_file
 //******       The Main program                ******
 //***************************************************
 
-
-
 syntactic_rule C_MPI is
 begin
 	put_line ('/*');
-	put_line ('##=======================================================================');
-	put_line ('##Copyright (C) 2007-2008 C_MPI Generator');
-	put_line ('##This program is free software; you can redistribute it and/or modify');
-	put_line ('##it under the terms of the GNU General Public License (GPL) as published');
-	put_line ('##of the License, or (at your option) any later version.');
-	put_line ('##');
-	put_line ('##This program is distributed in the hope that it will be useful,');
-	put_line ('##but WITHOUT ANY WARRANTY; without even the implied warranty of');
-	put_line ('##MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the');
-	put_line ('##GNU General Public License for more details.');
-	put_line ('##');
-	put_line ('##To read the license please visit http://www.gnu.org/copyleft/gpl.html');
-	put_line ('##=======================================================================');
-	put_line ('##');
-	put_line ('## File          : hello.c');
-	put_line ('## Authors       : Leonardo BAUTISTA GOMEZ <leobago@gmail.com>');
-	put_line ('##               : Florent WEBER <florent.weber@gmail.com>');
-	put_line ('##               : Julien CLEMENT <julien.jclement@gmail.com>');
-	put_line ('##               : Felix MACH <felix.mach@gmail.com>');
-	put_line ('##               : Henry LAY <lay.henri83@gmail.com>');
-	put_line ('##               : Remi VILLE <raymooz@gmail.com>');
-	put_line ('##               : Shi-Hon CHAN <syone7@gmail.com>');
-	put_line ('##');
-	put_line ('##');
+	increase_marging;
+	put_line ('=======================================================================');
+	put_line ('Copyright (C) 2007-2008 C_MPI Generator');
+	put_line ('This program is free software; you can redistribute it and/or modify');
+	put_line ('it under the terms of the GNU General Public License (GPL) as published');
+	put_line ('of the License, or (at your option) any later version.');
+	new_line (1);
+	put_line ('This program is distributed in the hope that it will be useful,');
+	put_line ('but WITHOUT ANY WARRANTY; without even the implied warranty of');
+	put_line ('MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the');
+	put_line ('GNU General Public License for more details.');
+	new_line (1);
+	put_line ('To read the license please visit http://www.gnu.org/copyleft/gpl.html');
+	put_line ('=======================================================================');
+	new_line (1);
+	put_line (' File          : generated.c');
+	put_line (' Authors       : Leonardo BAUTISTA GOMEZ <leobago@gmail.com>');
+	put_line ('               : Florent WEBER <florent.weber@gmail.com>');
+	put_line ('               : Julien CLEMENT <julien.jclement@gmail.com>');
+	put_line ('               : Felix MACH <felix.mach@gmail.com>');
+	put_line ('               : Henry LAY <lay.henri83@gmail.com>');
+	put_line ('               : Remi VILLE <raymooz@gmail.com>');
+	put_line ('               : Shi-Hon CHAN <syone7@gmail.com>');
+	decrease_marging;
 	put_line ('*/');
 	new_line(1);
 	put_line ('#include <math.h>');
@@ -65,7 +63,8 @@ begin
 	apply INIT_LIST_SYNC_TRANS ($2) ;
 	new_line (2);
 
-	put_line ('int main (int argc, char** argv) {');
+	put_line ('int main (int argc, char** argv)');
+	put_line('{') ;
 	new_line (1);
 	increase_marging;
 	put_line ('int i, my_rank, nb_proc;');
@@ -82,7 +81,8 @@ begin
 	put_line ('MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);');
 	new_line (1);
 	put_line ('//The prototype manager');
-	put_line ('if (my_rank == 0) {');
+	put_line ('if (my_rank == 0)');
+	put_line('{') ;
 	increase_marging;
 	put_line ('procLogStart(my_rank) ;');
 	new_line (1);
@@ -91,7 +91,8 @@ begin
 	new_line (1);
 	put_line ('//Killing all the process');
 	put_line ('procLogEnd(my_rank) ;') ;
-	put_line ('for(i = 1; i < nb_proc; i++) {');
+	put_line ('for(i = 1; i < nb_proc; i++)');
+	put_line('{') ;
 	increase_marging;
 	put_line('int buf = 0;');
 	put_line ('MPI_Isend(&buf,1,MPI_INT,i,TAG_END,MPI_COMM_WORLD,&request);');
@@ -109,7 +110,8 @@ begin
 	apply($3);
 	new_line (1);
 	put_line ('// Launching each PNProcess instance') ;
-	put_line ('if (my_rank > 2 && my_rank < INSTANCE_COUNT + 3) {') ;
+	put_line ('if (my_rank > 2 && my_rank < INSTANCE_COUNT + 3)') ;
+	put_line('{') ;
 	increase_marging;
 	put_line ('initRandomSeed();');
 	put_line ('instanceArray[my_rank-3]->code(instanceArray[my_rank-3]->startState, my_rank, nb_proc) ;') ;
@@ -118,7 +120,8 @@ begin
 
 	new_line (1);
 	put_line ('// Barrier for synchronisation before ending') ;
-	put_line ('if (my_rank != 0) {');
+	put_line ('if (my_rank != 0)');
+	put_line('{') ;
 	increase_marging;
 	put_line ('MPI_Barrier(MPI_COMM_WORLD);');
 	decrease_marging;
@@ -153,30 +156,30 @@ syntactic_rule INTERNAL_GLOBALS_H is
 begin
 
 	put_line ('/*');
-	put_line ('##=======================================================================');
-	put_line ('##Copyright (C) 2007-2008 C_MPI Generator');
-	put_line ('##This program is free software; you can redistribute it and/or modify');
-	put_line ('##it under the terms of the GNU General Public License (GPL) as published');
-	put_line ('##of the License, or (at your option) any later version.');
-	put_line ('##');
-	put_line ('##This program is distributed in the hope that it will be useful,');
-	put_line ('##but WITHOUT ANY WARRANTY; without even the implied warranty of');
-	put_line ('##MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the');
-	put_line ('##GNU General Public License for more details.');
-	put_line ('##');
-	put_line ('##To read the license please visit http://www.gnu.org/copyleft/gpl.html');
-	put_line ('##=======================================================================');
-	put_line ('##');
-	put_line ('## File          : hello.c');
-	put_line ('## Authors       : Leonardo BAUTISTA GOMEZ <leobago@gmail.com>');
-	put_line ('##               : Florent WEBER <florent.weber@gmail.com>');
-	put_line ('##               : Julien CLEMENT <julien.jclement@gmail.com>');
-	put_line ('##               : Felix MACH <felix.mach@gmail.com>');
-	put_line ('##               : Henry LAY <lay.henri83@gmail.com>');
-	put_line ('##               : Remi VILLE <raymooz@gmail.com>');
-	put_line ('##               : Shi-Hon CHAN <syone7@gmail.com>');
-	put_line ('##');
-	put_line ('##');
+	increase_marging;
+	put_line ('=======================================================================');
+	put_line ('Copyright (C) 2007-2008 C_MPI Generator');
+	put_line ('This program is free software; you can redistribute it and/or modify');
+	put_line ('it under the terms of the GNU General Public License (GPL) as published');
+	put_line ('of the License, or (at your option) any later version.');
+	new_line (1);
+	put_line ('This program is distributed in the hope that it will be useful,');
+	put_line ('but WITHOUT ANY WARRANTY; without even the implied warranty of');
+	put_line ('MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the');
+	put_line ('GNU General Public License for more details.');
+	new_line (1);
+	put_line ('To read the license please visit http://www.gnu.org/copyleft/gpl.html');
+	put_line ('=======================================================================');
+	new_line (1);
+	put_line (' File          : globals.h');
+	put_line (' Authors       : Leonardo BAUTISTA GOMEZ <leobago@gmail.com>');
+	put_line ('               : Florent WEBER <florent.weber@gmail.com>');
+	put_line ('               : Julien CLEMENT <julien.jclement@gmail.com>');
+	put_line ('               : Felix MACH <felix.mach@gmail.com>');
+	put_line ('               : Henry LAY <lay.henri83@gmail.com>');
+	put_line ('               : Remi VILLE <raymooz@gmail.com>');
+	put_line ('               : Shi-Hon CHAN <syone7@gmail.com>');
+	decrease_marging;
 	put_line ('*/');
 
 	new_line(1) ;
@@ -359,7 +362,8 @@ begin
 	put ('//There are ');
 	put ($STR_INT (0));
 	put_line (' synchronisation transitions');
-	put_line('if (my_rank == SYNCT_MANAGER) {');
+	put_line('if (my_rank == SYNCT_MANAGER)');
+	put_line('{') ;
 	increase_marging;
 	put_line('syncTransMngr(my_rank, nb_proc);') ;
 	decrease_marging;
@@ -455,20 +459,22 @@ begin
 	new_line(1) ;
 	put_line('procLogStart(my_rank) ;');
 	new_line(1) ;
-	put_line('while (1) {') ;
+	put_line('while (1)') ;
+	put_line('{') ;
 	increase_marging;
 	put_line('MPI_Recv(&syncID,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status);');
-	put_line('if (status.MPI_SOURCE == PROTO_MANAGER) {') ;
-		increase_marging;
+	put_line('if (status.MPI_SOURCE == PROTO_MANAGER)') ;
+	put_line('{') ;
+	increase_marging;
 		put_line ('procLogEnd(my_rank) ;');
 		if $# > 0 then
 
 		put_line ('for (i = 0; i<ST_COUNT; i++)');
 		put_line ('{');
 		increase_marging;
-		put_line ('free(syncTab[i]->cmp);');
-		put_line ('free(syncTab[i]->tab);');
-		put_line ('free(syncTab[i]);');
+			put_line ('free(syncTab[i]->cmp);');
+			put_line ('free(syncTab[i]->tab);');
+			put_line ('free(syncTab[i]);');
 		decrease_marging;
 		put_line ('}');
 
@@ -476,30 +482,35 @@ begin
 		new_line(1);
 		put_line('return;');
 		decrease_marging;
-		put_line('} else {');
+		put_line('}') ;
+		put_line('else');
+		put_line('{') ;
 		increase_marging;
 		put_line ('int source = status.MPI_SOURCE;');
 		put_line ('int tag = status.MPI_TAG;');
-		put_line('if (tag == TAG_SYNCT_ASK) {');
+		put_line('if (tag == TAG_SYNCT_ASK)');
+		put_line('{') ;
 		increase_marging;
 		
-			put_line ('snprintf(msgStr, 63, "Received a TAG_SYNCT_ASK in synchronization ID %d from PN-process %d", syncID, source);') ;
+			put_line ('snprintf(msgStr, 63, "Received a TAG_SYNCT_ASK in sync ID %d from PNProcess %d", syncID, source);') ;
 			put_line ('procLogMsg(my_rank, msgStr) ;') ;
 
 		decrease_marging;
 		put_line('}');
 		new_line(1) ;
-		put_line('if (tag == TAG_SYNCT_CAN) {');
+		put_line('if (tag == TAG_SYNCT_CAN)');
+		put_line('{') ;
 		increase_marging;
 		
-			put_line ('snprintf(msgStr, 63, "Received a TAG_SYNCT_CAN in synchronization ID %d from PN-process %d", syncID, source);') ;
+			put_line ('snprintf(msgStr, 63, "Received a TAG_SYNCT_CAN in sync ID %d from PNProcess %d", syncID, source);') ;
 			put_line ('procLogMsg(my_rank, msgStr) ;') ;
 		
 		decrease_marging;
 		put_line('}');
 		new_line(1) ;
 
-		put_line('switch(syncID) {');
+		put_line('switch(syncID)');
+		put_line('{') ;
 		increase_marging;
 
 		if $# > 0 then
@@ -508,17 +519,14 @@ begin
 
 		decrease_marging;
 		put_line('}');
-	new_line(1) ;
 
 		decrease_marging;
 		put_line('}');
-	new_line(1) ;
 
 	decrease_marging;
 	put_line('}') ;
 	decrease_marging;
 	put_line('}') ;
-	new_line(1) ;
 
 end ;
 
@@ -544,7 +552,7 @@ syntactic_rule INTERNAL_LIST_SYNC_TRANS is
 	new_line(1);
 	put ('case __ST_');
 	put_upper ($STR(1));
-	put (' : ');
+	put (' :');
 	new_line(1);
 
 	increase_marging;
@@ -565,21 +573,28 @@ begin
 	put ($STR(0));
 	new_line(1);
 
-	put ('if ( (tag == TAG_SYNCT_ASK) && (');
-	apply ONE_SYNC_TRANS_PROC_IN ($1);
-	put (')) {');
+	put_line ('if ((tag == TAG_SYNCT_ASK) &&');
+	increase_marging;
+		put ('(') ;
+		apply ONE_SYNC_TRANS_PROC_IN ($1);
+		put_line ('))');
+	decrease_marging;
+	put_line ('{');
 
-	new_line(1);
 	increase_marging;
         put_line('treatACK(syncTab[syncID], source, syncID, my_rank);');
 	decrease_marging;
 	put_line ('}');
 	new_line(1);
 
-	put ('if ( (tag == TAG_SYNCT_CAN) && (');
-	apply ONE_SYNC_TRANS_PROC_IN ($1);
-	put (')) {');
-	new_line(1);
+	put_line ('if ((tag == TAG_SYNCT_CAN) &&');
+	increase_marging;
+		put ('(') ;
+		apply ONE_SYNC_TRANS_PROC_IN ($1);
+		put_line ('))');
+	decrease_marging;
+	put_line ('{');
+
 	increase_marging;
         put_line('treatCAN(syncTab[syncID], source, syncID, my_rank);');
 	decrease_marging;
@@ -589,19 +604,21 @@ end;
 
 syntactic_rule ONE_SYNC_TRANS_PROC_IN is
 begin
-	put (' (instanceArray[source-3])->PNProcess == __');
+	put ('(instanceArray[source-3]->PNProcess == __');
 	apply PROC_IN ($1);
 
 	if $# > 1 then
-		put (' ||');
+		put_line (') ||');
 		apply ONE_SYNC_TRANS_PROC_IN ($2*);
+	else
+		put (')') ;
 	end if;
 end;
 
 syntactic_rule PROC_IN is
 begin
 	put_upper ($STR(1));
-	new_line (1);
+	//new_line (1);
 end;
 
 
@@ -626,7 +643,8 @@ begin
 	put ('//There are ');
 	put ($STR_INT (0));
 	put_line (' communication places');
-	put_line('if (my_rank == COMMP_MANAGER) {');
+	put_line('if (my_rank == COMMP_MANAGER)');
+	put_line('{') ;
 	increase_marging;
 	put_line('commPlaceMngr(my_rank, nb_proc);');
 	decrease_marging;
@@ -724,7 +742,8 @@ begin
 	put_line('procLogStart(my_rank) ;');
 	new_line(1);
 
-	put_line ('while (1) {');
+	put_line ('while (1)');
+	put_line('{') ;
 	increase_marging;
 
 		put_line ('// Compute current time') ;
@@ -757,34 +776,35 @@ begin
 
 		put_line('MPI_Iprobe (MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status) ;');
 		new_line(1);
-		put_line('if (flag) {');
-		increase_marging;
-		put_line('MPI_Recv(buf, CP_COUNT, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
-		put_line('if (status.MPI_SOURCE == PROTO_MANAGER)') ;
+		put_line('if (flag)');
 		put_line('{') ;
-		increase_marging ;
-		put_line('procLogEnd(my_rank) ;') ;
-		put_line('break ;') ;
-		decrease_marging ;
-		put_line('}') ;
-		
-		decrease_marging;
-		put_line('} else {');
 		increase_marging;
-		put_line('continue ;') ;
+			put_line('MPI_Recv(buf, CP_COUNT, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
+			put_line('if (status.MPI_SOURCE == PROTO_MANAGER)') ;
+			put_line('{') ;
+			increase_marging ;
+				put_line('procLogEnd(my_rank) ;') ;
+				put_line('break ;') ;
+			decrease_marging ;
+			put_line('}') ;
+			
 		decrease_marging;
 		put_line('}');
+		put_line('else');
+		increase_marging;
+			put_line('continue ;') ;
+		decrease_marging;
 
 		new_line(1);
-		put_line('switch (status.MPI_TAG) {') ;
+		put_line('switch (status.MPI_TAG)') ;
+		put_line('{') ;
+		increase_marging;
 
-			increase_marging;
+		if $# > 0 then
+			apply INTERNAL_LIST_COMM_PLACE ($0);
+		end if;
 
-			if $# > 0 then
-				apply INTERNAL_LIST_COMM_PLACE ($0);
-			end if;
-
-			decrease_marging;
+		decrease_marging;
 
 		new_line(1);
 		put_line('}') ;
@@ -839,7 +859,13 @@ begin
 	put_line('case TAG_CP_GET:') ;
 	increase_marging;
 		new_line (1) ;
-		put_line ('if (tab_cmp(cpArray, buf, CP_COUNT) > 0) {') ;
+		
+		put_line ('snprintf(msgStr, 63, "Received a TAG_CP_GET from process %d", status.MPI_SOURCE) ;') ;
+		put_line ('procLogMsg(my_rank, msgStr) ;') ;
+
+		new_line (1) ;
+		put_line ('if (tab_cmp(cpArray, buf, CP_COUNT) > 0)') ;
+		put_line('{') ;
 		increase_marging;
 
 		put_line ('for (i = 0; i<CP_COUNT; i++)') ;
@@ -850,7 +876,9 @@ begin
 		put_line ('MPI_Send(&buf, 1, MPI_INT, status.MPI_SOURCE, TAG_CP_ACK, MPI_COMM_WORLD) ;') ;
 
 		decrease_marging;
-		put_line ('} else {') ;
+		put_line ('}') ;
+		put_line ('else') ;
+		put_line ('{') ;
 		increase_marging;
 
 			put_line ('appendToQueue(&cpQueue, status.MPI_SOURCE, buf, CP_COUNT) ;') ;
@@ -866,7 +894,14 @@ begin
 	put_line('case TAG_CP_TGET:') ;
 	increase_marging;
 		new_line (1) ;
-		put_line ('if (tab_cmp(cpArray, buf, CP_COUNT) > 0) {') ;
+		
+		put_line ('snprintf(msgStr, 63, "Received a TAG_CP_TGET from process %d", status.MPI_SOURCE) ;') ;
+		put_line ('procLogMsg(my_rank, msgStr) ;') ;
+
+		new_line (1) ;
+		
+		put_line ('if (tab_cmp(cpArray, buf, CP_COUNT) > 0)') ;
+		put_line('{') ;
 		increase_marging;
 
 		put_line ('for (i = 0; i<CP_COUNT; i++)') ;
@@ -877,7 +912,9 @@ begin
 		put_line ('MPI_Send(&buf, 1, MPI_INT, status.MPI_SOURCE, TAG_CP_ACK, MPI_COMM_WORLD) ;') ;
 
 		decrease_marging;
-		put_line ('} else {') ;
+		put_line ('}') ;
+		put_line ('else') ;
+		put_line ('{') ;
 		increase_marging;
 
 			put_line ('timerArray[status.MPI_SOURCE-3] = t1 ;') ;
@@ -893,6 +930,12 @@ begin
 
 	put_line('case TAG_CP_PUT:') ;
 	increase_marging;
+		new_line (1) ;
+
+		put_line ('snprintf(msgStr, 63, "Received a TAG_CP_PUT from process %d", status.MPI_SOURCE) ;') ;
+		put_line ('procLogMsg(my_rank, msgStr) ;') ;
+
+		new_line (1) ;
 
 		put_line ('for (i = 0; i<CP_COUNT; i++)') ;
 		increase_marging;
@@ -912,6 +955,10 @@ begin
 		put_line ('timerArray[tmpProc->rank] = 0 ;') ;
 		put_line ('MPI_Send(&buf, 1, MPI_INT, tmpProc->rank, TAG_CP_ACK, MPI_COMM_WORLD) ;') ;
 		put_line ('free(tmpProc) ;') ;
+		
+		put_line ('snprintf(msgStr, 63, "Removed process from queue, rank=%d", tmpProc->rank) ;') ;
+		put_line ('procLogMsg(my_rank, msgStr) ;') ;
+		
 		decrease_marging;
 		put_line ('}') ;
 		new_line (1) ;
@@ -973,7 +1020,8 @@ begin
 
 	put ('void PNProc_');
 	put ($STR(1));
-	put_line('(int state, int my_rank, int nb_proc) {');
+	put_line('(int state, int my_rank, int nb_proc)');
+	put_line('{') ;
 	increase_marging;
 
 	new_line (1);
@@ -998,7 +1046,8 @@ begin
 	put_line ('lastRandIndex = 0 ;') ;
 	new_line(1);
 
-	put_line ('while (1) {');
+	put_line ('while (1)');
+	put_line('{') ;
 	increase_marging;
 
 	put_line('//Sleeping a random duration');
@@ -1007,7 +1056,8 @@ begin
 
 	put_line('//Checking if Prototype manager request END');
 	put_line('MPI_Iprobe(PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&flag,&status);');
-	put_line('if (flag) {');
+	put_line('if (flag)');
+	put_line('{') ;
 	increase_marging;
 		put_line('MPI_Recv(&buf,1,MPI_INT,PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&status);');
 		put_line('procLogEnd (my_rank) ;') ;
@@ -1038,7 +1088,8 @@ begin
 	new_line(1);
 
 	put_line('//Main switch');
-	put_line ('switch(state) {');
+	put_line ('switch(state)');
+	put_line('{') ;
 	increase_marging;
 
 	apply LOCAL_PLACE ($1);
@@ -1069,7 +1120,7 @@ begin
 	put('case ');
 	put ('__') ;
 	put_upper ($STR(1));
-	put (' : ');
+	put (' :');
 	new_line(1);
 
 	apply LOC_TRANS_OUT ($1);
@@ -1225,7 +1276,7 @@ begin
 	put('case ');
 	put ('__') ;
 	put_upper ($STR(1));
-	put (' : ');
+	put (' :');
 	new_line(1);
 
 	increase_marging;
@@ -1338,106 +1389,112 @@ begin
 		put('case ');
 		put ('__') ;
 		put_upper ($STR(1));
-		put (' : ');
+		put (' :');
 		new_line(1);
 
 		increase_marging;
-
-		put ('buf = __ST_') ;
-		put_upper($STR(1));
-		put (';') ;
-	new_line(1);
-		put('MPI_Send(&buf,1,MPI_INT,SYNCT_MANAGER,TAG_SYNCT_ASK,MPI_COMM_WORLD);');
-	new_line(1);
-
-		put_line('if (isTimedTrans) {');
-
-		increase_marging;
-		put_line('time_t ti,ct;');
-		put_line('(void) time(&ti);');
-		put_line('//Timed wait for firing the transition');
-		put_line ('while (1) {');
-
-		increase_marging;
-	put_line ('MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status) ;');
-	put_line ('if (flag)');
-		increase_marging;
-	put_line ('break;');
+	
+			put ('buf = __ST_') ;
+			put_upper($STR(1));
+			put (';') ;
+			new_line(1);
+			put('MPI_Send(&buf,1,MPI_INT,SYNCT_MANAGER,TAG_SYNCT_ASK,MPI_COMM_WORLD);');
+			new_line(1);
+	
+			put_line('if (isTimedTrans)');
+			put_line('{') ;
+	
+			increase_marging;
+				put_line('time_t ti, ct;');
+				put_line('time(&ti);');
+				put_line('//Timed wait for firing the transition');
+				put_line ('while (1)');
+				put_line ('{');
+		
+				increase_marging;
+					put_line ('MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status) ;');
+					put_line ('if (flag)');
+					increase_marging;
+						put_line ('break;');
+					decrease_marging;
+					put_line('usleep(ST_STEP);');
+					put_line('(void) time(&ct);');
+					put_line('if (ct - ti > DEFAULT_TIMEOUT) break;');
+				decrease_marging;
+				put_line('}');
+				new_line(1);
+		
+				put_line('//Timer expired');
+				put_line('if (!flag)');
+				put_line('{') ;
+				increase_marging;
+					put_line('MPI_Send(&buf,1,MPI_INT,SYNCT_MANAGER,TAG_SYNCT_CAN,MPI_COMM_WORLD);');
+				decrease_marging;
+				put_line('}');
+	
+			decrease_marging;
+			put_line('}');
+			new_line(1);
+	
+			put_line ('//Blocking wait for a message');
+			put_line ('MPI_Recv(&buf, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
+			new_line(1);
+		
+			put_line ('//If END request from prototype manager');
+			put_line ('if (status.MPI_SOURCE == PROTO_MANAGER)');
+			put_line ('{') ;
+			increase_marging;
+				put_line ('procLogEnd(my_rank) ;');
+				put_line('return ;') ;
+			decrease_marging;
+			put_line ('}') ;
+			new_line(1);
+	
+			put_line ('//If ACK answer from synchronization transitions manager');
+			put_line ('if (status.MPI_SOURCE == SYNCT_MANAGER && status.MPI_TAG == TAG_SYNCT_ACK)');
+			put_line ('{') ;
+			increase_marging;
+	
+				put ('procLogEvt (my_rank, curState, "') ;
+				put ($STR(1));
+				put_line ('");');
+				put ('strncpy (curState, "') ;
+				put ($STR(1));
+				put_line ('", 63);');
+				put_line ('curState[63] = 0 ;') ;
+		
+				put_line('//Going to next place');
+				put('state = ');
+				apply LOC_SYNC_TRANSITIONS ($1);
+				put (';');
+				new_line(1);
+		
+				put_line('break;');
+			decrease_marging;
+			put_line ('}');
+			new_line(1);
+	
+			put_line ('//If CCK answer from synchronization transitions manager');
+			put_line ('if (status.MPI_SOURCE == SYNCT_MANAGER && status.MPI_TAG == TAG_SYNCT_CCK)');
+			put_line ('{') ;
+			increase_marging;
+		
+				put ('procLogEvtBack (my_rank, "') ;
+				put ($STR(1));
+				put_line ('", curState);');
+				put ('strncpy (curState, "') ;
+				put ($STR(1));
+				put_line ('", 63);');
+				put_line ('curState[63] = 0 ;') ;
+		
+				put_line('//Coming back to the last place');
+				put('state = lastState;');
+				new_line(1);
+		
+				put_line('break;');
+			decrease_marging;
+			put_line ('}');
 		decrease_marging;
-	put_line('usleep(ST_STEP);');
-		put_line('(void) time(&ct);');
-		put_line('if (ct - ti > DEFAULT_TIMEOUT) break;');
-		decrease_marging;
-	put_line('}');
-	new_line(1);
-
-		put_line('//Timer expired');
-		put_line('if (!flag) {');
-		increase_marging;
-			put_line('MPI_Send(&buf,1,MPI_INT,SYNCT_MANAGER,TAG_SYNCT_CAN,MPI_COMM_WORLD);');
-		decrease_marging;
-	put_line('}');
-
-		decrease_marging;
-	put_line('}');
-	new_line(1);
-
-
-	put_line ('//Blocking wait for a message');
-	put_line ('MPI_Recv(&buf, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
-	new_line(1);
-
-	put_line ('//If END request from prototype manager');
-	put_line ('if (status.MPI_SOURCE == PROTO_MANAGER) {');
-	increase_marging;
-		put_line ('procLogEnd(my_rank) ;');
-	put_line('return ;  }') ;
-	decrease_marging;
-	new_line(1);
-
-	put_line ('//If ACK answer from synchronization transitions manager');
-	put_line ('if (status.MPI_SOURCE == SYNCT_MANAGER && status.MPI_TAG == TAG_SYNCT_ACK) {');
-	increase_marging;
-
-		put ('procLogEvt (my_rank, curState, "') ;
-		put ($STR(1));
-		put_line ('");');
-		put ('strncpy (curState, "') ;
-		put ($STR(1));
-		put_line ('", 63);');
-		put_line ('curState[63] = 0 ;') ;
-
-		put_line('//Going to next place');
-		put('state = ');
-		apply LOC_SYNC_TRANSITIONS ($1);
-		put (';');
-		new_line(1);
-
-		put_line('break;');
-		decrease_marging;
-	put_line ('}');
-		new_line(1);
-
-	put_line ('//If CCK answer from synchronization transitions manager');
-	put_line ('if (status.MPI_SOURCE == SYNCT_MANAGER && status.MPI_TAG == TAG_SYNCT_CCK) {');
-	increase_marging;
-
-		put ('procLogEvtBack (my_rank, "') ;
-		put ($STR(1));
-		put_line ('", curState);');
-		put ('strncpy (curState, "') ;
-		put ($STR(1));
-		put_line ('", 63);');
-		put_line ('curState[63] = 0 ;') ;
-
-		put_line('//Coming back to the last place');
-		put('state = lastState;');
-		new_line(1);
-
-		put_line('break;');
-		decrease_marging;
-	put_line ('}');
-	decrease_marging;
 		new_line(1);
 
 		if $# > 1 then
@@ -1459,10 +1516,6 @@ begin
 end;
 
 
-
-
-
-
 //***************************************************
 //******       List of instances               ******
 //***************************************************
@@ -1478,10 +1531,10 @@ begin
 	put_line ('// Instances structure') ;
 	put_line ('typedef struct INSTANCE {') ;
 	increase_marging ;
-	put_line ('void (*code)(int, int, int) ;') ;
-	put_line ('int PNProcess ;') ;
-	put_line ('char PNProcStr[64] ;') ;
-	put_line ('int startState ;') ;
+		put_line ('void (*code)(int, int, int) ;') ;
+		put_line ('int PNProcess ;') ;
+		put_line ('char PNProcStr[64] ;') ;
+		put_line ('int startState ;') ;
 	decrease_marging ;
 	put_line('} INSTANCE_T ;') ;
 

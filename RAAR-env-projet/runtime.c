@@ -319,7 +319,22 @@ void procLogEvt (int rank, const char * curState, int curType, const char * targ
 {
 #ifdef LOG_TO_DOT
 
-	if (curType == LOG_PLACE_TYPE)
+	if (!strncmp(curState, "INIT", 4))
+	{
+		fprintf (LOG_STD_DEST,
+				"\t%s_%d [label=\"%s\",color=\"red\"] ;\n",
+				curState,
+				rank,
+				curState) ;
+				
+		fprintf (LOG_STD_DEST,
+				"\t%s_%d -> %s_%d [style=dotted] ;\n",
+				curState,
+				rank,
+				targetState,
+				rank) ;
+	}
+	else if (curType == LOG_PLACE_TYPE)
 	{
 		if (targetType == LOG_ST_TYPE)
 		{
@@ -330,7 +345,7 @@ void procLogEvt (int rank, const char * curState, int curType, const char * targ
 					 curState) ;
 			
 			fprintf (LOG_STD_DEST,
-					 "\t%s [shape=box,color=\"green\"] ;\n",
+					 "\t%s [style=filled,shape=box,color=\"green\"] ;\n",
 					 targetState) ;
 			
 			fprintf (LOG_STD_DEST,
@@ -364,8 +379,20 @@ void procLogEvt (int rank, const char * curState, int curType, const char * targ
 	else if (curType == LOG_ST_TYPE)
 	{
 		fprintf (LOG_STD_DEST,
-				 "\t%s [shape=box,color=\"green\"] ;\n",
-				 targetState) ;
+				 "\t%s [style=filled,shape=box,color=\"green\"] ;\n",
+				 curState) ;
+		
+		fprintf (LOG_STD_DEST,
+				"\t%s -> %s_%d ;\n",
+				curState,
+				targetState,
+				rank) ;
+	}
+	else if (curType == LOG_CP_TYPE)
+	{
+		fprintf (LOG_STD_DEST,
+				 "\t%s [style=filled,color=\"blue\"] ;\n",
+				 curState) ;
 		
 		fprintf (LOG_STD_DEST,
 				 "\t%s -> %s_%d ;\n",
@@ -375,27 +402,64 @@ void procLogEvt (int rank, const char * curState, int curType, const char * targ
 	}
 	else
 	{
-		fprintf (LOG_STD_DEST,
-				 "\t%s_%d [label=\"%s\"] ;\n",
-				 curState,
-				 rank,
-				 curState) ;
-		
-		fprintf (LOG_STD_DEST,
-				 "\t%s_%d -> %s_%d ;\n",
-				 curState,
-				 rank,
-				 targetState,
-				 rank) ;
+		if (targetType == LOG_CP_TYPE)
+		{
+			fprintf (LOG_STD_DEST,
+					 "\t%s [style=filled,color=\"blue\"] ;\n",
+					 targetState) ;
+			
+			fprintf (LOG_STD_DEST,
+					 "\t%s_%d -> %s ;\n",
+					 curState,
+					 rank,
+					 targetState) ;
+		}
+		else
+		{
+			fprintf (LOG_STD_DEST,
+					"\t%s_%d [label=\"%s\"] ;\n",
+					curState,
+					rank,
+					curState) ;
+			
+			fprintf (LOG_STD_DEST,
+					"\t%s_%d -> %s_%d ;\n",
+					curState,
+					rank,
+					targetState,
+					rank) ;
+		}
 	}
 	
 #else
-	fprintf (LOG_STD_DEST,
-			 "[%s\t%d]\tFrom %s going to %s\n",
-			 instanceArray[rank-3]->PNProcStr,
-			 rank,
-			 curState,
-			 targetState) ;
+
+	if (curType == LOG_CP_TYPE)
+	{
+		fprintf (LOG_STD_DEST,
+				 "[%s\t%d]\tGet token(s) from CP %s to %s\n",
+				 instanceArray[rank-3]->PNProcStr,
+				 rank,
+				 curState,
+				 targetState) ;
+	}
+	else if (targetType == LOG_CP_TYPE)
+	{
+		fprintf (LOG_STD_DEST,
+				 "[%s\t%d]\tPut token(s) from %s in CP %s\n",
+				 instanceArray[rank-3]->PNProcStr,
+				 rank,
+				 curState,
+				 targetState) ;
+	}
+	else
+	{
+		fprintf (LOG_STD_DEST,
+				 "[%s\t%d]\tFrom %s going to %s\n",
+				 instanceArray[rank-3]->PNProcStr,
+				 rank,
+				 curState,
+				 targetState) ;
+	}
 #endif
 }
 

@@ -206,7 +206,7 @@ begin
 	put_line ('#define TAG_CP_PUT  9') ;
 
 	new_line (1);
-	put_line ('#define EXEC_DURATION 30');
+	put_line ('#define EXEC_DURATION 10');
 	put_line ('#define DEFAULT_TIMEOUT 1') ;
 	put_line ('#define CP_STEP 250000') ;
 	put_line ('#define ST_STEP 250000') ;
@@ -1161,9 +1161,6 @@ begin
 	put (';');
 
 	new_line(1);
-	apply COMM_TRANS_IN ($1);
-	apply COMM_TRANS_OUT ($2);
-	new_line(1);
 
 	put ('procLogEvt (my_rank, curState, curType, "') ;
 	put ($STR(0));
@@ -1174,8 +1171,12 @@ begin
 	put ($STR(0));
 	put_line ('", 63);');
 	put_line ('curState[63] = 0 ;') ;
-	
+
 	new_line(1);
+	apply COMM_TRANS_IN ($1);
+	apply COMM_TRANS_OUT ($2);
+	new_line(1);
+
 	put_line('break;');
 	decrease_marging;
 end;
@@ -1229,13 +1230,13 @@ begin
 			put ($STR(1));
 			put_line ('", LOG_CP_TYPE, curState, curType);');
 			
-			put_line ('curType = LOG_CP_TYPE ;') ;
-			put ('strncpy (curState, "') ;
-			put ($STR(1));
-			put_line ('", 63);');
-			put_line ('curState[63] = 0 ;') ;
-			
 			put_line ('break;') ;
+		decrease_marging;
+		put_line ('}') ;
+		put_line ('else') ;
+		put_line ('{') ;
+		increase_marging;
+			apply INTERNAL_OUTPUT_COMM_TRANS_IN ($0) ;
 		decrease_marging;
 		put_line ('}') ;
 	end if;
@@ -1248,6 +1249,21 @@ begin
 	put ('] = ');
 	put (to_string($INT(1))) ;
 	put_line (';') ;
+
+	put ('procLogEvt (my_rank, "') ;
+	put ($STR(1));
+	put_line ('", LOG_CP_TYPE, curState, curType);');
+
+	if $# > 1 then
+		apply INTERNAL_COMM_TRANS_IN ($2*);
+	end if;
+end;
+
+syntactic_rule INTERNAL_OUTPUT_COMM_TRANS_IN is
+begin
+	put ('procLogEvt (my_rank, "') ;
+	put ($STR(1));
+	put_line ('", LOG_CP_TYPE, curState, curType);');
 
 	if $# > 1 then
 		apply INTERNAL_COMM_TRANS_IN ($2*);
@@ -1276,6 +1292,10 @@ begin
 	put ('] = ');
 	put (to_string($INT(1))) ;
 	put_line (';') ;
+
+	put ('procLogEvt (my_rank, curState, curType, "') ;
+	put ($STR(1));
+	put_line ('", LOG_CP_TYPE);');
 
 	if $# > 1 then
 		apply INTERNAL_COMM_TRANS_OUT ($2*);
@@ -1507,12 +1527,6 @@ begin
 				put ('procLogEvtBack (my_rank, "') ;
 				put ($STR(1));
 				put_line ('", LOG_ST_TYPE, curState, curType);');
-				
-				put_line ('curType = LOG_ST_TYPE ;') ;
-				put ('strncpy (curState, "') ;
-				put ($STR(1));
-				put_line ('", 63);');
-				put_line ('curState[63] = 0 ;') ;
 		
 				put_line('//Going back to the last place');
 				put('state = lastState;');

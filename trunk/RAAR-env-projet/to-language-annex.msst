@@ -80,9 +80,9 @@ begin
 	put_line ('MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);');
 	put_line ('MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);');
 	new_line (1);
-	
+
 	put_line ('if (!my_rank) startLogging() ;') ;
-	
+
 	new_line (1);
 	put_line ('//The prototype manager');
 	put_line ('if (my_rank == 0)');
@@ -140,9 +140,9 @@ begin
 	new_line(1);
 
 	put_line ('MPI_Finalize();');
-	
+
 	put_line ('if (!my_rank) stopLogging() ;') ;
-	
+
 	put_line ('return 0;');
 	decrease_marging;
 	put_line ('}');
@@ -215,7 +215,7 @@ begin
 	put_line ('#define SYNCT_MANAGER 1');
 	put_line ('#define COMMP_MANAGER 2');
 	new_line (1);
-	
+
 	put_line ('#define LOG_TRANS_TYPE 0');
 	put_line ('#define LOG_PLACE_TYPE 1');
 	put_line ('#define LOG_ST_TYPE    2');
@@ -311,7 +311,6 @@ end;
 syntactic_rule INTERNAL_GLOBAL_LIST_ELEMENTS is
 begin
 	apply INTERNAL_PROCESS_PLACES($1) ;
-	put_line(',');
 	apply INTERNAL_PROCESS_TRANSITIONS($1) ;
 
 	if $# > 1 then
@@ -337,17 +336,18 @@ end;
 
 syntactic_rule INTERNAL_PROCESS_TRANSITIONS is
 begin
-	apply LOCAL_TRANSITIONS ($2) ;
+	    apply LOCAL_TRANSITIONS ($2) ;
 end;
 
 syntactic_rule LOCAL_TRANSITIONS is
 begin
-	put('__') ;
+    if $# > 0 then
+	put(',__') ;
 	put_upper($STR(1));
 	if $# > 1 then
-	put(',');
 		apply LOCAL_TRANSITIONS ($2*);
 	end if;
+    end if;
 end;
 
 
@@ -508,7 +508,7 @@ begin
 		put_line('if (tag == TAG_SYNCT_ASK)');
 		put_line('{') ;
 		increase_marging;
-		
+
 			put_line ('snprintf(msgStr, 63, "Received a TAG_SYNCT_ASK in sync ID %d from PNProcess %d", syncID, source);') ;
 			put_line ('procLogMsg(my_rank, msgStr) ;') ;
 
@@ -518,10 +518,10 @@ begin
 		put_line('if (tag == TAG_SYNCT_CAN)');
 		put_line('{') ;
 		increase_marging;
-		
+
 			put_line ('snprintf(msgStr, 63, "Received a TAG_SYNCT_CAN in sync ID %d from PNProcess %d", syncID, source);') ;
 			put_line ('procLogMsg(my_rank, msgStr) ;') ;
-		
+
 		decrease_marging;
 		put_line('}');
 		new_line(1) ;
@@ -773,10 +773,10 @@ begin
 			put_line ('if ((timerArray[i] > 0) && ((t1 - timerArray[i]) >= DEFAULT_TIMEOUT))') ;
 			put_line ('{') ;
 				increase_marging;
-				
+
 				put_line ('snprintf(msgStr, 63, "Removed process from queue, rank=%d", i+3) ;') ;
 				put_line ('procLogMsg(my_rank, msgStr) ;') ;
-				
+
 				put_line ('MPI_Send(&buf, 1, MPI_INT, i+3, TAG_CP_NACK, MPI_COMM_WORLD) ;') ;
 				put_line ('deleteNodeByRank(&cpQueue, i+3) ;') ;
 				put_line ('timerArray[i] = 0 ;') ;
@@ -804,7 +804,7 @@ begin
 				put_line('break ;') ;
 			decrease_marging ;
 			put_line('}') ;
-			
+
 		decrease_marging;
 		put_line('}');
 		put_line('else');
@@ -876,7 +876,7 @@ begin
 	put_line('case TAG_CP_GET:') ;
 	increase_marging;
 		new_line (1) ;
-		
+
 		put_line ('snprintf(msgStr, 63, "Received a TAG_CP_GET from process %d", status.MPI_SOURCE) ;') ;
 		put_line ('procLogMsg(my_rank, msgStr) ;') ;
 
@@ -911,12 +911,12 @@ begin
 	put_line('case TAG_CP_TGET:') ;
 	increase_marging;
 		new_line (1) ;
-		
+
 		put_line ('snprintf(msgStr, 63, "Received a TAG_CP_TGET from process %d", status.MPI_SOURCE) ;') ;
 		put_line ('procLogMsg(my_rank, msgStr) ;') ;
 
 		new_line (1) ;
-		
+
 		put_line ('if (tab_cmp(cpArray, buf, CP_COUNT) > 0)') ;
 		put_line('{') ;
 		increase_marging;
@@ -972,10 +972,10 @@ begin
 		put_line ('timerArray[tmpProc->rank] = 0 ;') ;
 		put_line ('MPI_Send(&buf, 1, MPI_INT, tmpProc->rank, TAG_CP_ACK, MPI_COMM_WORLD) ;') ;
 		put_line ('free(tmpProc) ;') ;
-		
+
 		put_line ('snprintf(msgStr, 63, "Removed process from queue, rank=%d", tmpProc->rank) ;') ;
 		put_line ('procLogMsg(my_rank, msgStr) ;') ;
-		
+
 		decrease_marging;
 		put_line ('}') ;
 		new_line (1) ;
@@ -1052,7 +1052,7 @@ begin
 	//Main loop
 	put_line ('char curState[64] ;') ;
 	put_line ('strncpy (curState, "INIT", 63);');
-	
+
 	put_line ('int buf, flag, lastState, isTimedTrans, lastRandIndex, curType ;');
 
 	put_line ('#ifndef NO_CP') ;
@@ -1130,21 +1130,23 @@ end;
 
 syntactic_rule LOCAL_TRANS is
 begin
-	new_line(1);
-	put('//Transition ');
-	put ($STR(1));
-	new_line(1);
+	if $# > 0 then
+	    new_line(1);
+    	    put('//Transition ');
+	    put ($STR(1));
+	    new_line(1);
 
-	put('case ');
-	put ('__') ;
-	put_upper ($STR(1));
-	put (' :');
-	new_line(1);
+	    put('case ');
+	    put ('__') ;
+	    put_upper ($STR(1));
+	    put (' :');
+	    new_line(1);
 
-	apply LOC_TRANS_OUT ($1);
+	    apply LOC_TRANS_OUT ($1);
 
-	if $# > 1 then
+	    if $# > 1 then
 		apply LOCAL_TRANS ($2*);
+	    end if;
 	end if;
 end;
 
@@ -1165,7 +1167,7 @@ begin
 	put ('procLogEvt (my_rank, curState, curType, "') ;
 	put ($STR(0));
 	put_line ('", LOG_TRANS_TYPE);');
-	
+
 	put_line ('curType = LOG_TRANS_TYPE ;') ;
 	put ('strncpy (curState, "') ;
 	put ($STR(0));
@@ -1225,11 +1227,11 @@ begin
 		put_line ('{') ;
 		increase_marging;
 			put_line ('state = lastState ;');
-			
+
 			put ('procLogEvtBack (my_rank, "') ;
 			put ($STR(1));
 			put_line ('", LOG_CP_TYPE, curState, curType);');
-			
+
 			put_line ('break;') ;
 		decrease_marging;
 		put_line ('}') ;
@@ -1321,11 +1323,11 @@ begin
 	new_line(1);
 
 	increase_marging;
-	
+
 	put ('procLogEvt (my_rank, curState, curType, "') ;
 	put ($STR(1));
 	put_line ('", LOG_PLACE_TYPE);');
-	
+
 	put_line ('curType = LOG_PLACE_TYPE ;') ;
 	put ('strncpy (curState, "') ;
 	put ($STR(1));
@@ -1436,24 +1438,24 @@ begin
 		new_line(1);
 
 		increase_marging;
-	
+
 			put ('buf = __ST_') ;
 			put_upper($STR(1));
 			put (';') ;
 			new_line(1);
 			put('MPI_Send(&buf,1,MPI_INT,SYNCT_MANAGER,TAG_SYNCT_ASK,MPI_COMM_WORLD);');
 			new_line(1);
-	
+
 			put_line('if (isTimedTrans)');
 			put_line('{') ;
-	
+
 			increase_marging;
 				put_line('time_t ti, ct;');
 				put_line('time(&ti);');
 				put_line('//Timed wait for firing the transition');
 				put_line ('while (1)');
 				put_line ('{');
-		
+
 				increase_marging;
 					put_line ('MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status) ;');
 					put_line ('if (flag)');
@@ -1466,7 +1468,7 @@ begin
 				decrease_marging;
 				put_line('}');
 				new_line(1);
-		
+
 				put_line('//Timer expired');
 				put_line('if (!flag)');
 				put_line('{') ;
@@ -1474,15 +1476,15 @@ begin
 					put_line('MPI_Send(&buf,1,MPI_INT,SYNCT_MANAGER,TAG_SYNCT_CAN,MPI_COMM_WORLD);');
 				decrease_marging;
 				put_line('}');
-	
+
 			decrease_marging;
 			put_line('}');
 			new_line(1);
-	
+
 			put_line ('//Blocking wait for a message');
 			put_line ('MPI_Recv(&buf, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
 			new_line(1);
-		
+
 			put_line ('//If END request from prototype manager');
 			put_line ('if (status.MPI_SOURCE == PROTO_MANAGER)');
 			put_line ('{') ;
@@ -1492,46 +1494,46 @@ begin
 			decrease_marging;
 			put_line ('}') ;
 			new_line(1);
-	
+
 			put_line ('//If ACK answer from synchronization transitions manager');
 			put_line ('if (status.MPI_SOURCE == SYNCT_MANAGER && status.MPI_TAG == TAG_SYNCT_ACK)');
 			put_line ('{') ;
 			increase_marging;
-	
+
 				put ('procLogEvt (my_rank, curState, curType, "') ;
 				put ($STR(1));
 				put_line ('", LOG_ST_TYPE);');
-				
+
 				put_line ('curType = LOG_ST_TYPE ;') ;
 				put ('strncpy (curState, "') ;
 				put ($STR(1));
 				put_line ('", 63);');
 				put_line ('curState[63] = 0 ;') ;
-		
+
 				put_line('//Going to next place');
 				put('state = ');
 				apply LOC_SYNC_TRANSITIONS ($1);
 				put (';');
 				new_line(1);
-		
+
 				put_line('break;');
 			decrease_marging;
 			put_line ('}');
 			new_line(1);
-	
+
 			put_line ('//If CCK answer from synchronization transitions manager');
 			put_line ('if (status.MPI_SOURCE == SYNCT_MANAGER && status.MPI_TAG == TAG_SYNCT_CCK)');
 			put_line ('{') ;
 			increase_marging;
-		
+
 				put ('procLogEvtBack (my_rank, "') ;
 				put ($STR(1));
 				put_line ('", LOG_ST_TYPE, curState, curType);');
-		
+
 				put_line('//Going back to the last place');
 				put('state = lastState;');
 				new_line(1);
-		
+
 				put_line('break;');
 			decrease_marging;
 			put_line ('}');
@@ -1613,7 +1615,7 @@ begin
 	put ('strncpy(instanceArray[instIndex]->PNProcStr, "') ;
 	put ($STR(2)) ;
 	put_line ('", 63) ;') ;
-	
+
 	put_line ('instanceArray[instIndex]->PNProcStr[63] = 0 ;') ;
 
 	put ('instanceArray[instIndex++]->startState = __') ;

@@ -221,7 +221,7 @@ begin
 	put_line ('#define LOG_ST_TYPE    2');
 	put_line ('#define LOG_CP_TYPE    3');
 	new_line (1);
-	put_line ('#define LOG_TO_DOT');
+	put_line ('// #define LOG_TO_DOT');
 	put_line ('#define LOG_STD_DEST stdout');
 	new_line (1);
 
@@ -1079,7 +1079,7 @@ begin
 	put_line ('curType = LOG_TRANS_TYPE ;') ;
 	put_line ('lastState = state ;') ;
 	put_line ('isTimedTrans = 0 ;') ;
-	put_line ('lastRandIndex = 0 ;') ;
+	put_line ('lastRandIndex = -1 ;') ;
 	new_line(1);
 
 	put_line ('while (1)');

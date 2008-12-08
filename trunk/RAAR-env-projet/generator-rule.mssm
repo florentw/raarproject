@@ -13,13 +13,13 @@ begin
 	THE_GLOBALS := create_sm_tree ([GLOBALS_H# # ]);
 
 	//Creating the subtrees
-	message ('Working on process...');
+	// message('Working on process...');
 	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_PROCESS ());
-	message ('Working on synchronisation transitions...');
+	// message('Working on synchronisation transitions...');
 	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_SYNC_TRANS ());
-	message ('Working on communication places...');
+	// message('Working on communication places...');
 	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_COMM_PLACE ());
-	message ('Working on instances...');
+	// message('Working on instances...');
 	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_INSTANCES ());
 	
 	THE_GLOBALS := add_sm_son ($smt (THE_GLOBALS), $smt(THE_TREE));
@@ -30,7 +30,7 @@ begin
 	//Generating the globals tree
 	generate $smt (THE_GLOBALS) in 'globals.h';
 	
-	message ('Done...');
+	// message('Done...');
 	return;
 end;
 
@@ -147,7 +147,7 @@ begin
 	P_IN := create_sm_tree ([PROC_IN # {'PROCIN_' & $str(nameTrans)} #]);
 	P_OUT := create_sm_tree ([PROC_OUT # {'PROCOUT_' & $str(nameTrans)} #]);
 
-	message({'* SyncTrans Name : ' & $str (nameTrans)}) ;
+	// message({'* SyncTrans Name : ' & $str (nameTrans)}) ;
 
 	if nb_node_instance (ARC) > 0 then
 
@@ -156,12 +156,12 @@ begin
 			nameIN := $atrv_str (attribute NAME from get_neighbour_in (get_link_reference(ARC,$int (AR)), 1));
 			nameOUT := $atrv_str (attribute NAME from get_neighbour_out (get_link_reference(ARC,$int (AR)), 1));
 
-			message({'* ARC nb' & to_string($int(AR))}) ;
-			message({{$str(nameIN) & ' -> ' } & $str(nameOUT)}) ;
+			// message({'* ARC nb' & to_string($int(AR))}) ;
+			// message({{$str(nameIN) & ' -> ' } & $str(nameOUT)}) ;
 
 			if $str (nameIN) = $str (nameTrans) then
 
-				message('ST ---> PL') ;
+				// message('ST ---> PL') ;
 
 				//		AR
 				//  ST ---> PL
@@ -169,7 +169,7 @@ begin
 				if nb_node_instance (BELONG) > 0 then
 					for GROUP in 1 .. nb_node_instance (BELONG) do
 
-						message({'1-Group : ' & to_string($int(GROUP))}) ;
+						// message({'1-Group : ' & to_string($int(GROUP))}) ;
 
 						if nb_neighbour_having_class (get_link_reference(BELONG,$int (GROUP)), STT_PLACE) > 0 then
 							for PL in 1 .. nb_neighbour_having_class (get_link_reference(BELONG,$int (GROUP)), STT_PLACE) do
@@ -183,8 +183,8 @@ begin
 														sm_tree ONE_SYNC_TRANS_PROC_OUT(NAME => $str (processName),
 																						TARGET_PLACE => $str (namePL)));
 
-									message({'namePL (OUT) : ' & $str(namePL)}) ;
-									message({'1-Found namePL process name is : ' & $str(processName)}) ;
+									// message({'namePL (OUT) : ' & $str(namePL)}) ;
+									// message({'1-Found namePL process name is : ' & $str(processName)}) ;
 								end if;
 							end for;
 						end if;
@@ -193,7 +193,7 @@ begin
 
 			elsif $str (nameOUT) = $str (nameTrans) then
 
-				message('PL ---> ST') ;
+				// message('PL ---> ST') ;
 
 				//		AR
 				//  PL ---> ST
@@ -201,7 +201,7 @@ begin
 				if nb_node_instance (BELONG) > 0 then
 					for GROUP in 1 .. nb_node_instance (BELONG) do
 
-						message({'2 - Group : ' & to_string($int(GROUP))}) ;
+						// message({'2 - Group : ' & to_string($int(GROUP))}) ;
 
 						if nb_neighbour_having_class (get_link_reference(BELONG,$int (GROUP)), STT_PLACE) > 0 then
 							for PL in 1 .. nb_neighbour_having_class (get_link_reference(BELONG,$int (GROUP)), STT_PLACE) do
@@ -209,13 +209,13 @@ begin
 								namePL := $atrv_str (attribute NAME from get_neighbour_having_class(get_link_reference(BELONG, $int (GROUP)), $int (PL), STT_PLACE));
 
 								if $str (namePL) = $str (nameIN) then
-									message({'namePL (IN) : ' & $str(namePL)}) ;
+									// message({'namePL (IN) : ' & $str(namePL)}) ;
 
 									processName := $atrv_str (attribute NAME from get_neighbour_having_class(get_link_reference(BELONG, $int (GROUP)), 1, PROCESS));
 									P_IN := add_sm_son ($smt (P_IN),
 														sm_tree ONE_SYNC_TRANS_PROC_IN(NAME => $str (processName),
 														SOURCE_PLACE => $str (namePL)));
-									message({'Found namePL process name is : ' & $str(processName)}) ;
+									// message({'Found namePL process name is : ' & $str(processName)}) ;
 								end if;
 							end for;
 						end if;
@@ -274,7 +274,7 @@ begin
 	P_IN := create_sm_tree ([PROC_IN # {'PROCIN_' & $str (namePlace)} #]);
 	P_OUT := create_sm_tree ([PROC_OUT # {'PROCOUT_' & $str (namePlace)} #]);
 
-	message({'* Name Place : ' & $str (namePlace)}) ;
+	// message({'* Name Place : ' & $str (namePlace)}) ;
 
 	if nb_node_instance (COMM_ARC) > 0 then
 
@@ -283,8 +283,8 @@ begin
 			nameIN := $atrv_str (attribute NAME from get_neighbour_in (get_link_reference(COMM_ARC,$int (CA)), 1));
 			nameOUT := $atrv_str (attribute NAME from get_neighbour_out (get_link_reference(COMM_ARC,$int (CA)), 1));
 
-			message({'* CommArc nb' & to_string($int(CA))}) ;
-			message({{$str(nameIN) & ' -> ' } & $str(nameOUT)}) ;
+			// message({'* CommArc nb' & to_string($int(CA))}) ;
+			// message({{$str(nameIN) & ' -> ' } & $str(nameOUT)}) ;
 
 			if $str (nameIN) = $str (namePlace) then
 
@@ -294,7 +294,7 @@ begin
 				if nb_node_instance (BELONG) > 0 then
 					for GROUP in 1 .. nb_node_instance (BELONG) do
 
-						message({'1-Group : ' & to_string($int(GROUP))}) ;
+						// message({'1-Group : ' & to_string($int(GROUP))}) ;
 
 						if nb_neighbour_having_class (get_link_reference(BELONG,$int (GROUP)), LOC_TRANS) > 0 then
 							for LT in 1 .. nb_neighbour_having_class (get_link_reference(BELONG,$int (GROUP)), LOC_TRANS) do
@@ -317,8 +317,8 @@ begin
 																						TARGET_TRANS => $str (nameLT),
 																						VALUE => $int(tmpValue)));
 
-									message({'NameLT (OUT) : ' & $str(nameLT)}) ;
-									message({'1-Found NameLT process name is : ' & $str(processName)}) ;
+									// message({'NameLT (OUT) : ' & $str(nameLT)}) ;
+									// message({'1-Found NameLT process name is : ' & $str(processName)}) ;
 								end if;
 							end for;
 						end if;
@@ -333,7 +333,7 @@ begin
 				if nb_node_instance (BELONG) > 0 then
 					for GROUP in 1 .. nb_node_instance (BELONG) do
 
-						message({'2 - Group : ' & to_string($int(GROUP))}) ;
+						// message({'2 - Group : ' & to_string($int(GROUP))}) ;
 
 						if nb_neighbour_having_class (get_link_reference(BELONG,$int (GROUP)), LOC_TRANS) > 0 then
 							for LT in 1 .. nb_neighbour_having_class (get_link_reference(BELONG,$int (GROUP)), LOC_TRANS) do
@@ -342,7 +342,7 @@ begin
 
 								if $str (nameLT) = $str (nameIN) then
 
-									message({'NameLT (IN) : ' & $str(nameLT)}) ;
+									// message({'NameLT (IN) : ' & $str(nameLT)}) ;
 
 									// Testing wether the attribute value is defined
 									if is_atr_defined(attribute VALUE from get_link_reference(COMM_ARC,$int (CA))) then
@@ -357,7 +357,7 @@ begin
 																						SOURCE_TRANS => $str (nameLT),
 																						VALUE => $int(tmpValue)));
 									
-									message({'Found NameLT process name is : ' & $str(processName)}) ;
+									// message({'Found NameLT process name is : ' & $str(processName)}) ;
 								end if;
 							end for;
 						end if;
@@ -399,7 +399,7 @@ begin
 
 					namePL := $atrv_str (attribute NAME from get_neighbour_having_class(get_link_reference(BELONG, $int(GROUP)), $int(PL), STT_PLACE));
 
-					message ($str(namePL)) ;
+					// message($str(namePL)) ;
 
 					RETV := add_sm_son ($smt (RETV),
 										sm_rule CREATE_PLACE (namePL => $str(namePL))) ;
@@ -426,7 +426,7 @@ begin
 	LT_OUT := create_sm_tree ([LOC_TRANS_OUT # {'LOC_TRANS_OUT' & $str(namePL) } #]);
 	LST_OUT := create_sm_tree ([LOC_SYNC_TRANS_OUT # {'LOC_SYNC_TRANS_OUT' & $str(namePL) } #]);
 
-	message({ 'CREATE_PLACE Place : ' & $str(namePL) }) ;
+	// message({ 'CREATE_PLACE Place : ' & $str(namePL) }) ;
 
 	if nb_node_instance (ARC) > 0 then
 
@@ -435,12 +435,12 @@ begin
 			nameIN := $atrv_str (attribute NAME from get_neighbour_in (get_link_reference(ARC,$int (AR)), 1));
 			nameOUT := $atrv_str (attribute NAME from get_neighbour_out (get_link_reference(ARC,$int (AR)), 1));
 
-			message({'* ARC nb' & to_string($int(AR))}) ;
-			message({{$str(nameIN) & ' -> ' } & $str(nameOUT)}) ;
+			// message({'* ARC nb' & to_string($int(AR))}) ;
+			// message({{$str(nameIN) & ' -> ' } & $str(nameOUT)}) ;
 
 			if $str (nameIN) = $str (namePL) then
 
-				message('PL ----> [LOCAL_TRANS|SYNC_TRANS]') ;
+				// message('PL ----> [LOCAL_TRANS|SYNC_TRANS]') ;
 
 				//		AR
 				//  PL ----> [LOCAL_TRANS|SYNC_TRANS]
@@ -467,7 +467,7 @@ begin
 
 			elsif $str (nameOUT) = $str (namePL) then
 
-				message('[LOCAL_TRANS|SYNC_TRANS] ---> PL') ;
+				// message('[LOCAL_TRANS|SYNC_TRANS] ---> PL') ;
 
 				//							  AR
 				//  [LOCAL_TRANS|SYNC_TRANS] ---> PL
@@ -515,7 +515,7 @@ begin
 
 					nameTrans := $atrv_str (attribute NAME from get_neighbour_having_class(get_link_reference(BELONG, $int(GROUP)), $int(LT), LOC_TRANS));
 
-					message ($str(nameTrans)) ;
+					// message($str(nameTrans)) ;
 
 					RETV := add_sm_son ($smt (RETV),
 										sm_rule CREATE_TRANS (nameTrans => $str(nameTrans))) ;
@@ -541,7 +541,7 @@ begin
 	CP_OUT := create_sm_tree ([COMM_PLACE_OUT # {'COMM_PLACE_OUT_' & $str(nameTrans)} #]);
 	LP_OUT := create_sm_tree ([LOC_PLACE_OUT # {'LOC_PLACE_OUT_' & $str(nameTrans)} #]);
 
-	message({ 'CREATE_TRANS Trans : ' & $str(nameTrans) }) ;
+	// message({ 'CREATE_TRANS Trans : ' & $str(nameTrans) }) ;
 
 	if nb_node_instance (ARC) > 0 then
 
@@ -550,12 +550,12 @@ begin
 			nameIN := $atrv_str (attribute NAME from get_neighbour_in (get_link_reference(ARC,$int (AR)), 1));
 			nameOUT := $atrv_str (attribute NAME from get_neighbour_out (get_link_reference(ARC,$int (AR)), 1));
 
-			message({'* ARC nb' & to_string($int(AR))}) ;
-			message({{$str(nameIN) & ' -> ' } & $str(nameOUT)}) ;
+			// message({'* ARC nb' & to_string($int(AR))}) ;
+			// message({{$str(nameIN) & ' -> ' } & $str(nameOUT)}) ;
 
 			if $str (nameIN) = $str (nameTrans) then
 
-				message('LT ----> LOC_PLACE') ;
+				// message('LT ----> LOC_PLACE') ;
 
 				//		AR
 				//  PL ----> LOCAL_PLACE
@@ -575,12 +575,12 @@ begin
 			nameIN := $atrv_str (attribute NAME from get_neighbour_in (get_link_reference(COMM_ARC,$int (CA)), 1));
 			nameOUT := $atrv_str (attribute NAME from get_neighbour_out (get_link_reference(COMM_ARC,$int (CA)), 1));
 
-			message({'* COMM_ARC nb' & to_string($int(CA))}) ;
-			message({{$str(nameIN) & ' -ca-> ' } & $str(nameOUT)}) ;
+			// message({'* COMM_ARC nb' & to_string($int(CA))}) ;
+			// message({{$str(nameIN) & ' -ca-> ' } & $str(nameOUT)}) ;
 
 			if $str (nameOUT) = $str (nameTrans) then
 
-				message('COMM_PLACE ----> LT') ;
+				// message('COMM_PLACE ----> LT') ;
 
 				//		AR
 				//  COMM_PLACE ----> LT
@@ -599,7 +599,7 @@ begin
 
 			elsif $str (nameIN) = $str (nameTrans) then
 
-				message('LT ----> COMM_PLACE') ;
+				// message('LT ----> COMM_PLACE') ;
 
 				//		AR
 				//  LT ----> COMM_PLACE
@@ -630,11 +630,8 @@ end;
 
 semantic_rule CREATE_LOC_SYNC_TRANSITIONS (nodeID : integer) return semantic_tree is
 	RETV : semantic_tree;
-	LPL_OUT : semantic_tree;
 	nameProc : string;
 	tmpNameProc : string;
-	nameST : string;
-	syInstances : syntactic_tree;
 begin
 	nameProc := $atrv_str (attribute NAME from get_node_reference (PROCESS, $int (nodeID)));
 	RETV := create_sm_tree ([LOC_SYNC_TRANSITIONS # {'LocSyncTransitions' & to_string($int(nodeID)) } # ]);
@@ -684,8 +681,8 @@ begin
 			nameIN := $atrv_str (attribute NAME from get_neighbour_in (get_link_reference(ARC,$int (AR)), 1));
 			nameOUT := $atrv_str (attribute NAME from get_neighbour_out (get_link_reference(ARC,$int (AR)), 1));
 
-			message({'* ARC nb' & to_string($int(AR))}) ;
-			message({{$str(nameIN) & ' -> ' } & $str(nameOUT)}) ;
+			// message({'* ARC nb' & to_string($int(AR))}) ;
+			// message({{$str(nameIN) & ' -> ' } & $str(nameOUT)}) ;
 
 			if $str (nameIN) = $str (nameST) then
 

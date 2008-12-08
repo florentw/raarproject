@@ -70,8 +70,8 @@ public class NProcess {
     }
 
     /* Ajout d'un arc */
-    public void addArc(int startId, int endId, int startType, int endType) {
-	arcs.add(new Arc(this, startId, endId, startType, endType));
+    public void addArc(int startId, int endId, int startType, int endType, int valuation) {
+	arcs.add(new Arc(this, startId, endId, startType, endType, valuation));
     }
 
     /* Ajout d'une synchro */

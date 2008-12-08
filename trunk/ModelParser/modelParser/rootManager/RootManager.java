@@ -249,12 +249,14 @@ public class RootManager {
 	/* Transition synchronisee */
 
 	if(isSync(name)) {
-	    System.out.println(name + " is sync");
+	    //System.err.println(name + " is sync");
 	    addSyncToNProcess(name, id);
 	    allSyncs.add(new Sync(name, id));
 	    return;
-	} else
-	    System.out.println(name + " is NOT sync");
+	} else {
+	    ;
+	    //System.err.println(name + " is NOT sync");
+	}
 
 	/* Transition locale */
 
@@ -380,16 +382,17 @@ public class RootManager {
        Ajout d'un arc a un NProcess
        @param startId id du node de depart du .model
        @param endId id du node d'arrivee du .model
+       @param valuation valuation de l'arc
     */
     
-    public void addArc(int startId, int endId) throws Exception {
+    public void addArc(int startId, int endId, int valuation) throws Exception {
 
 	ArcInfos arcInfos = getArcInfos(startId, endId);
 
 	if(arcInfos == null)
 	    throw(new Exception("arcInfos == null"));
 
-	arcInfos.belong.addArc(startId, endId, arcInfos.startType, arcInfos.endType);	
+	arcInfos.belong.addArc(startId, endId, arcInfos.startType, arcInfos.endType, valuation);	
     }    
 
     public String toString() {

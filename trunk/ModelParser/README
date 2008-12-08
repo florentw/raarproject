@@ -1,10 +1,6 @@
 Author : Remi Ville for C/MPI TEAM
 
-/* Convertisseur de .modele (Coloane) en .msm (MetaScribe) */
-
-/* Prerequis a la compilation */
-
-La librairie Xerces d'Apache doit etre presente et indiquee dans la variable XERCES_JAR du Makefile
+/* Convertisseur de .model (Coloane) en .msm (MetaScribe) */
 
 /* Execution */
 
@@ -12,7 +8,7 @@ $make exec M=<fichier .model source> MSM=<fichier .msm a ecrire> // => dans le r
 ou
 java -cp $CLASSPATH modelParser.ModelParser <fichier .model source> <fichier .msm a ecrire> // => n'importe ou
 
-CLASSPATH doit contenir XERCES_JAR et .../ModelParser
+CLASSPATH doit contenir .../ModelParser
 
 /*******************************************/
 /* Protocole syntaxique pour la convertion */

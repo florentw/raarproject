@@ -14,14 +14,16 @@ public class Arc {
     int		startId, endId;
     public int	startType, endType;
     public String	startMSMId, endMSMId;
+    public int valuation = 0;
 
     public String msmNameId;
     int msmId;    
     
     public ArcType arcType = ArcType.ARC;
 
-    public Arc(NProcess nproc, int startId, int endId, int startType, int endType) {
+    public Arc(NProcess nproc, int startId, int endId, int startType, int endType, int valuation) {
 	belong = nproc;
+	this.valuation = valuation;
 	this.startId = startId;
 	this.endId = endId;
 	this.startType = startType;
@@ -82,7 +84,7 @@ public class Arc {
 	String res = msmNameId;
 	
 	res += "(startId=" + startId + "(" + startMSMId + ", " + nodeTypeToString(startType) + ")"
-	    + " endId=" + endId + "(" + endMSMId + ", " + nodeTypeToString(endType) + ")" + ")";
+	    + " endId=" + endId + "(" + endMSMId + ", " + nodeTypeToString(endType) + ")" + ") valuation = " + valuation;
 
 	return res;
 

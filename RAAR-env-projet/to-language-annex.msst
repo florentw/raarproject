@@ -206,7 +206,7 @@ begin
 	put_line ('#define TAG_CP_PUT  9') ;
 
 	new_line (1);
-	put_line ('#define EXEC_DURATION 10');
+	put_line ('#define EXEC_DURATION 15');
 	put_line ('#define DEFAULT_TIMEOUT 1') ;
 	put_line ('#define CP_STEP 250000') ;
 	put_line ('#define ST_STEP 250000') ;
@@ -221,7 +221,7 @@ begin
 	put_line ('#define LOG_ST_TYPE    2');
 	put_line ('#define LOG_CP_TYPE    3');
 	new_line (1);
-	put_line ('// #define LOG_TO_DOT');
+	put_line ('#define LOG_TO_DOT');
 	put_line ('#define LOG_STD_DEST stdout');
 	new_line (1);
 
@@ -275,7 +275,7 @@ end;
 
 //Internal header syntactic rule for PT-processes
 syntactic_rule HEAD_LIST_PROCESS is
-	begin
+begin
 
 	//Creation of a string array with the name of each process
 	put ('__');
@@ -288,6 +288,24 @@ syntactic_rule HEAD_LIST_PROCESS is
 	end if;
 end;
 
+//***************************************************
+//******       Syntactic rule for Makefile     ******
+//***************************************************
+
+
+syntactic_rule MAKEFILE is
+begin
+
+	apply INTERNAL_MAKEFILE($1) ;
+
+end;
+
+syntactic_rule INTERNAL_MAKEFILE is
+begin
+
+	put_line (to_string($#)) ;
+
+end;
 
 //***************************************************
 //******       List of elements                ******

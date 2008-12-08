@@ -8,9 +8,6 @@ PARSER_SRC=$(wildcard $(PARSER_DIR)/*.java)
 ROOTMANAGER_SRC=$(wildcard $(ROOTMANAGER_DIR)/*.java)
 ROOTOMSM_SRC=$(wildcard $(ROOTOMSM_DIR)/*.java)
 
-# xerces.jar necessaire
-XERCES_JAR=~/xerces-1_4_4/xerces.jar
-
 USAGE="Usage : make exec M=<model> MSM=<msm>"
 
 .PHONY : all clean
@@ -41,7 +38,7 @@ ifndef MSM
 	@echo $(USAGE)
 	@exit 1	
 endif
-	CLASSPATH=$$CLASSPATH:$(XERCES_JAR) $(JRUN) modelParser.ModelParser $(M) $(MSM)
+	CLASSPATH=$$CLASSPATH:. $(JRUN) modelParser.ModelParser $(M) $(MSM)
 
 clean :
 	rm -f *~ $(PARSER_DIR)/*~ $(PARSER_DIR)/*.class \

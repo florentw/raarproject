@@ -217,7 +217,12 @@ public class RootToMSM {
 		    out.write("link '" + tmp_arc.msmNameId + "' is ARC");
 
 		out.newLine();
-		out.write(ind + "where(none)");
+		
+		if(tmp_arc.valuation < 2) // Valuation
+		    out.write(ind + "where(none)");
+		else
+		    out.write(ind + "where(attribute VALUE => " + tmp_arc.valuation + ")");
+
 		out.newLine();
 		out.write(ind+"relate ");
 

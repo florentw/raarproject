@@ -10,16 +10,17 @@ import modelParser.rootManager.*;
 /* Pour savoir ce que l'on parse */
 enum Job {
     NODE, // node + nodetype='place'
-    TRANSITION, // node + nodetype='transition'
-    ARC, // arcs
-    NAN // rien a parser
+	TRANSITION, // node + nodetype='transition'
+	ARC, // arcs
+	NAN // rien a parser
 }
 
 /* Pour savoir ce qu'est le texte */
 enum Texte {
     MARK, // Jeton
-    NAME, // Nom
-    NAN // rien
+	NAME, // Nom
+	VALUATION, // Valuation d'un arc
+	NAN // rien
 }
 
 public class ModelHandler implements ContentHandler {
@@ -32,6 +33,8 @@ public class ModelHandler implements ContentHandler {
     private	Texte texte = Texte.NAN;
     /* Parametres */
     private	int mark = 0;
+    private	int valuation = 0;
+    private	int startid, endid;
     private	int id;
     private	String name;
 
@@ -159,14 +162,18 @@ public class ModelHandler implements ContentHandler {
 	    job = Job.ARC;
 	}
 	/* arc */
-	else if(localName.equals("arc")) {	    
+	else if(localName.equals("arc")) {
+	    valuation = 0;
+	    startid = Integer.parseInt(getAttr(attributs, "startid"));
+	    endid = Integer.parseInt(getAttr(attributs, "endid"));
+	    job = Job.ARC;
 	    //System.out.println("Parsing 1 arc...");
-	    try {
-		rootManager.addArc(Integer.parseInt(getAttr(attributs, "startid")),
-				   Integer.parseInt(getAttr(attributs, "endid")));
+	    /*try {
+	      rootManager.addArc(Integer.parseInt(getAttr(attributs, "startid")),
+	      Integer.parseInt(getAttr(attributs, "endid")));
 	    } catch(Exception e) {
 		e.printStackTrace();		
-	    }
+	    }*/
 	}
 
 	/* attribute */
@@ -182,6 +189,10 @@ public class ModelHandler implements ContentHandler {
 	    /* TRANSITION */
 	    else if(job == Job.TRANSITION) {
 		texte = Texte.NAME;
+	    }
+	    /* ARC */
+	    else if(job == Job.ARC) {
+		texte = Texte.VALUATION;
 	    }
 	}
 
@@ -209,6 +220,14 @@ public class ModelHandler implements ContentHandler {
 		    rootManager.addTrans(name, id);
 		}
 		job = Job.NAN;
+	    }
+	    /* arc */
+	    else if(localName.equals("arc")) {
+		try {
+		    rootManager.addArc(startid, endid, valuation);
+		} catch(Exception e) {
+		    e.printStackTrace();		
+		}
 	    }
 	    /* attibute */
 	    else if(localName.equals("attribute")) {
@@ -239,6 +258,9 @@ public class ModelHandler implements ContentHandler {
 	case NAME : {
 	    name = val;
 	    break;
+	}
+	case VALUATION : {
+	    valuation = Integer.parseInt(val);
 	}
 	}
 

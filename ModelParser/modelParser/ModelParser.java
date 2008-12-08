@@ -17,7 +17,8 @@ public class ModelParser {
      * Contructeur.
      */
     public ModelParser(String ficModelName, RootManager rootManager) throws SAXException, IOException {
-	XMLReader saxReader = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
+	//XMLReader saxReader = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
+	XMLReader saxReader = XMLReaderFactory.createXMLReader();
 	saxReader.setContentHandler(new ModelHandler(rootManager));
 	saxReader.parse(ficModelName);
     }

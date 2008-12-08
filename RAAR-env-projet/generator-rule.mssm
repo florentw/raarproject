@@ -632,7 +632,6 @@ semantic_rule CREATE_LOC_SYNC_TRANSITIONS (nodeID : integer) return semantic_tre
 	RETV : semantic_tree;
 	nameProc : string;
 	tmpNameProc : string;
-	nameST : string;
 begin
 	nameProc := $atrv_str (attribute NAME from get_node_reference (PROCESS, $int (nodeID)));
 	RETV := create_sm_tree ([LOC_SYNC_TRANSITIONS # {'LocSyncTransitions' & to_string($int(nodeID)) } # ]);
@@ -647,8 +646,6 @@ begin
 			
 				if nb_neighbour_having_class (get_link_reference(BELONG,$int (GROUP)), SYNC_TRANS) > 0 then
 					for ST in 1 .. nb_neighbour_having_class (get_link_reference(BELONG,$int (GROUP)), SYNC_TRANS) do
-						
-						nameST := $atrv_str (attribute NAME from get_neighbour_having_class(get_link_reference(BELONG, $int (GROUP)), $int (ST), SYNC_TRANS)) ;
 						
 						RETV := add_sm_son ($smt (RETV),
 											sm_rule CREATE_LOC_SYNC_TRANS ( nodeID => $int (ST),

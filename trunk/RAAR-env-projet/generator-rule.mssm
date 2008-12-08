@@ -4,23 +4,31 @@ annex_file
 semantic_rule DO_THE_WORK (none) return void is
 THE_TREE : semantic_tree;
 THE_GLOBALS : semantic_tree;
+THE_MAKEFILE : semantic_tree;
 begin
 
 	//Creating the main tree
 	THE_TREE := create_sm_tree ([C_MPI# # ]);
 	
-	//Creating the main tree
+	//Creating the globals definition tree
 	THE_GLOBALS := create_sm_tree ([GLOBALS_H# # ]);
+
+	//Creating the makefile tree
+	THE_MAKEFILE := create_sm_tree ([MAKEFILE# # ]);
 
 	//Creating the subtrees
 	// message('Working on process...');
 	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_PROCESS ());
+	
 	// message('Working on synchronisation transitions...');
 	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_SYNC_TRANS ());
+	
 	// message('Working on communication places...');
 	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_COMM_PLACE ());
+	
 	// message('Working on instances...');
 	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_INSTANCES ());
+	THE_MAKEFILE := add_sm_son ($smt (THE_MAKEFILE), sm_rule WORK_ON_INSTANCES ());
 	
 	THE_GLOBALS := add_sm_son ($smt (THE_GLOBALS), $smt(THE_TREE));
 
@@ -30,7 +38,10 @@ begin
 	//Generating the globals tree
 	generate $smt (THE_GLOBALS) in 'globals.h';
 	
-	// message('Done...');
+	//Generating the makefile tree
+	generate $smt (THE_MAKEFILE) in 'makefile.gen';
+	
+	message('Done...');
 	return;
 end;
 

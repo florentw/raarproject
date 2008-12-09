@@ -55,8 +55,6 @@ if [ $# -ne 0 ]; then
     if [ -f "$EX/$1-main.msm" ]; then
 	./generator_to_language anlzed-pn-main.msf $EX/$1-main.msm;
 
-	cp runtime.c src;
-	cp runtime.h include;
 	mv generated.c src/$1.c;
 	mv globals.h include/globals.h;
 

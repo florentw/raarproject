@@ -293,18 +293,40 @@ end;
 //***************************************************
 
 
-syntactic_rule MAKEFILE is
+syntactic_rule TEST_GENERATOR is
 begin
 
-	apply INTERNAL_MAKEFILE($1) ;
+	apply INTERNAL_TEST_GENERATOR($1) ;
 
 end;
 
-syntactic_rule INTERNAL_MAKEFILE is
+syntactic_rule INTERNAL_TEST_GENERATOR is
 begin
-
-	put_line (to_string($#)) ;
-
+	put_line ('#!/bin/sh');
+	new_line (1);
+	put_line ('###################');
+	put_line ('# MPI_TEAM RAAR 06/12/2208');				
+	put_line ('###################');
+	new_line (1);
+	put_line ('if [ $# -eq 1 ]; then');
+	increase_marging;
+	put_line ('# if we have only one argument, we launch the main execution');
+	put 	 ('make test-generator NAME=$1 NUM=`expr ');
+	put 	 (to_string($#));
+	put      (' + 3`;');
+	decrease_marging;
+	put_line ('else');
+	increase_marging;
+	put_line ('if [ $# -eq 2 ]; then');
+	increase_marging;
+	put_line ('# else we launch the dot execution of the makefile');
+	put      ('make dot-generator NAME=$1 NUM=`expr ');
+	put 	 (to_string($#));
+	put      (' + 3`;');
+	decrease_marging;
+        put_line ('fi;');
+	decrease_marging;
+	put_line ('fi;');
 end;
 
 //***************************************************

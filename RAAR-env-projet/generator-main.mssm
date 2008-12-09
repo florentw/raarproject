@@ -51,8 +51,7 @@ constructor_list is C_MPI,
 					GLOBAL_PROCESS,
 					GLOBAL_LIST_CP_COUNT,
 					GLOBALS_H,
-					MAKEFILE,
-					HEAD_ENUM_COMM_PLACE,
+				 	HEAD_ENUM_COMM_PLACE,
 					HEAD_INIT_LIST_COMM_PLACE,
 					HEAD_LIST_PROCESS,
 					INIT_GLOBAL_LIST_COMM_PLACE,
@@ -74,7 +73,7 @@ constructor_list is C_MPI,
 					INTERNAL_RANDOM_OUT,
 					INTERNAL_SYNC,
 					INTERNAL_SYNC_IN,
-					INTERNAL_MAKEFILE,
+					INTERNAL_TEST_GENERATOR,
 					LIST_COMM_PLACE,
 					LIST_INSTANCE,
 					LIST_PROCESS,
@@ -101,7 +100,8 @@ constructor_list is C_MPI,
 					ST_LOC_PLACE_OUT,
 					SYNC_TRANSITIONS,
 					SYNC_TRANS_IN,
-					SYNC_TRANS_OUT;
+					SYNC_TRANS_OUT,
+					TEST_GENERATOR;
 
 //The list of all global variables
 global_variables none end;

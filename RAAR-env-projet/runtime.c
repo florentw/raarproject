@@ -322,7 +322,7 @@ void procLogEvt (int rank, const char * curState, int curType, const char * targ
 	if (!strncmp(curState, "INIT", 4))
 	{
 		fprintf (LOG_STD_DEST,
-				"\t%s_%d [label=\"%s\",color=\"red\"] ;\n",
+				 "\t%s_%d [shape=invtriangle,label=\"%s\",color=\"firebrick1\",style=filled] ;\n",
 				curState,
 				rank,
 				curState) ;
@@ -383,7 +383,7 @@ void procLogEvt (int rank, const char * curState, int curType, const char * targ
 				 curState) ;
 		
 		fprintf (LOG_STD_DEST,
-				"\t%s -> %s_%d ;\n",
+				 "\t%s -> %s_%d [color=\"forestgreen\"] ;\n",
 				curState,
 				targetState,
 				rank) ;
@@ -391,9 +391,9 @@ void procLogEvt (int rank, const char * curState, int curType, const char * targ
 	else if (curType == LOG_CP_TYPE)
 	{
 		fprintf (LOG_STD_DEST,
-				 "\t%s [style=filled,color=\"blue\"] ;\n",
+				 "\t%s [style=filled,color=\"dodgerblue\"] ;\n",
 				 curState) ;
-		
+	
 		fprintf (LOG_STD_DEST,
 				 "\t%s -> %s_%d ;\n",
 				 curState,
@@ -405,7 +405,7 @@ void procLogEvt (int rank, const char * curState, int curType, const char * targ
 		if (targetType == LOG_CP_TYPE)
 		{
 			fprintf (LOG_STD_DEST,
-					 "\t%s [style=filled,color=\"blue\"] ;\n",
+					 "\t%s [style=filled,color=\"dodgerblue\"] ;\n",
 					 targetState) ;
 			
 			fprintf (LOG_STD_DEST,
@@ -432,11 +432,10 @@ void procLogEvt (int rank, const char * curState, int curType, const char * targ
 	}
 	
 #else
-
 	if (curType == LOG_CP_TYPE)
 	{
 		fprintf (LOG_STD_DEST,
-				 "[%s\t%d]\tGet token(s) from CP %s to %s\n",
+				 "[%s\t%d]\tHad token(s) from CP %s to %s\n",
 				 instanceArray[rank-3]->PNProcStr,
 				 rank,
 				 curState,
@@ -463,9 +462,139 @@ void procLogEvt (int rank, const char * curState, int curType, const char * targ
 #endif
 }
 
+/** Event : Trying to get token(s) from a communication place */
+void procLogEvtAsk (int rank, const char * curState, int curType, const char * targetState, int targetType)
+{
+#ifdef LOG_TO_DOT
+	if (targetType == LOG_CP_TYPE)
+	{
+		fprintf (LOG_STD_DEST,
+				"\t%s [style=filled,color=\"dodgerblue\"] ;\n",
+				targetState) ;
+		
+		fprintf (LOG_STD_DEST,
+				"\t%s -> %s_%d [color=\"dodgerblue\"] ;\n",
+				targetState,
+				curState,
+				rank) ;
+	}
+	else if (targetType == LOG_ST_TYPE)
+	{
+		fprintf (LOG_STD_DEST,
+				 "\t%s [style=filled,shape=box,color=\"green\"] ;\n",
+				 targetState) ;
+		
+		fprintf (LOG_STD_DEST,
+				 "\t%s -> %s_%d [color=\"dodgerblue\"] ;\n",
+				 targetState,
+				 curState,
+				 rank) ;
+	}
+#else
+	if (targetType == LOG_CP_TYPE)
+	{
+		fprintf (LOG_STD_DEST,
+				"[%s\t%d]\tAsk for token(s) from CP %s to %s\n",
+				instanceArray[rank-3]->PNProcStr,
+				rank,
+				targetState,
+				curState) ;
+	}
+	else if (targetType == LOG_ST_TYPE)
+	{
+		fprintf (LOG_STD_DEST,
+				 "[%s\t%d]\tTry to fire ST %s from %s\n",
+				 instanceArray[rank-3]->PNProcStr,
+				 rank,
+				 targetState,
+				 curState) ;
+	}
+#endif
+}
+
+/** Event : Succeeded to get token(s) from a communication place */
+void procLogEvtHad (int rank, const char * curState, int curType, const char * targetState, int targetType)
+{
+#ifdef LOG_TO_DOT
+
+	if (curType == LOG_CP_TYPE)
+	{
+		fprintf (LOG_STD_DEST,
+				"\t%s [style=filled,color=\"dodgerblue\"] ;\n",
+				curState) ;
+		
+		fprintf (LOG_STD_DEST,
+				"\t%s -> %s_%d [color=\"forestgreen\"] ;\n",
+				curState,
+				targetState,
+				rank) ;
+	}
+	else if (curType == LOG_ST_TYPE)
+	{
+		fprintf (LOG_STD_DEST,
+				 "\t%s [style=filled,shape=box,color=\"green\"] ;\n",
+				 curState) ;
+		
+		fprintf (LOG_STD_DEST,
+				 "\t%s -> %s_%d [color=\"forestgreen\"] ;\n",
+				 curState,
+				 targetState,
+				 rank) ;
+	}
+#else
+	if (curType == LOG_CP_TYPE)
+	{
+		fprintf (LOG_STD_DEST,
+				"[%s\t%d]\tHad token(s) from CP %s to %s\n",
+				instanceArray[rank-3]->PNProcStr,
+				rank,
+				curState,
+				targetState) ;
+	}
+	else if (curType == LOG_ST_TYPE)
+	{
+		fprintf (LOG_STD_DEST,
+				 "[%s\t%d]\tGranted to fire ST %s from %s\n",
+				 instanceArray[rank-3]->PNProcStr,
+				 rank,
+				 curState,
+				 targetState) ;
+	}
+#endif
+}
+
+/** Event : Put token(s) in a communication place */
+void procLogEvtPut (int rank, const char * curState, int curType, const char * targetState)
+{
+#ifdef LOG_TO_DOT
+	fprintf (LOG_STD_DEST,
+			 "\t%s [style=filled,color=\"dodgerblue\"] ;\n",
+			 targetState) ;
+	
+	fprintf (LOG_STD_DEST,
+			 "\t%s_%d -> %s [color=\"darkorange1\"] ;\n",
+			 curState,
+			 rank,
+			 targetState) ;
+#else
+	fprintf (LOG_STD_DEST,
+			 "[%s\t%d]\tPut token(s) from %s to CP %s\n",
+			 instanceArray[rank-3]->PNProcStr,
+			 rank,
+			 curState,
+			 targetState) ;
+#endif
+}
+
 void procLogEvtBack (int rank, const char * curState, int curType, const char * targetState, int targetType)
 {
 #ifdef LOG_TO_DOT
+// 	fprintf (LOG_STD_DEST,
+// 			 "\t%s_%d -> %s_%d [style=dotted,color=\"dodgerblue\"] ;\n",
+// 			 curState,
+// 			 rank,
+// 			 targetState,
+// 			 rank) ;
 #else
 	fprintf (LOG_STD_DEST,
 			 "[%s\t%d]\tFrom %s going BACK to %s\n",

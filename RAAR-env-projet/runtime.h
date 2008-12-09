@@ -46,6 +46,10 @@ void stopLogging(void) ;
 
 void procLogEvt (int rank, const char * curState, int curType, const char * targetState, int targetType) ;
 void procLogEvtBack (int rank, const char * curState, int curType, const char * targetState, int targetType) ;
+void procLogEvtAsk (int rank, const char * curState, int curType, const char * targetState, int targetType) ;
+void procLogEvtHad (int rank, const char * curState, int curType, const char * targetState, int targetType) ;
+void procLogEvtPut (int rank, const char * curState, int curType, const char * targetState) ;
+
 void procLogStart (int rank) ;
 void procLogEnd (int rank) ;
 void procLogMsg (int rank, const char * msg) ;

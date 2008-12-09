@@ -1253,12 +1253,10 @@ begin
 			put_line ('break;') ;
 		decrease_marging;
 		put_line ('}') ;
-		put_line ('else') ;
-		put_line ('{') ;
-		increase_marging;
-			apply INTERNAL_OUTPUT_COMM_TRANS_IN ($0) ;
-		decrease_marging;
-		put_line ('}') ;
+
+		new_line(1);
+
+		apply INTERNAL_OUTPUT_COMM_TRANS_IN ($0) ;
 	end if;
 end;
 
@@ -1270,9 +1268,9 @@ begin
 	put (to_string($INT(1))) ;
 	put_line (';') ;
 
-	put ('procLogEvt (my_rank, "') ;
+	put ('procLogEvtAsk (my_rank, curState, curType, "') ;
 	put ($STR(1));
-	put_line ('", LOG_CP_TYPE, curState, curType);');
+	put_line ('", LOG_CP_TYPE);');
 
 	if $# > 1 then
 		apply INTERNAL_COMM_TRANS_IN ($2*);
@@ -1281,12 +1279,12 @@ end;
 
 syntactic_rule INTERNAL_OUTPUT_COMM_TRANS_IN is
 begin
-	put ('procLogEvt (my_rank, "') ;
+	put ('procLogEvtHad (my_rank, "') ;
 	put ($STR(1));
 	put_line ('", LOG_CP_TYPE, curState, curType);');
 
 	if $# > 1 then
-		apply INTERNAL_COMM_TRANS_IN ($2*);
+		apply INTERNAL_OUTPUT_COMM_TRANS_IN ($2*);
 	end if;
 end;
 
@@ -1313,9 +1311,9 @@ begin
 	put (to_string($INT(1))) ;
 	put_line (';') ;
 
-	put ('procLogEvt (my_rank, curState, curType, "') ;
+	put ('procLogEvtPut (my_rank, curState, curType, "') ;
 	put ($STR(1));
-	put_line ('", LOG_CP_TYPE);');
+	put_line ('");');
 
 	if $# > 1 then
 		apply INTERNAL_COMM_TRANS_OUT ($2*);
@@ -1461,6 +1459,11 @@ begin
 			put_upper($STR(1));
 			put (';') ;
 			new_line(1);
+			
+			put ('procLogEvtAsk (my_rank, curState, curType, "') ;
+			put ($STR(1));
+			put_line ('", LOG_ST_TYPE);');
+			
 			put('MPI_Send(&buf,1,MPI_INT,SYNCT_MANAGER,TAG_SYNCT_ASK,MPI_COMM_WORLD);');
 			new_line(1);
 
@@ -1518,9 +1521,9 @@ begin
 			put_line ('{') ;
 			increase_marging;
 
-				put ('procLogEvt (my_rank, curState, curType, "') ;
+				put ('procLogEvtHad (my_rank, "') ;
 				put ($STR(1));
-				put_line ('", LOG_ST_TYPE);');
+				put_line ('", LOG_ST_TYPE, curState, curType);');
 
 				put_line ('curType = LOG_ST_TYPE ;') ;
 				put ('strncpy (curState, "') ;

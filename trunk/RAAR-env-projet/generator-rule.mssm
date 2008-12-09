@@ -5,6 +5,7 @@ semantic_rule DO_THE_WORK (none) return void is
 THE_TREE : semantic_tree;
 THE_GLOBALS : semantic_tree;
 THE_MAKEFILE : semantic_tree;
+THE_TEST_GENERATOR : semantic_tree;
 begin
 
 	//Creating the main tree
@@ -14,7 +15,7 @@ begin
 	THE_GLOBALS := create_sm_tree ([GLOBALS_H# # ]);
 
 	//Creating the makefile tree
-	THE_MAKEFILE := create_sm_tree ([MAKEFILE# # ]);
+	THE_TEST_GENERATOR := create_sm_tree ([TEST_GENERATOR# # ]);
 
 	//Creating the subtrees
 	// message('Working on process...');
@@ -28,7 +29,7 @@ begin
 	
 	// message('Working on instances...');
 	THE_TREE := add_sm_son ($smt (THE_TREE), sm_rule WORK_ON_INSTANCES ());
-	THE_MAKEFILE := add_sm_son ($smt (THE_MAKEFILE), sm_rule WORK_ON_INSTANCES ());
+	THE_TEST_GENERATOR := add_sm_son ($smt (THE_TEST_GENERATOR), sm_rule WORK_ON_INSTANCES ());
 	
 	THE_GLOBALS := add_sm_son ($smt (THE_GLOBALS), $smt(THE_TREE));
 
@@ -39,7 +40,7 @@ begin
 	generate $smt (THE_GLOBALS) in 'globals.h';
 	
 	//Generating the makefile tree
-	generate $smt (THE_MAKEFILE) in 'makefile.gen';
+	generate $smt (THE_TEST_GENERATOR) in 'test_generator.sh';
 	
 	message('Done...');
 	return;

@@ -1,0 +1,10 @@
+This is the file that contains all the groups of the
+FrameKit platform
+
+NB_GROUP 1
+
+DEF_GROUP
+Admin
+Administrator
+END_DEF_GROUP
+

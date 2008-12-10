@@ -1,0 +1,90 @@
+annex_file
+
+// =======================================================
+node (PROCESS) is
+   attribute_list
+      attribute string     : NAME;
+	  attribute expression : INSTANCES;
+   end;
+   connectability_list
+      with BELONG
+         direction non_oriented,
+         maximum none;
+   end ;
+end PROCESS;
+
+// =======================================================
+node (STT_PLACE) is
+   attribute_list
+      attribute string : NAME;
+   end;
+   connectability_list
+      with BELONG
+         direction non_oriented,
+         maximum 1;
+      with ARC
+         direction in,
+         maximum none;
+      with ARC
+         direction out,
+         maximum none;
+   end;
+end STT_PLACE;
+
+// =======================================================
+node (COMM_PLACE) is
+   attribute_list
+      attribute string  : NAME;
+      attribute integer : NB_IN_TOKENS;
+   end;
+   connectability_list
+      with COMM_ARC
+         direction in,
+         maximum none;
+      with COMM_ARC
+         direction out,
+         maximum none;
+   end;
+end COMM_PLACE;
+
+// =======================================================
+node (LOC_TRANS) is
+   attribute_list
+      attribute string : NAME;
+   end;
+   connectability_list
+      with BELONG
+         direction non_oriented,
+         maximum 1;
+      with ARC
+         direction in,
+         maximum 1;
+      with ARC
+         direction out,
+         maximum 1;
+      with COMM_ARC
+         direction in,
+         maximum none;
+      with COMM_ARC
+         direction out,
+         maximum none;
+   end;
+end LOC_TRANS;
+
+// =======================================================
+node (SYNC_TRANS) is
+   attribute_list
+      attribute string : NAME;
+   end;
+   connectability_list
+      with BELONG
+         direction non_oriented,
+         maximum none;
+      with ARC
+         direction in,
+         maximum none;
+      with ARC
+         direction out,
+         maximum none;
+   end;
+end SYNC_TRANS;

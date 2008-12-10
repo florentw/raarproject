@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<model xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='http://coloane.lip6.fr/resources/schemas/model.xsd' formalism='Place/Transition Net' xposition='0' yposition='0'>
+<attributes>
+<attribute name='note' xposition='0' yposition='0'>Designed with Coloane</attribute>
+<attribute name='version' xposition='0' yposition='0'>0,0</attribute>
+</attributes>
+<nodes>
+<node nodetype='place' id='4' xposition='420' yposition='158' scale='100' foreground='#000000' background='#ffffff'>
+<attributes>
+<attribute name='marking' xposition='409' yposition='172'>1</attribute>
+<attribute name='name' xposition='440' yposition='138'>P1_1</attribute>
+</attributes>
+</node>
+<node nodetype='transition' id='3' xposition='416' yposition='205' scale='100' foreground='#000000' background='#ffffff'>
+<attributes>
+<attribute name='name' xposition='436' yposition='185'>P1_T1</attribute>
+</attributes>
+</node>
+</nodes>
+<arcs>
+<arc arctype='arc' id='6' startid='3' endid='4' color='#000000'>
+<pi xposition='430' yposition='255'/>
+<pi xposition='491' yposition='254'/>
+<pi xposition='487' yposition='117'/>
+<pi xposition='427' yposition='118'/>
+<attributes>
+<attribute name='valuation' xposition='0' yposition='0'>1</attribute>
+</attributes>
+</arc>
+<arc arctype='arc' id='7' startid='4' endid='3' color='#000000'>
+<attributes>
+<attribute name='valuation' xposition='0' yposition='0'>1</attribute>
+</attributes>
+</arc>
+</arcs>
+<stickys>
+</stickys>
+</model>

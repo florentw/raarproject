@@ -38,8 +38,10 @@ RUN=runtime
 # For the question...
 ###################################################
 
+all : generate
+
 # clean and recompile all
-generate: 
+generate: superclean
 # Check if the user put the right argument and create the repertories 
 # for files. If not, send an error message.
 	sh check.sh && make rules-generator && \
@@ -61,7 +63,7 @@ tengine-generator: $(GEN)/generator_to_language.ads
 	mv *.ali *.o $(GEN)
 
 # launch test
-test-generator: 
+test-generator:  
 	@echo -e "\n\nLaunching LAM..."
 	lamboot -v bhost
 	@echo -e "\n\nCompiling the code..."
@@ -83,12 +85,12 @@ dot-generator:
 	mpicc $(CFLAGS) -c $(SRC)/$(NAME).c -o $(OBJ)/$(NAME).o -I$(INC) -I$(RUN)
 	mpicc $(CFLAGS) -o $(BIN)/$(NAME) $(OBJ)/$(NAME).o $(OBJ)/runtime.o
 	@echo -e "\n\nExecuting the program..."
-	mpirun -v -c $(NUM) $(BIN)/$(NAME) > dot/$(NAME).dot
+	mpirun -c $(NUM) $(BIN)/$(NAME) > dot/$(NAME).dot
 	@echo -e "\n\nClosing LAM..."
 	lamwipe -v bhost  
 	@echo -e "\n\nDone!"
 	@echo -e "\n\n Visualisation of the dot"
-	dotty $(NAME).dot
+	dotty dot/$(NAME).dot
 	@echo -e "\n\nEND!"
 
 # the report
@@ -100,10 +102,10 @@ rapport.pdf: *.tex *.eps
 	rm rapport.ps
 
 # test for fk exemple : make test-pour-fk NAME=toto
-test-pour-fk: generator_to_language
-	sh check.sh $(NAME) && sh test_generator.sh
+test-pour-fk: bigclean
+	sh check.sh $(NAME) TEST
 
-dot: generator_to_language
+dot: bigclean
 	sh check.sh $(NAME) DOT
 
 ###################################################
@@ -117,12 +119,12 @@ clean:
 bigclean:
 	make clean
 	rm -f $(GEN)/*.ads $(GEN)/*.adb $(SRC)/*.c $(INC)/*.h \
-	rm test_generator.sh
+	rm test_generator.sh dot/*.dot bhost $(BIN)/*
 
 # delete the code generator produced by metascribe and the report
 superclean:
 	make bigclean
-	rm -f generator_to_language $(BIN)/* *.xml *.dtd rapport.pdf dot/*.dot
+	rm -f generator_to_language $(BIN)/* *.xml *.dtd rapport.pdf
 
 # export the MSM into a XML format with his DTD for the example
 rdpxml1:

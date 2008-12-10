@@ -40,6 +40,9 @@ int randomIndex (int rank, int range) ;
 void initRandomSeed (void) ;
 void randomSleep (void) ;
 
+/** Time functions */
+long getMilliTime(void) ;
+
 /** Logging functions */
 void startLogging(void) ;
 void stopLogging(void) ;

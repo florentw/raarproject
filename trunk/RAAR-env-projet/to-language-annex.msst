@@ -39,7 +39,7 @@ begin
 	put_line ('#include <stdio.h>');
 	put_line ('#include <unistd.h>');
 	put_line ('#include <string.h>');
-	put_line ('#include <time.h>');
+	put_line ('#include <sys/timeb.h>');
 	put_line ('#include <mpi.h>');
 
 	new_line (1);
@@ -206,8 +206,8 @@ begin
 	put_line ('#define TAG_CP_PUT  9') ;
 
 	new_line (1);
-	put_line ('#define EXEC_DURATION 15');
-	put_line ('#define DEFAULT_TIMEOUT 1') ;
+	put_line ('#define EXEC_DURATION 150');
+	put_line ('#define DEFAULT_TIMEOUT 500') ;
 	put_line ('#define CP_STEP 250000') ;
 	put_line ('#define ST_STEP 250000') ;
 	new_line (1);
@@ -789,7 +789,7 @@ begin
 	put_line ('MPI_Status status;');
 	put_line ('char msgStr[64] ;') ;
 	put_line ('msgStr[63] = 0 ;') ;
-	put_line ('time_t t1, timerArray[INSTANCE_COUNT] ;') ;
+	put_line ('long t1, timerArray[INSTANCE_COUNT] ;') ;
 	put_line ('int i, buf[CP_COUNT], flag = 0 ;');
 	put_line ('memset(timerArray, 0, INSTANCE_COUNT*sizeof(time_t));') ;
 	new_line(1) ;
@@ -804,7 +804,7 @@ begin
 	increase_marging;
 
 		put_line ('// Compute current time') ;
-		put_line ('(void) time(&t1) ;') ;
+		put_line ('t1 = getMilliTime() ;') ;
 		new_line(1) ;
 		put_line ('// Remove expired timers') ;
 		put_line ('for (i = 0; i<INSTANCE_COUNT; i++)') ;
@@ -814,7 +814,7 @@ begin
 			put_line ('{') ;
 				increase_marging;
 
-				put_line ('snprintf(msgStr, 63, "Removed process from queue, rank=%d", i+3) ;') ;
+				put_line ('snprintf(msgStr, 63, "Removed process from queue (expired timer) rank=%d", i+3) ;') ;
 				put_line ('procLogMsg(my_rank, msgStr) ;') ;
 
 				put_line ('MPI_Send(&buf, 1, MPI_INT, i+3, TAG_CP_NACK, MPI_COMM_WORLD) ;') ;
@@ -1493,8 +1493,8 @@ begin
 			put_line('{') ;
 
 			increase_marging;
-				put_line('time_t ti, ct;');
-				put_line('time(&ti);');
+				put_line('long ti, ct;');
+				put_line('ti = getMilliTime();');
 				put_line('//Timed wait for firing the transition');
 				put_line ('while (1)');
 				put_line ('{');
@@ -1506,7 +1506,7 @@ begin
 						put_line ('break;');
 					decrease_marging;
 					put_line('usleep(ST_STEP);');
-					put_line('(void) time(&ct);');
+					put_line('ct = getMilliTime();');
 					put_line('if (ct - ti > DEFAULT_TIMEOUT) break;');
 				decrease_marging;
 				put_line('}');

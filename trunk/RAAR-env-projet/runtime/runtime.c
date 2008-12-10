@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <time.h>
+#include <sys/timeb.h>
 #include <mpi.h>
 
 #include "globals.h"
@@ -54,13 +54,15 @@ void appendToQueue (CP_QUEUE_NODE ** pqueue, int rank, int * tokenMask, int arra
 
 	CP_QUEUE_NODE * tmp = *pqueue ;
 
-	while (tmp->next) tmp = tmp->next ;
+	/* Go to the end of queue */
+	while (tmp->next)
+		tmp = tmp->next ;
 
 	tmp->next = (CP_QUEUE_NODE *) malloc(sizeof(CP_QUEUE_NODE)) ;
 	tmp->next->next = NULL ;
 	tmp->next->rank = rank ;
 	for (i = 0; i<arraySize; i++)
-		(*pqueue)->tokenMask[i] = tokenMask[i] ;
+		tmp->next->tokenMask[i] = tokenMask[i] ;
 	
 	snprintf(msgStr, 63, "Added a process to queue, rank=%d", rank) ;
 	procLogMsg(2, msgStr) ;
@@ -80,27 +82,28 @@ void freeQueue (CP_QUEUE_NODE ** pqueue)
 
 int tab_cmp(int* tab1, int* tab2, int size)
 {
-	int i;
-	int top=0;
-	int point=0;
+	int i ;
+	int top = 0 ;
+	int point = 0 ;
 
-	for(i=0;i<size;i++)
+	for(i=0; i<size; i++)
 	{
-		if (*(tab1+i) > top)
-			top = *(tab1+i);
+		if (tab1[i] > top)
+			top = tab1[i] ;
 	}
 
-	top = top*size ;
+	top *= size ;
 
-	for (i=0;i<size;i++)
+	for (i=0; i<size; i++)
 	{
-		if (*(tab1+i) != 0)
+		if (tab1[i] != 0)
 		{
-			if (*(tab2+i) > 0)
-				point+=top+(*(tab1+i)<=*(tab2+i)?*(tab1+i):*(tab2+i));
+			if (tab2[i] > 0)
+				point += top+(tab1[i]<=tab2[i] ? tab1[i] : tab2[i]) ;
 		}
 	}
-	return point;
+	
+	return point ;
 }
 
 CP_QUEUE_NODE* findProcessToServe (int* tab_ref, CP_QUEUE_NODE** pqueue, int size)
@@ -150,12 +153,12 @@ void deleteNodeByRank (CP_QUEUE_NODE ** pqueue, int rank)
 			if (tmp2) tmp2->next = tmp->next;
 			else *pqueue = tmp->next ;
 
-			free(tmp);
+			free(tmp) ;
 			return ;
 		}
 
 		tmp2 = tmp ;
-		tmp = tmp->next;
+		tmp = tmp->next ;
 	}
 }
 
@@ -186,7 +189,7 @@ int randomIndex (int rank, int range)
 	
 	int index = (int) (range * (random() / (RAND_MAX + 1.0))) ;
 	
-	//index = (index + rank) % range ;
+	index = (index + rank) % range ;
 	
 	snprintf(msgStr, 63, "Random index : %d, Range : 0-%d", index, range) ;
 	procLogMsg(rank, msgStr) ;
@@ -196,9 +199,8 @@ int randomIndex (int rank, int range)
 
 void initRandomSeed (void)
 {
-	time_t t1;
-	(void) time(&t1);
-	srandom(t1); /* use time in seconds to set seed */
+	long t = getMilliTime() ;
+	srandom(t) ; /* use time in milliseconds to set seed */
 }
 
 void randomSleep (void)
@@ -298,6 +300,14 @@ void treatCAN(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank)
 	}
 }
 
+/* Return the current time in milliseconds */
+long getMilliTime(void)
+{
+	struct timeb t ;
+	
+	ftime(&t) ;
+	return (1000 * t.time) + t.millitm ;
+}
 
 /** Logging functions */
 
@@ -460,6 +470,8 @@ void procLogEvt (int rank, const char * curState, int curType, const char * targ
 				 targetState) ;
 	}
 #endif
+
+	fflush(LOG_STD_DEST) ;
 }
 
 /** Event : Trying to get token(s) from a communication place */
@@ -510,6 +522,8 @@ void procLogEvtAsk (int rank, const char * curState, int curType, const char * t
 				 curState) ;
 	}
 #endif
+
+	fflush(LOG_STD_DEST) ;
 }
 
 /** Event : Succeeded to get token(s) from a communication place */
@@ -561,6 +575,8 @@ void procLogEvtHad (int rank, const char * curState, int curType, const char * t
 				 targetState) ;
 	}
 #endif
+
+	fflush(LOG_STD_DEST) ;
 }
 
 /** Event : Put token(s) in a communication place */
@@ -584,6 +600,8 @@ void procLogEvtPut (int rank, const char * curState, int curType, const char * t
 			 curState,
 			 targetState) ;
 #endif
+
+	fflush(LOG_STD_DEST) ;
 }
 
 void procLogEvtBack (int rank, const char * curState, int curType, const char * targetState, int targetType)
@@ -603,6 +621,8 @@ void procLogEvtBack (int rank, const char * curState, int curType, const char * 
 			 curState,
 			 targetState) ;
 #endif
+
+	fflush(LOG_STD_DEST) ;
 }
 
 void procLogStart (int rank)
@@ -622,6 +642,8 @@ void procLogStart (int rank)
 	
 	fprintf (LOG_STD_DEST, "%sStarting\n", msgBuf) ;
 #endif
+
+	fflush(LOG_STD_DEST) ;
 }
 
 void procLogEnd (int rank)
@@ -644,6 +666,8 @@ void procLogEnd (int rank)
 	else
 		fprintf (LOG_STD_DEST, "%sReceived TAG_END, going down\n", msgBuf) ;
 #endif
+
+	fflush(LOG_STD_DEST) ;
 }
 
 void procLogMsg (int rank, const char * msg)
@@ -663,6 +687,8 @@ void procLogMsg (int rank, const char * msg)
 	
 	fprintf (LOG_STD_DEST, "%s%s\n", msgBuf, msg) ;
 #endif
+
+	fflush(LOG_STD_DEST) ;
 }
 
 

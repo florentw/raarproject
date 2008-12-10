@@ -308,6 +308,16 @@ begin
 	put_line ('# MPI_TEAM RAAR 06/12/2208');				
 	put_line ('###################');
 	new_line (1);
+	put_line ('# if you want to run the program with computers');
+	put_line ('# you have to add N ip adress or N host names in bhost');
+	put_line ('# where N is cpu=N in the bhost file');
+	new_line (1);
+	put_line ('echo -e "# put N ip adress or N host names where N is the" > bhost;');
+	put_line ('echo -e "# number of nodes indicate by cpu (cpu=N).\n" >> bhost;');
+	put      ('echo "127.0.0.1 cpu=`expr ');
+	put	 (to_string($#));
+	put	 (' + 3`" >> bhost');
+	new_line (1);	
 	put_line ('if [ $# -eq 1 ]; then');
 	increase_marging;
 	put_line ('# if we have only one argument, we launch the main execution');

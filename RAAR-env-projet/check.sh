@@ -1,11 +1,13 @@
 #!/bin/sh
 
-EX=example;
+EX=JDT;
 
 # generate the directories if it doesn't exist
 
-if [ ! -d "example" ]; then
-    mkdir example;
+if [ ! -d "JDT" ]; then
+    mkdir JDT;
+    mkdir JDT/image;
+    mkdir JDT/coloane;
 fi;
 
 if [ ! -d "dot" ]; then
@@ -32,7 +34,7 @@ if [ ! -d "include" ]; then
     mkdir include;
 fi;
 
-FICH=`ls example | wc -l`;
+FICH=`ls $EX | wc -l`;
 
 echo "
 
@@ -45,13 +47,13 @@ echo "
 
 if [ $FICH -eq 0 ]; then
     echo "
-You need to add examples of petri net in the example directory. 
+You need to add examples of petri net in the $EX directory. 
 You can generate one by using Coloane and our ModelParser.
 ";
     exit 1;
 fi;
 
-if [ $# -ne 0 ]; then
+if [ $# -eq 2 ]; then
     if [ -f "$EX/$1-main.msm" ]; then
 	./generator_to_language anlzed-pn-main.msf $EX/$1-main.msm;
 
@@ -65,9 +67,34 @@ if [ $# -ne 0 ]; then
 	fi;
     else
 	   echo "
-I can't find the file, please open a existing msm file from the example
+I can't find the file, please open an existing msm file from the $EX
 directory.
-The file must be in this format : NAME-main.msm
+
+To run the project :
+
+                make test-pour-fk NAME=<NAME>
+
+The file must be in this format : <NAME>-main.msm
+You can also generate a dot file with :
+
+                make dot NAME=<NAME>
 ";
+	   exit 1;
+    fi;
+else
+    if [ $# -eq 1 ]; then
+	echo "
+Please open an existing msm file from the $EX directory.
+
+To run the project :
+
+                make test-pour-fk NAME=<NAME>
+
+The file must be in this format : <NAME>-main.msm
+You can also generate a dot file with :
+
+                make dot NAME=<NAME>
+";
+	exit 1;
     fi;
 fi;

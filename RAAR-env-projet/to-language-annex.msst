@@ -206,7 +206,7 @@ begin
 	put_line ('#define TAG_CP_PUT  9') ;
 
 	new_line (1);
-	put_line ('#define EXEC_DURATION 150');
+	put_line ('#define EXEC_DURATION 15');
 	put_line ('#define DEFAULT_TIMEOUT 500') ;
 	put_line ('#define CP_STEP 250000') ;
 	put_line ('#define ST_STEP 250000') ;

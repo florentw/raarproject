@@ -1035,7 +1035,7 @@ begin
 		put_line ('cpArray[i] -= tmpProc->tokenMask[i] ;') ;
 		decrease_marging;
 		new_line (1) ;
-		put_line ('timerArray[tmpProc->rank] = 0 ;') ;
+		put_line ('timerArray[tmpProc->rank-3] = 0 ;') ;
 		put_line ('MPI_Send(&buf, 1, MPI_INT, tmpProc->rank, TAG_CP_ACK, MPI_COMM_WORLD) ;') ;
 		put_line ('free(tmpProc) ;') ;
 

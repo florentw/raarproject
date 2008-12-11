@@ -4,28 +4,85 @@
 A PN-process is a sequential state machine computed from a Petri Net model.
 The PN-process can be considered like a process or a thread managed by the operating system. The number of token present in the PN-process actually correspond of the number of instances of processes or threads that should be generated on execution.
 The initial place of each token in the PN-process is interpreted as the entry point for the process/thread that should be implemented. 
-Since a Petri Net model can be composed with many PN-process, informations about all these PN-process must be available to the prototype manager in order to instanciate them correctly. We came up with the solution of creating a table of INSTANCE_T which represent each instance of PN-process of the Petri Net model. So to start the application, the prototype manager will seek in the table for every INSTANCE_T and call a function related to the instance_T. As a consequence, there will be as many functions as types of PN-process.
+Since a Petri Net model can be composed with many PN-process, informations about all these PN-process must be available to the prototype manager in order to instanciate them correctly. 
+We came up with the solution of creating a table of INSTANCE_T which represent each instance of PN-process of the Petri Net model.
+So to start the application, the prototype manager will seek in the table for every INSTANCE_T and call a function related to the instance_T. As a consequence, there will be as many functions as types of PN-process.
 
 ### 1-1 PN-process
-As stated, the code generated from the model for a PN-process consists of a single function for each PN-process which parameters are : the start place (state), the rank of the process since we are generating code for C/MPI, and the number of process.( sert à quoi ce champ?)
-The main core of the function is a loop where a switch is included. Each case covered by the switch is related to a P/T of the PN-process. Thus, firing a P/T in the Petri Net model can be seen as having a case condition met in the switch, then execute the code associated of the current P/T and then compute the next state (successor).
+As stated, the code generated from the model for a PN-process consists of a single function for each PN-process which parameters are : 
+	- The start place (state)
+	- The rank of the process since we are generating code for C/MPI
+	- The number of process.( sert à quoi ce champ?)
+The main core of the function is a loop where a switch is included. Each case covered by the switch is related to a P/T of the PN-process. 
+Thus, firing a P/T in the Petri Net model can be seen as having a case condition met in the switch, then execute the code associated of the current P/T and then compute the next state (successor).
 
-### 1-2 partie comm place
-If the chosen successor is a communication place, the process send a "TAG_CP_GET" tagged message to the communication place manager to request the needed ressources. The process is blocked until reception of the requested ressources. As we can request ressources, we can also release ressources, that is the case when the chosen state is a release state. So the process will send a "TAG_CP_PUT"" tagged message to the communication manager in order to free the ressources.
+### 1-2 partie comm. place
+If the chosen successor is a communication place, the process send a "TAG_CP_GET" tagged message to the communication place manager to request the needed ressources.
+The process is blocked until reception of the requested ressources. As we can request ressources, we can also release ressources, that is the case when the chosen state is a release state. 
+So the process will send a "TAG_CP_PUT" tagged message to the communication manager in order to free the ressources.
 
 ### 1-3 partie sync trans
 If the chosen successor is a synchronisation transition, the process send a "TAGSYNCT_ASK" tagged message to the synchronisation transition manager to request a synchronisation and then wait for a reply ("TAGSYNCT_CAN" tagged message) from it before going on its execution.
 
 ### 1-4 I do have choices !
-In case of multiple choices of successors, a random choice within the successors is chosen for the next state. Futhermore, before choosing any of the successors states, the current state is saved and if chosen successor can not be executed (the successor state is blocked) within a DEFAULT_TIMEOUT secondes then another random choice is made.
-In case that the successor is a synchronisation transition place, a cancel message ("TAG_SYNCT_CAN" tagged message) is sent to the synchronisation transition manager. The new choice has to be different from the previous one to have fair execution of the process. By using a timeout in theses situations, deadlock can be avoided, then the process can try to fire the others choices proposed in the previous state. Therefore, to be sure that the process clearly canceled his choice to a synchronisation transition manager, a system of ack/nack tagged message is used (more details in synchronisation transition manager part). 
-In case that the successor is a communication place, if we don't get the requested ressources within the timeout, the communication place manager will send us a "TAG_CP_NACK" tagged message.
+In case of multiple choices of successors, a random choice within the successors is chosen for the next state. 
+Futhermore, before choosing any of the successors states, the current state is saved and if chosen successor can not be executed (the successor state is blocked) within a DEFAULT_TIMEOUT secondes then another random choice is made.
+In case that the successor is a synchronisation transition place, a cancel message ("TAG_SYNCT_CAN" tagged message) is sent to the synchronisation transition manager. The new choice has to be different from the previous one to have fair execution of the process. 
+By using a timeout in theses situations, deadlock can be avoided, then the process can try to fire the others choices proposed in the previous state. 
+Therefore, to be sure that the process clearly canceled his choice to a synchronisation transition manager, a system of ack/nack tagged message is used (more details in synchronisation transition manager part). 
+In case that the successor is a communication place, if we don't get the requested ressources within the timeout, the communication place manager will send us a "TAG_CP_NACK" tagged message. (see implementation of the timeout below)
 
 #### 1-5 Termination 
 The end of the process is actually managed thank to a "TAG_END" tagged message sent from the prototype manager. 
 Each iteration of the loop start with probing if a "TAG_END" message is received and every wait time for a ressource or a synchronisation transition is an opportunity to probe the prototype manager for any message.
-Thus, on receive of the "TAG_END" message, every process in the system should wait for each other to reach the same point of execution by using a barrier (every process should have receive the message before quitting). By doing so, we can ensure that the application will properly terminate. 
-Actually, the prototype manager is configured to let the application runs for thirty secondes. A choice was made that the prototype manager, the synchronisation transition manager and the communication place manager will be respectively assigned rank 0, 1, 2 in the MPI communicator (MPI_COMM_WORLD).
+Thus, on receive of the "TAG_END" message, every process in the system should wait for each other to reach the same point of execution by using a barrier (every process should have receive the message before quitting). 
+By doing so, we can ensure that the application will properly terminate. 
+Actually, the prototype manager is configured to let the application runs for thirty secondes. 
+A choice was made that the prototype manager, the synchronisation transition manager and the communication place manager will be respectively assigned rank 0, 1, 2 in the MPI communicator (MPI_COMM_WORLD).
 
 
+###########################################
+#####   Timeout in comm. place manager 
+###########################################
 
+The way we chose to handle the PN-process that requested ressources is to put them into a table. As there are two differents types of requests, to differentiate the normal one from the timed request, a way was to record the arrival time of the request into a table (timerArray). 
+Each case of the table correspond to one instance of a PN-process. 
+This choice of implementation was made in order to facilitate the management of the PN-process in a timed wait.
+Since, there could be a PN-process which timeout expired, we chose to implement an active wait for the comm. place manager. Moreover, every beginning of the loop permits us to check any expired timeout in the timerArray. As a result, the comm. place manager won't be holding any out of dated PN-process in its table.
+For each one of theses PN-processes, a "TAG_CP_NACK" tagged message will be sent from the comm. place manager.
+
+
+#############################################################
+##### Exemple of the loop implementation of a PN-process P1
+#############################################################
+
+loop
+	if a message is sent from the prototype manager
+		break;
+
+	switch (state)
+		case __P1XX :
+			Process the code associated the place P1XX
+			state := next_state;			
+		case __P1_TAKES :
+			Process the code associated a request of ressources from the comm. place manager
+			Type of request(with timeout or not) is determined from the predecessor place
+			state := next_state;			
+		case __P1_RELEASE :
+			Process the code associated a release of ressources to the comm. place manager
+			state := next_state;
+		case __P1_TX :
+			Process the code associated the local transition P1_TX
+			state := next_state;
+		case __SYNCX :	
+			Process the code associated the synchronisation transition SYNCX
+			A timeout is started if this choice of state is a result from a multiple choice
+			In case of expired timeout 
+ 				state := last_state;
+			else
+				state := next_state;
+				
+end loop;
+			
+next_state can be computed from the result of the code associated to each state.			
+			

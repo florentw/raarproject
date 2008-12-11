@@ -336,7 +336,7 @@ void procLogEvt (int rank, const char * curState, int curType, const char * targ
 				curState,
 				rank,
 				curState) ;
-				
+		
 		fprintf (LOG_STD_DEST,
 				"\t%s_%d -> %s_%d [style=dotted] ;\n",
 				curState,
@@ -394,9 +394,9 @@ void procLogEvt (int rank, const char * curState, int curType, const char * targ
 		
 		fprintf (LOG_STD_DEST,
 				 "\t%s -> %s_%d [color=\"forestgreen\"] ;\n",
-				curState,
-				targetState,
-				rank) ;
+				 curState,
+				 targetState,
+				 rank) ;
 	}
 	else if (curType == LOG_CP_TYPE)
 	{
@@ -481,14 +481,14 @@ void procLogEvtAsk (int rank, const char * curState, int curType, const char * t
 	if (targetType == LOG_CP_TYPE)
 	{
 		fprintf (LOG_STD_DEST,
-				"\t%s [style=filled,color=\"dodgerblue\"] ;\n",
+				 "\t%s [style=filled,color=\"dodgerblue\"] ;\n",
 				targetState) ;
 		
 		fprintf (LOG_STD_DEST,
-				"\t%s -> %s_%d [color=\"dodgerblue\"] ;\n",
-				targetState,
+				"\t%s_%d -> %s [color=\"dodgerblue\"] ;\n",
 				curState,
-				rank) ;
+				rank,
+				targetState) ;
 	}
 	else if (targetType == LOG_ST_TYPE)
 	{
@@ -534,7 +534,7 @@ void procLogEvtHad (int rank, const char * curState, int curType, const char * t
 	if (curType == LOG_CP_TYPE)
 	{
 		fprintf (LOG_STD_DEST,
-				"\t%s [style=filled,color=\"dodgerblue\"] ;\n",
+				 "\t%s [style=filled,color=\"dodgerblue\"] ;\n",
 				curState) ;
 		
 		fprintf (LOG_STD_DEST,
@@ -550,10 +550,10 @@ void procLogEvtHad (int rank, const char * curState, int curType, const char * t
 				 curState) ;
 		
 		fprintf (LOG_STD_DEST,
-				 "\t%s -> %s_%d [color=\"forestgreen\"] ;\n",
-				 curState,
+				 "\t%s_%d -> %s [color=\"forestgreen\"] ;\n",
 				 targetState,
-				 rank) ;
+				 rank,
+				 curState) ;
 	}
 #else
 	if (curType == LOG_CP_TYPE)

@@ -119,7 +119,7 @@ clean:
 bigclean:
 	make clean
 	rm -f $(GEN)/*.ads $(GEN)/*.adb $(SRC)/*.c $(INC)/*.h \
-	rm test_generator.sh dot/*.dot bhost $(BIN)/*
+	rm test_generator.sh dot/*.dot $(BIN)/*
 
 # delete the code generator produced by metascribe and the report
 superclean:

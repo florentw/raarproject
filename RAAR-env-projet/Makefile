@@ -136,12 +136,12 @@ clean:
 bigclean:
 	make clean
 	rm -f $(GEN)/*.ads $(GEN)/*.adb $(SRC)/*.c $(INC)/*.h 
-	rm test_generator.sh $(BIN)/*
+	rm -f test_generator.sh $(BIN)/*
 
 # delete the code generator produced by metascribe and the report
 superclean:
 	make bigclean
-	rm -fr generator_to_language $(BIN)/* *.xml *.dtd \
+	rm -f generator_to_language $(BIN)/* *.xml *.dtd \
 	dot/*.dot bhost
 
 # export the MSM into a XML format with his DTD for the example

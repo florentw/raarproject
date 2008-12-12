@@ -212,7 +212,7 @@ begin
 	put_line ('#define EXEC_DURATION 20') ;
 	decrease_marging;
 	put_line ('#endif');
-	put_line ('#define DEFAULT_TIMEOUT 500') ;
+	put_line ('#define DEFAULT_TIMEOUT 1000') ;
 	put_line ('#define CP_STEP 250000') ;
 	put_line ('#define ST_STEP 250000') ;
 	new_line (1);

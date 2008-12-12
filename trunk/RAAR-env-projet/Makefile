@@ -24,12 +24,21 @@ GEN=generator
 
 #a rediriger vers un fichier .dot
 CFLAGS = -Wall -DLOG_TO_DOT
+CTIME=-DEXEC_DURATION=$(TIME)
 
 SRC=src
 BIN=bin
 OBJ=obj
 INC=include
 RUN=runtime
+
+ifndef $(TIME)
+	TIME=20
+endif
+
+ifndef $(NAME)
+        NAME=NOT_DEFINED
+endif
 
 # ADVICE: DEBUG can be use when you call "make".
 # It is very useful for more information...
@@ -67,9 +76,12 @@ test-generator:
 	@echo -e "\n\nLaunching LAM..."
 	lamboot -v bhost
 	@echo -e "\n\nCompiling the code..."
-	mpicc -Wall -c $(RUN)/runtime.c -o $(OBJ)/runtime.o -I$(INC) -I$(RUN)
-	mpicc -Wall -c $(SRC)/$(NAME).c -o $(OBJ)/$(NAME).o -I$(INC) -I$(RUN)
-	mpicc -Wall -o $(BIN)/$(NAME) $(OBJ)/$(NAME).o $(OBJ)/runtime.o
+	mpicc -Wall $(CTIME) -c $(RUN)/runtime.c -o $(OBJ)/runtime.o \
+		-I$(INC) -I$(RUN)
+	mpicc -Wall $(CTIME) -c $(SRC)/$(NAME).c -o $(OBJ)/$(NAME).o \
+		-I$(INC) -I$(RUN)
+	mpicc -Wall $(CTIME) -o $(BIN)/$(NAME) $(OBJ)/$(NAME).o \
+		$(OBJ)/runtime.o
 	@echo -e "\n\nExecuting the program..."
 	mpirun -v -c $(NUM) $(BIN)/$(NAME)
 	@echo -e "\n\nClosing LAM..."
@@ -81,9 +93,12 @@ dot-generator:
 	@echo -e "\n\nLaunching LAM..."
 	lamboot -v bhost
 	@echo -e "\n\nCompiling the code..."
-	mpicc $(CFLAGS) -c $(RUN)/runtime.c -o $(OBJ)/runtime.o -I$(INC) -I$(RUN)
-	mpicc $(CFLAGS) -c $(SRC)/$(NAME).c -o $(OBJ)/$(NAME).o -I$(INC) -I$(RUN)
-	mpicc $(CFLAGS) -o $(BIN)/$(NAME) $(OBJ)/$(NAME).o $(OBJ)/runtime.o
+	mpicc $(CFLAGS) $(CTIME) -c $(RUN)/runtime.c -o $(OBJ)/runtime.o \
+		-I$(INC) -I$(RUN)
+	mpicc $(CFLAGS) $(CTIME) -c $(SRC)/$(NAME).c -o $(OBJ)/$(NAME).o \
+	 	-I$(INC) -I$(RUN)
+	mpicc $(CFLAGS) $(CTIME) -o $(BIN)/$(NAME) $(OBJ)/$(NAME).o \
+		$(OBJ)/runtime.o
 	@echo -e "\n\nExecuting the program..."
 	mpirun -c $(NUM) $(BIN)/$(NAME) > dot/$(NAME).dot
 	@echo -e "\n\nClosing LAM..."
@@ -103,10 +118,10 @@ rapport.pdf: *.tex *.eps
 
 # test for fk exemple : make test-pour-fk NAME=toto
 test-pour-fk: bigclean
-	sh check.sh $(NAME) TEST
+	sh check.sh $(NAME) TEST $(TIME)
 
 dot: bigclean
-	sh check.sh $(NAME) DOT
+	sh check.sh $(NAME) DOT $(TIME)
 
 ###################################################
 # AUTRES...

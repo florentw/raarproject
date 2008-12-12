@@ -53,48 +53,48 @@ You can generate one by using Coloane and our ModelParser.
     exit 1;
 fi;
 
-if [ $# -eq 2 ]; then
-    if [ -f "$EX/$1-main.msm" ]; then
-	./generator_to_language anlzed-pn-main.msf $EX/$1-main.msm;
-
-	mv generated.c src/$1.c;
-	mv globals.h include/globals.h;
-
-	if [ $# -ne 1 ] && [ $2 = "DOT" ]; then
-	    sh test_generator.sh $1 DOT;
-	else
-	    sh test_generator.sh $1;
-	fi;
-    else
-	   echo "
-I can't find the file, please open an existing msm file from the $EX
-directory.
-
-To run the project :
-
-                make test-pour-fk NAME=<NAME>
-
-The file must be in this format : <NAME>-main.msm
-You can also generate a dot file with :
-
-                make dot NAME=<NAME>
-";
-	   exit 1;
-    fi;
-else
-    if [ $# -eq 1 ]; then
+if [ $# -eq 3 ]; then
+    if [ $1 = "NOT_DEFINED" ]; then
 	echo "
 Please open an existing msm file from the $EX directory.
 
 To run the project :
 
-                make test-pour-fk NAME=<NAME>
+                make test-pour-fk NAME=<NAME> TIME=<TIME>
 
 The file must be in this format : <NAME>-main.msm
 You can also generate a dot file with :
 
-                make dot NAME=<NAME>
-";
+                make dot NAME=<NAME>  TIME=<TIME>
+
+<TIME> is optional and will be set at 20 secondes by default.
+";	
 	exit 1;
+    else
+	if [ -f "$EX/$1-main.msm" ];  then
+	    ./generator_to_language anlzed-pn-main.msf $EX/$1-main.msm;
+	    
+	    mv generated.c src/$1.c;
+	    mv globals.h include/globals.h;
+	    
+	    sh test_generator.sh $1 $2 $3;
+	else
+	    echo "
+I can't find the file, please open an existing msm file from the $EX
+directory.
+
+To run the project :
+
+                make test-pour-fk NAME=<NAME>  TIME=<TIME>
+
+The file must be in this format : <NAME>-main.msm
+You can also generate a dot file with :
+
+                make dot NAME=<NAME>  TIME=<TIME>
+
+<TIME> is optional and will be set at 20 secondes by default.
+";
+	    exit 1;
+	fi;
     fi;
 fi;

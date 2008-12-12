@@ -21,6 +21,7 @@ SEARCH_DIR_OPTION       = -aL$(SOURCES_DIR) -aI$(SOURCES_DIR)
 # Directory for our project
 
 GEN=generator
+JDT=JDT
 
 #a rediriger vers un fichier .dot
 CFLAGS = -Wall -DLOG_TO_DOT
@@ -143,21 +144,21 @@ superclean:
 
 # export the MSM into a XML format with his DTD for the example
 rdpxml1:
-	$(XML_EXPORT) -generic -f anlzed-pn-main.msf -m anlzed-pn-1.msm -o exemple
+	$(XML_EXPORT) -generic -f anlzed-pn-main.msf -m $(JDT)/anlzed-pn-1-main.msm -o exemple
 	ls *.xml *.dtd
 
 rdpxml2:
-	$(XML_EXPORT) -generic -f anlzed-pn-main.msf -m anlzed-pn-2.msm -o exemple
+	$(XML_EXPORT) -generic -f anlzed-pn-main.msf -m $(JDT)/anlzed-pn-2-main.msm -o exemple
 	ls *.xml *.dtd
 
 # Have a view of the MSM file (and test it with his MSF)
-showinput1:
-	$(SHOW_MODEL) anlzed-pn-main.msf anlzed-pn-1.msm
+showinput1: 
+	$(SHOW_MODEL) anlzed-pn-main.msf $(JDT)/anlzed-pn-1-main.msm
 	cat ShowModel.0
 	rm ShowModel.0
 
 showinput2:
-	$(SHOW_MODEL) anlzed-pn-main.msf anlzed-pn-2.msm
+	$(SHOW_MODEL) anlzed-pn-main.msf $(JDT)/anlzed-pn-2-main.msm
 	cat ShowModel.0
 	rm ShowModel.0
 

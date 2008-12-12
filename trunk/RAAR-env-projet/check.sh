@@ -1,7 +1,5 @@
 #!/bin/sh
 
-EX=JDT;
-
 # generate the directories if it doesn't exist
 
 if [ ! -d "JDT" ]; then
@@ -34,8 +32,6 @@ if [ ! -d "include" ]; then
     mkdir include;
 fi;
 
-FICH=`ls $EX | wc -l`;
-
 echo "
 
 #####################################################################
@@ -45,52 +41,46 @@ echo "
 #####################################################################
 ";
 
-if [ $FICH -eq 0 ]; then
-    echo "
-You need to add examples of petri net in the $EX directory. 
-You can generate one by using Coloane and our ModelParser.
-";
-    exit 1;
-fi;
 
 if [ $# -eq 3 ]; then
     if [ $1 = "NOT_DEFINED" ]; then
 	echo "
-Please open an existing msm file from the $EX directory.
+Please enter a msm file.
 
 To run the project :
 
-                make test-pour-fk NAME=<NAME> TIME=<TIME>
+                make test-pour-fk NAME=DIR/<NAME> TIME=<TIME>
 
 The file must be in this format : <NAME>-main.msm
+DIR is the directory where the file is.
 You can also generate a dot file with :
 
-                make dot NAME=<NAME>  TIME=<TIME>
+                make dot NAME=DIR/<NAME>  TIME=<TIME>
 
 <TIME> is optional and will be set at 20 secondes by default.
 ";	
 	exit 1;
     else
-	if [ -f "$EX/$1-main.msm" ];  then
-	    ./generator_to_language anlzed-pn-main.msf $EX/$1-main.msm;
+	if [ -f "$1-main.msm" ];  then
+	    ./generator_to_language anlzed-pn-main.msf $1-main.msm;
 	    
-	    mv generated.c src/$1.c;
+	    mv generated.c src/`basename $1`.c;
 	    mv globals.h include/globals.h;
 	    
-	    sh test_generator.sh $1 $2 $3;
+	    sh test_generator.sh `basename $1` $2 $3;
 	else
 	    echo "
-I can't find the file, please open an existing msm file from the $EX
-directory.
+I can't find the file, please open an existing msm file.
 
 To run the project :
 
-                make test-pour-fk NAME=<NAME>  TIME=<TIME>
+                make test-pour-fk NAME=DIR/<NAME>  TIME=<TIME>
 
 The file must be in this format : <NAME>-main.msm
+DIR is the directory where the file is.
 You can also generate a dot file with :
 
-                make dot NAME=<NAME>  TIME=<TIME>
+                make dot NAME=DIR/<NAME>  TIME=<TIME>
 
 <TIME> is optional and will be set at 20 secondes by default.
 ";

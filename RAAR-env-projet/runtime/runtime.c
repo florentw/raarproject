@@ -342,6 +342,9 @@ void procLogEvt (int rank, const char * curState, int curType, const char * targ
 {
 #ifdef LOG_TO_DOT
 
+	if (curType == targetType)
+		return ;
+
 	if (!strncmp(curState, "INIT", 4))
 	{
 		fprintf (LOG_STD_DEST,
@@ -455,6 +458,9 @@ void procLogEvt (int rank, const char * curState, int curType, const char * targ
 	}
 	
 #else
+	if (curType == targetType)
+		return ;
+	
 	if (curType == LOG_CP_TYPE)
 	{
 		fprintf (LOG_STD_DEST,
@@ -498,6 +504,12 @@ void procLogEvtAsk (int rank, const char * curState, int curType, const char * t
 				targetState) ;
 		
 		fprintf (LOG_STD_DEST,
+				 "\t%s_%d [label=\"%s\"] ;\n",
+				 curState,
+				 rank,
+				 curState) ;
+		
+		fprintf (LOG_STD_DEST,
 				"\t%s_%d -> %s [color=\"dodgerblue\"] ;\n",
 				curState,
 				rank,
@@ -508,6 +520,12 @@ void procLogEvtAsk (int rank, const char * curState, int curType, const char * t
 		fprintf (LOG_STD_DEST,
 				 "\t%s [style=filled,shape=box,color=\"green\"] ;\n",
 				 targetState) ;
+		
+		fprintf (LOG_STD_DEST,
+				 "\t%s_%d [label=\"%s\"] ;\n",
+				 curState,
+				 rank,
+				 curState) ;
 		
 		fprintf (LOG_STD_DEST,
 				 "\t%s -> %s_%d [color=\"dodgerblue\"] ;\n",
@@ -551,6 +569,12 @@ void procLogEvtHad (int rank, const char * curState, int curType, const char * t
 				curState) ;
 		
 		fprintf (LOG_STD_DEST,
+				 "\t%s_%d [label=\"%s\"] ;\n",
+				 targetState,
+				 rank,
+				 targetState) ;
+		
+		fprintf (LOG_STD_DEST,
 				"\t%s -> %s_%d [color=\"forestgreen\"] ;\n",
 				curState,
 				targetState,
@@ -561,6 +585,12 @@ void procLogEvtHad (int rank, const char * curState, int curType, const char * t
 		fprintf (LOG_STD_DEST,
 				 "\t%s [style=filled,shape=box,color=\"green\"] ;\n",
 				 curState) ;
+		
+		fprintf (LOG_STD_DEST,
+				 "\t%s_%d [label=\"%s\"] ;\n",
+				 targetState,
+				 rank,
+				 targetState) ;
 		
 		fprintf (LOG_STD_DEST,
 				 "\t%s_%d -> %s [color=\"forestgreen\"] ;\n",
@@ -599,6 +629,12 @@ void procLogEvtPut (int rank, const char * curState, int curType, const char * t
 	fprintf (LOG_STD_DEST,
 			 "\t%s [style=filled,color=\"dodgerblue\"] ;\n",
 			 targetState) ;
+	
+	fprintf (LOG_STD_DEST,
+			"\t%s_%d [label=\"%s\"] ;\n",
+			curState,
+			rank,
+			curState) ;
 	
 	fprintf (LOG_STD_DEST,
 			 "\t%s_%d -> %s [color=\"darkorange1\"] ;\n",

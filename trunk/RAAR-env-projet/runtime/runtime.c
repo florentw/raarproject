@@ -29,6 +29,7 @@
 #include <string.h>
 #include <sys/timeb.h>
 #include <mpi.h>
+#include <stdlib.h>
 
 #include "globals.h"
 #include "runtime.h"

@@ -37,6 +37,7 @@ begin
 	new_line(1);
 	put_line ('#include <math.h>');
 	put_line ('#include <stdio.h>');
+	put_line ('#include <stdlib.h>') ;
 	put_line ('#include <unistd.h>');
 	put_line ('#include <string.h>');
 	put_line ('#include <sys/timeb.h>');
@@ -84,16 +85,15 @@ begin
 	put_line ('if (!my_rank) startLogging() ;') ;
 
 	new_line (1);
-	put_line ('//The prototype manager');
+	put_line ('/** The prototype manager */');
 	put_line ('if (my_rank == 0)');
 	put_line('{') ;
 	increase_marging;
 	put_line ('procLogStart(my_rank) ;');
 	new_line (1);
-	put_line ('//Sleeping EXEC_DURATION seconds');
 	put_line ('sleep(EXEC_DURATION);');
 	new_line (1);
-	put_line ('//Killing all the process');
+	put_line ('/* Killing all processes */');
 	put_line ('procLogEnd(my_rank) ;') ;
 	put_line ('for(i = 1; i < nb_proc; i++)');
 	put_line('{') ;
@@ -113,7 +113,7 @@ begin
 	//Calling the LIST_COMM_PLACE syntactic rule
 	apply($3);
 	new_line (1);
-	put_line ('// Launching each PNProcess instance') ;
+	put_line ('/* Launching each PNProcess instance */') ;
 	put_line ('if (my_rank > 2 && my_rank < INSTANCE_COUNT + 3)') ;
 	put_line('{') ;
 	increase_marging;
@@ -123,7 +123,7 @@ begin
 	put_line ('}') ;
 
 	new_line (1);
-	put_line ('// Barrier for synchronisation before ending') ;
+	put_line ('/* Barrier for synchronization before ending */') ;
 	put_line ('if (my_rank != 0)');
 	put_line('{') ;
 	increase_marging;
@@ -132,7 +132,7 @@ begin
 	put_line ('}');
 
 	new_line(1);
-	put_line ('// Free the global list instance array') ;
+	put_line ('/* Free the global list instance array */') ;
 	put ('for (i = 0; i<INSTANCE_COUNT; i++)') ;
 	increase_marging;
 	put_line ('free(instanceArray[i]) ;') ;
@@ -193,7 +193,7 @@ begin
 	put_line ('*/');
 
 	new_line(1) ;
-
+	put_line ('/** Messages types (MPI Tags) */') ;
 	put_line ('#define TAG_END 0');
 	put_line ('#define TAG_SYNCT_ASK 1');
 	put_line ('#define TAG_SYNCT_ACK 2');
@@ -206,22 +206,24 @@ begin
 	put_line ('#define TAG_CP_PUT  9') ;
 
 	new_line (1);
-	put_line ('#define EXEC_DURATION 15');
+	put_line ('/** Time constants */') ;
+	put_line ('#define EXEC_DURATION 20') ;
 	put_line ('#define DEFAULT_TIMEOUT 500') ;
 	put_line ('#define CP_STEP 250000') ;
 	put_line ('#define ST_STEP 250000') ;
 	new_line (1);
+	put_line ('/** Reserved MPI ranks */') ;
 	put_line ('#define PROTO_MANAGER 0');
 	put_line ('#define SYNCT_MANAGER 1');
 	put_line ('#define COMMP_MANAGER 2');
 	new_line (1);
-
+	put_line ('/** Logging constants */') ;
 	put_line ('#define LOG_TRANS_TYPE 0');
 	put_line ('#define LOG_PLACE_TYPE 1');
 	put_line ('#define LOG_ST_TYPE    2');
 	put_line ('#define LOG_CP_TYPE    3');
 	new_line (1);
-	put_line ('// #define LOG_TO_DOT');
+	put_line ('/* #define LOG_TO_DOT */');
 	put_line ('#define LOG_STD_DEST stdout');
 	new_line (1);
 
@@ -262,7 +264,7 @@ syntactic_rule GLOBAL_PROCESS is
 begin
 	if $# > 0 then
 
-		//Creation of a string array to distribute the PN-process
+		put_line ('/** Global enum for PN-Processes */') ;
 		put_line ('enum PROCESSES_T {');
 		increase_marging;
 		apply HEAD_LIST_PROCESS ($0);
@@ -364,7 +366,7 @@ end;
 syntactic_rule GLOBAL_LIST_ELEMENTS is
 begin
 	new_line(1) ;
-	put_line ('// Global enum for each pn-process element') ;
+	put_line ('/* Global enum for each pn-process element */') ;
 	put_line ('enum ELEMENTS_T {') ;
 	increase_marging;
 	apply INTERNAL_GLOBAL_LIST_ELEMENTS($1) ;
@@ -442,9 +444,9 @@ end ;
 
 syntactic_rule LIST_SYNC_TRANS is
 begin
-	put ('//There are ');
+	put ('/* There are ');
 	put ($STR_INT (0));
-	put_line (' synchronisation transitions');
+	put_line (' synchronisation transitions */');
 	put_line('if (my_rank == SYNCT_MANAGER)');
 	put_line('{') ;
 	increase_marging;
@@ -457,7 +459,7 @@ end;
 
 syntactic_rule GLOBAL_LIST_SYNC_TRANS is
 begin
-	put_line ('//Global enum for synchronisation transitions') ;
+	put_line ('/** Global declarations for synchronized transitions */') ;
 	put_line ('enum SYNC_TRANS_T {') ;
 	increase_marging;
 	apply GLOBAL_ENUM_SYNC_TRANS ($2) ;
@@ -477,7 +479,7 @@ begin
 		put_line('int *tab;');
 	decrease_marging;
 	put_line('} SYNC_PROC_T;');
-	new_line(2) ;
+	new_line(1) ;
 
 end ;
 
@@ -629,10 +631,9 @@ end;
 
 syntactic_rule INTERNAL_LIST_SYNC_TRANS is
 	begin
-	put ('//Synchronisation transition ');
+	put ('/* Synchronized transition ');
 	put ($STR(1));
-	put ('!');
-	new_line(1);
+	put_line (' */');
 	put ('case __ST_');
 	put_upper ($STR(1));
 	put (' :');
@@ -652,10 +653,6 @@ end;
 
 syntactic_rule SYNC_TRANS_IN is
 begin
-	put ('//');
-	put ($STR(0));
-	new_line(1);
-
 	put_line ('if ((tag == TAG_SYNCT_ASK) &&');
 	increase_marging;
 		put ('(') ;
@@ -722,10 +719,10 @@ end;
 
 syntactic_rule LIST_COMM_PLACE is
 begin
-	put_line('//Communication places manager');
-	put ('//There are ');
+	put_line('/* Communication places manager');
+	put ('   There are ');
 	put ($STR_INT (0));
-	put_line (' communication places');
+	put_line (' communication places */');
 	put_line('if (my_rank == COMMP_MANAGER)');
 	put_line('{') ;
 	increase_marging;
@@ -744,6 +741,8 @@ end;
 
 syntactic_rule GLOBAL_COMM_PLACE is
 begin
+	put_line ('/** Global declarations for comm. places */') ;
+	new_line(1);
 	put ('#define CP_COUNT ') ;
 	apply GLOBAL_LIST_CP_COUNT($3) ;
 	new_line(1);
@@ -758,7 +757,6 @@ begin
 
 	new_line(1);
 
-	put_line ('//Global enum for comm. places') ;
 	put_line ('enum COMM_PLACES_T {') ;
 	increase_marging;
 
@@ -829,10 +827,10 @@ begin
 	put_line('{') ;
 	increase_marging;
 
-		put_line ('// Compute current time') ;
+		put_line ('/* Compute current time */') ;
 		put_line ('t1 = getMilliTime() ;') ;
 		new_line(1) ;
-		put_line ('// Remove expired timers') ;
+		put_line ('/* Remove expired timers */') ;
 		put_line ('for (i = 0; i<INSTANCE_COUNT; i++)') ;
 		put_line ('{') ;
 			increase_marging;
@@ -1079,9 +1077,9 @@ end;
 
 syntactic_rule LIST_PROCESS is
 begin
-	put ('//There are ');
+	put ('/* There are ');
 	put ($STR_INT (0));
-	put (' processes');
+	put (' processes */');
 	new_line(1);
 
 	//If more than zero PN-process
@@ -1098,8 +1096,9 @@ end;
 syntactic_rule INTERNAL_LIST_PROCESS is
 begin
 	new_line(1);
-	put ('//Process ');
-	put_line ($STR(1));
+	put ('/* Process ');
+	put ($STR(1));
+	put_line (' */');
 
 	put ('void PNProc_');
 	put ($STR(1));
@@ -1134,11 +1133,11 @@ begin
 	put_line('{') ;
 	increase_marging;
 
-	put_line('//Sleeping a random duration');
+	put_line('/* Sleeping a random duration */');
 	put_line ('randomSleep();');
 	new_line(1);
 
-	put_line('//Checking if Prototype manager request END');
+	put_line('/* Checking if Prototype manager request END */');
 	put_line('MPI_Iprobe(PROTO_MANAGER,TAG_END,MPI_COMM_WORLD,&flag,&status);');
 	put_line('if (flag)');
 	put_line('{') ;
@@ -1167,11 +1166,8 @@ end;
 syntactic_rule PNPROCESS is
 begin
 	new_line(1);
-	put('//');
-	put($STR(2));
-	new_line(1);
 
-	put_line('//Main switch');
+	put_line('/* Main switch */');
 	put_line ('switch(state)');
 	put_line('{') ;
 	increase_marging;
@@ -1181,7 +1177,6 @@ begin
 	apply LOC_SYNC_TRANSITION ($3);
 
 	new_line(1);
-	put_line ('//Default');
 	put_line ('default: break;');
 	decrease_marging;
 	put_line ('}');
@@ -1198,9 +1193,9 @@ syntactic_rule LOCAL_TRANS is
 begin
 	if $# > 0 then
 	    new_line(1);
-    	    put('//Transition ');
+    	    put('/* Local transition ');
 	    put ($STR(1));
-	    new_line(1);
+	    put_line (' */') ;
 
 	    put('case ');
 	    put ('__') ;
@@ -1223,7 +1218,6 @@ begin
 
 	new_line(1);
 
-	put_line('//Going to next place...');
 	put('state = ');
 	apply INTERNAL_LOC_TRANS_OUT ($3);
 	put (';');
@@ -1257,7 +1251,7 @@ end;
 
 syntactic_rule COMM_TRANS_IN is
 begin
-	put_line('//IN arcs from communication places');
+	put_line('/* IN arcs from communication places */');
 	if $# > 0 then
 
 		put_line ('memset(bufCP, 0, CP_COUNT*sizeof(int)) ;') ;
@@ -1274,11 +1268,11 @@ begin
 		decrease_marging;
 
 		new_line(1);
-		put_line ('//Blocking wait for a message');
+		put_line ('/* Blocking wait for a message */');
 		put_line ('MPI_Recv(bufCP, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
 		new_line(1);
 
-		put_line ('//If END request from prototype manager');
+		put_line ('/* If END request from prototype manager */');
 		put_line ('if (status.MPI_SOURCE == PROTO_MANAGER)') ;
 		put_line ('{');
 		increase_marging;
@@ -1288,7 +1282,7 @@ begin
 		put_line('}') ;
 		new_line(1);
 
-		put_line ('//If timed GET failed, go back to last state');
+		put_line ('/* If timed GET failed, go back to last state */');
 		put_line ('if (status.MPI_TAG == TAG_CP_NACK)');
 		put_line ('{') ;
 		increase_marging;
@@ -1338,7 +1332,7 @@ end;
 
 syntactic_rule COMM_TRANS_OUT is
 begin
-	put_line ('//Out arcs to communication places');
+	put_line ('/* OUT arcs to communication places */');
 	if $# > 0 then
 
 		put_line ('memset(bufCP, 0, CP_COUNT*sizeof(int)) ;') ;
@@ -1376,9 +1370,9 @@ end;
 syntactic_rule LOCAL_PLACE is
 begin
 	new_line(1);
-	put('//Place ');
+	put('/* Local place ');
 	put ($STR(1));
-	new_line(1);
+	put_line (' */');
 
 	put('case ');
 	put ('__') ;
@@ -1398,7 +1392,6 @@ begin
 	put_line ('", 63);');
 	put_line ('curState[63] = 0 ;') ;
 
-	put_line('//Going to next transition');
 	apply LOC_PLACE_OUT ($1);
 	new_line(1);
 
@@ -1418,11 +1411,11 @@ end;
 
 syntactic_rule LOC_SYNC_TRANS_OUT is
 begin
-	put_line ('// Remember the current state') ;
+	put_line ('/* Remember the current state */') ;
 	put_line ('lastState = state ;') ;
 
 	if $# > 1 then
-		put_line ('// Multiple OUT transitions') ;
+		put_line ('/* Multiple OUT transitions */') ;
 		put ('int outArray[') ;
 		put (to_string($#)) ;
 		put_line ('] ;') ;
@@ -1431,7 +1424,7 @@ begin
 		apply INTERNAL_RANDOM_OUT ($0) ;
 
 		new_line(1) ;
-		put_line ('// Get a random index different from the last one') ;
+		put_line ('/* Get a random index different from the last one */') ;
 		put ('while ((randIndex = randomIndex(my_rank,') ;
 		put (to_string($#)) ;
 		put_line (')) == lastRandIndex) ;') ;
@@ -1442,7 +1435,7 @@ begin
 		new_line(1) ;
 		put_line ('isTimedTrans = 1 ;') ;
 	else
-		put_line ('// One OUT transition') ;
+		put_line ('/* One OUT transition */') ;
 		put('state = __') ;
 		put_upper ($str(1)) ;
 		put_line (';') ;
@@ -1491,9 +1484,9 @@ syntactic_rule LOC_SYNC_TRANSITION is
 begin
 	if $# > 0 then
 		new_line(1);
-		put('//Synchronization transition ');
+		put('/* Synchronized transition ');
 		put ($STR(1));
-		new_line(1);
+		put_line (' */') ;
 
 		put('case ');
 		put ('__') ;
@@ -1521,7 +1514,7 @@ begin
 			increase_marging;
 				put_line('long ti, ct;');
 				put_line('ti = getMilliTime();');
-				put_line('//Timed wait for firing the transition');
+				put_line('/* Timed wait to fire the transition */');
 				put_line ('while (1)');
 				put_line ('{');
 
@@ -1538,7 +1531,7 @@ begin
 				put_line('}');
 				new_line(1);
 
-				put_line('//Timer expired');
+				put_line('/* Timer expired */');
 				put_line('if (!flag)');
 				put_line('{') ;
 				increase_marging;
@@ -1550,11 +1543,11 @@ begin
 			put_line('}');
 			new_line(1);
 
-			put_line ('//Blocking wait for a message');
+			put_line ('/* Blocking wait for a message */');
 			put_line ('MPI_Recv(&buf, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status) ;');
 			new_line(1);
 
-			put_line ('//If END request from prototype manager');
+			put_line ('/* If END request from prototype manager */');
 			put_line ('if (status.MPI_SOURCE == PROTO_MANAGER)');
 			put_line ('{') ;
 			increase_marging;
@@ -1564,7 +1557,7 @@ begin
 			put_line ('}') ;
 			new_line(1);
 
-			put_line ('//If ACK answer from synchronization transitions manager');
+			put_line ('/* If ACK answer from synchronization transitions manager */');
 			put_line ('if (status.MPI_SOURCE == SYNCT_MANAGER && status.MPI_TAG == TAG_SYNCT_ACK)');
 			put_line ('{') ;
 			increase_marging;
@@ -1579,7 +1572,6 @@ begin
 				put_line ('", 63);');
 				put_line ('curState[63] = 0 ;') ;
 
-				put_line('//Going to next place');
 				put('state = ');
 				apply LOC_SYNC_TRANSITIONS ($1);
 				put (';');
@@ -1590,7 +1582,7 @@ begin
 			put_line ('}');
 			new_line(1);
 
-			put_line ('//If CCK answer from synchronization transitions manager');
+			put_line ('/* If CCK answer from synchronization transitions manager */');
 			put_line ('if (status.MPI_SOURCE == SYNCT_MANAGER && status.MPI_TAG == TAG_SYNCT_CCK)');
 			put_line ('{') ;
 			increase_marging;
@@ -1599,7 +1591,7 @@ begin
 				put ($STR(1));
 				put_line ('", LOG_ST_TYPE, curState, curType);');
 
-				put_line('//Going back to the last place');
+				put_line('/* Going back to the last place */');
 				put('state = lastState;');
 				new_line(1);
 
@@ -1634,13 +1626,13 @@ end;
 
 syntactic_rule GLOBAL_LIST_INSTANCE is
 begin
-
+	put_line ('/** Global declarations for PN-Process instances */') ;
 	put ('#define INSTANCE_COUNT ') ;
 	put_line (to_string($#)) ;
 
 	new_line(1) ;
 
-	put_line ('// Instances structure') ;
+	put_line ('/* Instances structure */') ;
 	put_line ('typedef struct INSTANCE {') ;
 	increase_marging ;
 		put_line ('void (*code)(int, int, int) ;') ;
@@ -1650,7 +1642,9 @@ begin
 	decrease_marging ;
 	put_line('} INSTANCE_T ;') ;
 
-	put_line ('// Global instances array') ;
+	new_line(1) ;
+	
+	put_line ('/* Global instances array */') ;
 	put ('INSTANCE_T * instanceArray[INSTANCE_COUNT] ;') ;
 end;
 

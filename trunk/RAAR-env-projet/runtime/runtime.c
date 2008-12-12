@@ -25,15 +25,17 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/timeb.h>
 #include <mpi.h>
-#include <stdlib.h>
 
 #include "globals.h"
 #include "runtime.h"
 
+/** Append the given instance with its requirements vector to the waiting queue */
 void appendToQueue (CP_QUEUE_NODE ** pqueue, int rank, int * tokenMask, int arraySize)
 {
 	int i ;
@@ -69,6 +71,7 @@ void appendToQueue (CP_QUEUE_NODE ** pqueue, int rank, int * tokenMask, int arra
 	procLogMsg(2, msgStr) ;
 }
 
+/** Free the waiting queue */
 void freeQueue (CP_QUEUE_NODE ** pqueue)
 {
 	CP_QUEUE_NODE * tmp2, * tmp = *pqueue ;
@@ -81,6 +84,7 @@ void freeQueue (CP_QUEUE_NODE ** pqueue)
 	}
 }
 
+/** Communication places vectors comparison function */
 int tab_cmp(int* tab1, int* tab2, int size)
 {
 	int i ;
@@ -107,6 +111,7 @@ int tab_cmp(int* tab1, int* tab2, int size)
 	return point ;
 }
 
+/** Communication places scheduling algorithm */
 CP_QUEUE_NODE* findProcessToServe (int* tab_ref, CP_QUEUE_NODE** pqueue, int size)
 {
 	if (!(*pqueue)) return NULL ;
@@ -141,6 +146,7 @@ CP_QUEUE_NODE* findProcessToServe (int* tab_ref, CP_QUEUE_NODE** pqueue, int siz
 	return NULL ;
 }
 
+/** Look for a queued instance with the given MPI Rank and remove it */
 void deleteNodeByRank (CP_QUEUE_NODE ** pqueue, int rank)
 {
 	if (!(*pqueue)) return ;
@@ -163,7 +169,6 @@ void deleteNodeByRank (CP_QUEUE_NODE ** pqueue, int rank)
 	}
 }
 
-//This function returns a struct SYNC_PROC_T
 SYNC_PROC_T* newSyncProc (int size)
 {
 	SYNC_PROC_T* nsp = malloc(sizeof(SYNC_PROC_T));
@@ -183,6 +188,8 @@ SYNC_PROC_T* newSyncProc (int size)
 	return nsp;
 }
 
+/** Return a random index in the range 0-range
+	and uses the process rank to improve entropy */
 int randomIndex (int rank, int range)
 {
 	char msgStr[64] ;
@@ -198,12 +205,16 @@ int randomIndex (int rank, int range)
 	return index ;
 }
 
+/** Initialise the random seed
+	using current time in milliseconds */
 void initRandomSeed (void)
 {
 	long t = getMilliTime() ;
 	srandom(t) ; /* use time in milliseconds to set seed */
 }
 
+/** Sleep for a random duration
+	between 0.1 and 0.9 seconds */
 void randomSleep (void)
 {
 	int sleep = (1 + (int) (9.0 * (random() / (RAND_MAX + 1.0)))) * 100000 ;
@@ -211,6 +222,7 @@ void randomSleep (void)
 	usleep(sleep) ;
 }
 
+/** Process a ACK message for the synchronized transitions manager */
 void treatACK(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank)
 {
 	char msgStr[64] ;
@@ -268,7 +280,7 @@ void treatACK(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank)
 	}
 }
 
-
+/** Process a cancellation message for the synchronized transitions manager */
 void treatCAN(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank)
 {
 	int lev = syncElement->current;
@@ -301,7 +313,7 @@ void treatCAN(SYNC_PROC_T* syncElement, int source, int syncID, int my_rank)
 	}
 }
 
-/* Return the current time in milliseconds */
+/** Return the current time in milliseconds */
 long getMilliTime(void)
 {
 	struct timeb t ;
@@ -310,7 +322,7 @@ long getMilliTime(void)
 	return (1000 * t.time) + t.millitm ;
 }
 
-/** Logging functions */
+/** Standardized logging functions */
 
 void startLogging(void)
 {
@@ -607,23 +619,16 @@ void procLogEvtPut (int rank, const char * curState, int curType, const char * t
 
 void procLogEvtBack (int rank, const char * curState, int curType, const char * targetState, int targetType)
 {
-#ifdef LOG_TO_DOT
-// 	fprintf (LOG_STD_DEST,
-// 			 "\t%s_%d -> %s_%d [style=dotted,color=\"dodgerblue\"] ;\n",
-// 			 curState,
-// 			 rank,
-// 			 targetState,
-// 			 rank) ;
-#else
+#ifndef LOG_TO_DOT
 	fprintf (LOG_STD_DEST,
 			 "[%s\t%d]\tFrom %s going BACK to %s\n",
 			 instanceArray[rank-3]->PNProcStr,
 			 rank,
 			 curState,
 			 targetState) ;
-#endif
 
 	fflush(LOG_STD_DEST) ;
+#endif
 }
 
 void procLogStart (int rank)
@@ -666,9 +671,9 @@ void procLogEnd (int rank)
 		fprintf (LOG_STD_DEST, "%sSending TAG_END to all processes\n", msgBuf) ;
 	else
 		fprintf (LOG_STD_DEST, "%sReceived TAG_END, going down\n", msgBuf) ;
-#endif
-
+	
 	fflush(LOG_STD_DEST) ;
+#endif
 }
 
 void procLogMsg (int rank, const char * msg)
@@ -687,9 +692,9 @@ void procLogMsg (int rank, const char * msg)
 		snprintf (msgBuf, 63, "[CommPlaceMngr\t%d]\t", rank) ;
 	
 	fprintf (LOG_STD_DEST, "%s%s\n", msgBuf, msg) ;
-#endif
 
 	fflush(LOG_STD_DEST) ;
+#endif
 }
 
 

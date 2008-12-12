@@ -207,7 +207,11 @@ begin
 
 	new_line (1);
 	put_line ('/** Time constants */') ;
+	put_line ('#ifndef EXEC_DURATION');
+	increase_marging;
 	put_line ('#define EXEC_DURATION 20') ;
+	decrease_marging;
+	put_line ('#endif');
 	put_line ('#define DEFAULT_TIMEOUT 500') ;
 	put_line ('#define CP_STEP 250000') ;
 	put_line ('#define ST_STEP 250000') ;
@@ -336,25 +340,29 @@ begin
 	decrease_marging;
 	put_line ('fi;');
 	new_line (1);
-	put_line ('if [ $# -eq 1 ]; then');
+	
+	// for the test-generator
+	put_line ('if [ $2 = "TEST" ]; then');
 	increase_marging;
-	put_line ('# if we have only one argument, we launch the main execution');
+	put_line ('# if the second argument is TEST, launch the main execution');
+	put_line ('# launch with time');	
 	put 	 ('make test-generator NAME=$1 NUM=`expr ');
 	put 	 (to_string($#));
-	put_line (' + 3`;');
-	decrease_marging;
-	put_line ('else');
-	increase_marging;
-	put_line ('if [ $# -eq 2 ]; then');
-	increase_marging;
-	put_line ('# else we launch the dot execution of the makefile');
-	put      ('make dot-generator NAME=$1 NUM=`expr ');
-	put 	 (to_string($#));
-	put_line (' + 3`;');
-	decrease_marging;
-        put_line ('fi;');
+	put_line (' + 3` TIME=$3;');
 	decrease_marging;
 	put_line ('fi;');
+
+	new_line (1);
+
+	// for the dot generator
+	put_line ('if [ $2 = "DOT" ]; then');
+	increase_marging;
+	put_line ('# if the second argument is DOT, launch the dot execution');
+	put      ('make dot-generator NAME=$1 NUM=`expr ');
+	put 	 (to_string($#));
+	put_line (' + 3` TIME=$3;');
+	decrease_marging;
+        put_line ('fi;');
 end;
 
 //***************************************************

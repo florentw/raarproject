@@ -17,23 +17,24 @@ If there are no file in the JDT directory, we will get an error message.
 
 So to launch the test, we need to execute : 
  
-make test-pour-fk NAME=<NAME>
+make test-pour-fk NAME=<NAME> TIME=<TIME>
 
-where <NAME> is the name without -main.msm.
+where <NAME> is the name without -main.msm and <TIME> is optional.
+If you want to give the time of the execution, you can set it with TIME. Otherwise, without it, the program will work perfecty.
 
 To generate a dot file of the execution, we will have to execute :
 
-make dot NAME=<NAME>
+make dot NAME=<NAME> TIME=<TIME>
 
 To sum up : 
 
 make
 create or write ip adress in the bhost
-make test-pour-fk NAME=<NAME> or make dot NAME=<NAME>
+make test-pour-fk NAME=<NAME> or make dot NAME=<NAME> with or without TIME=<TIME>
 
 If you want to modify the source.c, you'll have to run
 
-make test-generator NAME=<NAME> NUM=<NUM>
+make test-generator NAME=<NAME> NUM=<NUM> TIME=<TIME>
 
 where <NUM> is the number of nodes to run.
 

@@ -16,15 +16,15 @@ THE MAKEFILE part
 
    First, in order to be able to build the project, we must put the path of metascribe in CONTAINER_TDIR and we need to use the gnat right (for example : the ocarina polyorb's gnat).
 
-   The first rule that the Makefile must run, is 'generate'. This rule will use superclean and after, will check if the directory JDT exists and if it have msm files inside.
+   The first rule that the Makefile must run, is 'generate'. This rule will use superclean and after, will check if  it msm files exist.
  
-   If it pass the check, it will run rules-generator and tengine-generator which will compile and create the binary files of the code generator.
+   If it pass the test, it will run rules-generator and tengine-generator which will compile and create the binary files of the code generator.
  
   To launch the generation of the MPI's source, we will use the rule 'test-pour-fk'. The protocol, that we have to follow, says that we must put the name of the msm without -main.msm. So in order to execute the test, we must write : 
 
     make test-pour-fk NAME=<NAME> TIME=<TIME>,
 
-where <NAME> is the name of the file without -main.msm. The rule will automatically search into the JDT directory and check with the script check.sh if the file exists. If it pass the test, it will generate a source, a header and a script of the generated code.
+where <NAME> is the directory and the name of the file without -main.msm. The rule will automatically check with the script check.sh if the file exists. If it pass the test, it will generate a source, a header and a script of the generated code.
 The TIME is optional. It is an option to give to the user, the possibility to change the duration of the test. Indeed, some models need longer execution than other. If TIME is not defined, it is initialized at 20 secondes.
 
     The script check.sh will execute the script generated : test-generator.sh. This script contains the number of node that we have to run. Indeed, the only way to know the number of nodes or processes that we have to execute, is determined in the generated code's stage. We can also use it to create the bhost file.
@@ -43,7 +43,7 @@ The TIME is optional. It is an option to give to the user, the possibility to ch
 STRUCTURE OF THE PROJECT part
 
 
-    The project will be organize into many directory. In order to have a clear view of the files, we will put all the msm files into the directory JDT. In JDT directory, we will create one called image where we put all the petri net's pictures. In the directory called Coloane, we will put all the .model's files that contain models of the petri net that we have created.
+    The project will be organize into many directory. In order to have a clear view of the files, we will put all our msm files into the directory JDT. In JDT directory, we will create one directory called image where we put all the petri net's pictures. In the one called Coloane, we will put all the .model's files that contain models of the petri net that we have created.
 
    To not fill the root directory with source and object files. We move all the adb, ads, o and ali files into the directory generator.
 
@@ -61,7 +61,8 @@ THE SCRIPTS part
 
    In the project, we will use 2 scripts. One is done by us and the other one, it will be generate by the code generator.
   
-   For the first one, the script will create directories if they don't exist and check if there are msm files JDT directory. If not, it will send an error message and ask the user to create msm files and to put them into the JDT directory.
+   For the first one, the script will create directories if they don't exist. 
+
 This script will also call the code generator if we give it 3 arguments : One is the name of the file without -main.msm, the other is the kind of the execution (TEST or DOT) and the third is optional, it is the duration of the program that by default, it is at 20 secondes.
 
 Indeed, in order to run the project, we will have to call the code generator with the right msm file. If the file doesn't exist, we must send an error message and invite the user to use an existing msm file.

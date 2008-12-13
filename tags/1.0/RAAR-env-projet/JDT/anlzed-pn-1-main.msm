@@ -1,0 +1,117 @@
+main_file
+formalism ( 'ANLZED_PN' ) ;
+// Attributs globaux
+where (attribute NAME => 'duo_mutex') ;
+
+// Places de communications
+
+node 'cp1' is COMM_PLACE
+   where (attribute NAME => 'mutex',
+          attribute NB_IN_TOKENS => 1);
+
+// Premier processus
+
+node 'proc1' is PROCESS
+   where (attribute NAME => 'processus_1',
+          attribute INSTANCES => sy_node (INSTANCE_LIST:
+                                    sy_node (ONE_INSTANCE:
+                                       sy_leaf ('P1out')),
+                                    sy_node (ONE_INSTANCE:
+                                       sy_leaf ('P1out'))
+                                       ));
+
+
+node 'p1p1' is STT_PLACE
+   where (attribute NAME => 'P1out');
+
+node 'p1p2' is STT_PLACE
+   where (attribute NAME => 'P1in');
+
+node 'p1t1' is LOC_TRANS
+   where (attribute NAME => 'P1_Takes');
+
+node 'p1t2' is LOC_TRANS
+   where (attribute NAME => 'P1_release');
+
+link 'p1bl1' is BELONG
+	where (none)
+	relate together STT_PLACE:'p1p1', STT_PLACE:'p1p2',
+		   LOC_TRANS:'p1t1', LOC_TRANS:'p1t2', PROCESS:'proc1';
+
+link 'p1l1' is ARC
+	where (none)
+	relate STT_PLACE:'p1p1' to LOC_TRANS:'p1t1';
+
+link 'p1l2' is ARC
+	where (none)
+	relate STT_PLACE:'p1p2' to LOC_TRANS:'p1t2';
+
+link 'p1l3' is ARC
+	where (none)
+	relate LOC_TRANS:'p1t2' to STT_PLACE:'p1p1';
+
+link 'p1l4' is ARC
+	where (none)
+	relate LOC_TRANS:'p1t1' to STT_PLACE:'p1p2';
+
+link 'commp1l1' is COMM_ARC
+	where (none)
+	relate LOC_TRANS:'p1t2' to COMM_PLACE:'cp1';
+
+link 'commp1l2' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp1' to LOC_TRANS:'p1t1';
+
+
+// Second processus
+
+node 'proc2' is PROCESS
+   where (attribute NAME => 'processus_2',
+          attribute INSTANCES => sy_node (INSTANCE_LIST:
+                                    sy_node (ONE_INSTANCE:
+                                       sy_leaf ('P2out')),
+                                    sy_node (ONE_INSTANCE:
+                                       sy_leaf ('P2out'))
+                                       ));
+
+
+node 'p2p1' is STT_PLACE
+   where (attribute NAME => 'P2out');
+
+node 'p2p2' is STT_PLACE
+   where (attribute NAME => 'P2in');
+
+node 'p2t1' is LOC_TRANS
+   where (attribute NAME => 'P2_Takes');
+
+node 'p2t2' is LOC_TRANS
+   where (attribute NAME => 'P2_release');
+
+link 'p2bl1' is BELONG
+	where (none)
+	relate together STT_PLACE:'p2p1', STT_PLACE:'p2p2',
+		   LOC_TRANS:'p2t1', LOC_TRANS:'p2t2', PROCESS:'proc2';
+
+link 'p2l1' is ARC
+	where (none)
+	relate STT_PLACE:'p2p1' to LOC_TRANS:'p2t1';
+
+link 'p2l2' is ARC
+	where (none)
+	relate STT_PLACE:'p2p2' to LOC_TRANS:'p2t2';
+
+link 'p2l3' is ARC
+	where (none)
+	relate LOC_TRANS:'p2t2' to STT_PLACE:'p2p1';
+
+link 'p2l4' is ARC
+	where (none)
+	relate LOC_TRANS:'p2t1' to STT_PLACE:'p2p2';
+
+link 'commp2l1' is COMM_ARC
+	where (none)
+	relate LOC_TRANS:'p2t2' to COMM_PLACE:'cp1';
+
+link 'commp2l2' is COMM_ARC
+	where (none)
+	relate COMM_PLACE:'cp1' to LOC_TRANS:'p2t1';

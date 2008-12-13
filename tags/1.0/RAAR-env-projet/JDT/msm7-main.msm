@@ -1,0 +1,151 @@
+main_file
+formalism ( 'ANLZED_PN' ) ;
+// Attributs globaux
+where (attribute NAME => 'msm7_model') ;
+
+// Transitions de synchronisation
+node 'ts_sync_P1_P2' is SYNC_TRANS
+  where (attribute NAME => 'sync_P1_P2');
+node 'ts_sync_P2_P3' is SYNC_TRANS
+  where (attribute NAME => 'sync_P2_P3');
+
+// Pas de places de communication
+
+// Processus P1
+
+node 'proc_P1' is PROCESS
+  where (attribute NAME => 'processus_P1',
+    attribute INSTANCES => sy_node (INSTANCE_LIST:
+      sy_node (ONE_INSTANCE:
+      sy_leaf ('P1_1'))));
+
+node 'P1p2' is STT_PLACE
+  where (attribute NAME => 'P1_2');
+
+node 'P1p1' is STT_PLACE
+  where (attribute NAME => 'P1_1');
+
+node 'P1t1' is LOC_TRANS
+  where (attribute NAME => 'P1_T1');
+
+link 'P1bl1' is BELONG
+  where(none)
+  relate together STT_PLACE:'P1p2',
+                       STT_PLACE:'P1p1',
+                       LOC_TRANS:'P1t1',
+                       SYNC_TRANS:'ts_sync_P1_P2',
+                       PROCESS:'proc_P1';
+
+// Nombre d'arcs = 4
+
+link 'P1l1' is ARC
+  where(none)
+  relate LOC_TRANS:'P1t1' to STT_PLACE:'P1p1';
+
+link 'P1l2' is ARC
+  where(none)
+  relate SYNC_TRANS:'ts_sync_P1_P2' to STT_PLACE:'P1p2';
+
+link 'P1l3' is ARC
+  where(none)
+  relate STT_PLACE:'P1p2' to LOC_TRANS:'P1t1';
+
+link 'P1l4' is ARC
+  where(none)
+  relate STT_PLACE:'P1p1' to SYNC_TRANS:'ts_sync_P1_P2';
+
+// Processus P2
+
+node 'proc_P2' is PROCESS
+  where (attribute NAME => 'processus_P2',
+    attribute INSTANCES => sy_node (INSTANCE_LIST:
+      sy_node (ONE_INSTANCE:
+      sy_leaf ('P2_1'))));
+
+node 'P2p1' is STT_PLACE
+  where (attribute NAME => 'P2_1');
+
+node 'P2p2' is STT_PLACE
+  where (attribute NAME => 'P2_2');
+
+node 'P2t1' is LOC_TRANS
+  where (attribute NAME => 'P2_T1');
+
+link 'P2bl1' is BELONG
+  where(none)
+  relate together STT_PLACE:'P2p1',
+                       STT_PLACE:'P2p2',
+                       LOC_TRANS:'P2t1',
+                       SYNC_TRANS:'ts_sync_P1_P2',
+                       SYNC_TRANS:'ts_sync_P2_P3',
+                       PROCESS:'proc_P2';
+
+// Nombre d'arcs = 6
+
+link 'P2l1' is ARC
+  where(none)
+  relate STT_PLACE:'P2p1' to SYNC_TRANS:'ts_sync_P1_P2';
+
+link 'P2l2' is ARC
+  where(none)
+  relate SYNC_TRANS:'ts_sync_P2_P3' to STT_PLACE:'P2p2';
+
+link 'P2l3' is ARC
+  where(none)
+  relate SYNC_TRANS:'ts_sync_P1_P2' to STT_PLACE:'P2p2';
+
+link 'P2l4' is ARC
+  where(none)
+  relate STT_PLACE:'P2p2' to LOC_TRANS:'P2t1';
+
+link 'P2l5' is ARC
+  where(none)
+  relate STT_PLACE:'P2p1' to SYNC_TRANS:'ts_sync_P2_P3';
+
+link 'P2l6' is ARC
+  where(none)
+  relate LOC_TRANS:'P2t1' to STT_PLACE:'P2p1';
+
+// Processus P3
+
+node 'proc_P3' is PROCESS
+  where (attribute NAME => 'processus_P3',
+    attribute INSTANCES => sy_node (INSTANCE_LIST:
+      sy_node (ONE_INSTANCE:
+      sy_leaf ('P3_1'))));
+
+node 'P3p2' is STT_PLACE
+  where (attribute NAME => 'P3_2');
+
+node 'P3p1' is STT_PLACE
+  where (attribute NAME => 'P3_1');
+
+node 'P3t1' is LOC_TRANS
+  where (attribute NAME => 'P3_T1');
+
+link 'P3bl1' is BELONG
+  where(none)
+  relate together STT_PLACE:'P3p2',
+                       STT_PLACE:'P3p1',
+                       LOC_TRANS:'P3t1',
+                       SYNC_TRANS:'ts_sync_P2_P3',
+                       PROCESS:'proc_P3';
+
+// Nombre d'arcs = 4
+
+link 'P3l1' is ARC
+  where(none)
+  relate STT_PLACE:'P3p1' to SYNC_TRANS:'ts_sync_P2_P3';
+
+link 'P3l2' is ARC
+  where(none)
+  relate STT_PLACE:'P3p2' to LOC_TRANS:'P3t1';
+
+link 'P3l3' is ARC
+  where(none)
+  relate LOC_TRANS:'P3t1' to STT_PLACE:'P3p1';
+
+link 'P3l4' is ARC
+  where(none)
+  relate SYNC_TRANS:'ts_sync_P2_P3' to STT_PLACE:'P3p2';
+

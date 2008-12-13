@@ -1,0 +1,35 @@
+main_file
+formalism ('ANLZED_PN');
+
+// ========================================================
+// Les entites d'un RdP partitionne                          
+
+entity_list
+   PROCESS    : node,
+   STT_PLACE  : node,
+   COMM_PLACE : node,
+   LOC_TRANS  : node,
+   SYNC_TRANS : node,
+   BELONG     : link,
+   ARC        : link,
+   COMM_ARC   : link;
+
+// ========================================================
+// Les attributs globaux d'un RdP partitionne                
+
+global_attributes
+   attribute string  : NAME;
+end;
+
+// ========================================================
+// Les operateurs pour decrire les instances                                      
+
+construction_list (INSTANCE_LIST,
+				   ONE_INSTANCE);
+
+// ========================================================
+// Les Fichiers annexes                                    
+
+file_list
+   file ('anlzed-pn-node.msf'),
+   file ('anlzed-pn-link.msf');

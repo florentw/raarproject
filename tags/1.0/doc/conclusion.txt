@@ -1,0 +1,13 @@
+Conclusion :
+     The code generation from Petri Net model was successfully implemented for the target langage C/MPI.
+
+     Therefore our implementation consisted in working on specifications close to Petri Net model. This choice was made in order to simplify work on modelling semantic tree, but complexify implemention of syntactics rules for another language other than C/MPI.
+
+     Another approach would have been choosing an implementation of the semantic tree closer to the target language. Because of our choice of implementation of the semantic tree, second step of development of the projet took longer, since less information about the target language was provided. Handling synchronisation or mutex access was a major concern.
+     Therefore, to help one to use our implementation, we provide a Coloane Petri Net model parser which generate Metascribe models (.msm). Our tool can also generate graphs showing the process execution.
+     
+     Also, the project shows how hard it is to create a distributed generated code as we found a lot of  case that lead to deadlocks or resource starvations. 
+     To avoid these, we use table of tokens, time-out, implementation of a protocol of Acknowledgement and use synchronization and communication place manager.      However, the code generation grants us a code that perfectly works for a lot of petri net models.
+     Instead of creating and writing code for each petri net models, we only need to use metascribe to generate the code that fit for each model.
+
+     Actually, since communications places and synchronisations transitions are handled with a centralized approach, there could be problems of bottleneck on these nodes. To avoid bottleneck on the communication place manager, we could have distributed the communication place over existing nodes. Of course, we should consider physical distribution of these in order to use as many local communications as possible.

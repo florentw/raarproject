@@ -1,0 +1,238 @@
+main_file
+formalism ( 'ANLZED_PN' ) ;
+// Attributs globaux
+where (attribute NAME => 'test_model') ;
+
+// Pas de transitions de synchronisation
+
+// Places de communication
+node 'cp1' is COMM_PLACE
+  where (attribute NAME => 'PlacesInBridge',
+    attribute NB_IN_TOKENS => 2);
+node 'cp2' is COMM_PLACE
+  where (attribute NAME => 'CTAutB',
+    attribute NB_IN_TOKENS => 0);
+node 'cp3' is COMM_PLACE
+  where (attribute NAME => 'CTAutA',
+    attribute NB_IN_TOKENS => 1);
+
+// Processus VB
+
+node 'proc_VB' is PROCESS
+  where (attribute NAME => 'processus_VB',
+    attribute INSTANCES => sy_node (INSTANCE_LIST:
+      sy_node (ONE_INSTANCE:
+      sy_leaf ('VB_1Near')),
+      sy_node (ONE_INSTANCE:
+      sy_leaf ('VB_1Near')),
+      sy_node (ONE_INSTANCE:
+      sy_leaf ('VB_1Near'))));
+
+node 'VBp2InBridge' is STT_PLACE
+  where (attribute NAME => 'VB_2InBridge');
+
+node 'VBp1Near' is STT_PLACE
+  where (attribute NAME => 'VB_1Near');
+
+node 'VBp3Out' is STT_PLACE
+  where (attribute NAME => 'VB_3Out');
+
+node 'VBt3Exit' is LOC_TRANS
+  where (attribute NAME => 'VB_T3Exit');
+
+node 'VBt1Ask' is LOC_TRANS
+  where (attribute NAME => 'VB_T1Ask');
+
+node 'VBt2Enter' is LOC_TRANS
+  where (attribute NAME => 'VB_T2Enter');
+
+node 'VBt4Coming' is LOC_TRANS
+  where (attribute NAME => 'VB_T4Coming');
+
+link 'VBbl1' is BELONG
+  where(none)
+  relate together STT_PLACE:'VBp2InBridge',
+                       STT_PLACE:'VBp1Near',
+                       STT_PLACE:'VBp3Out',
+                       LOC_TRANS:'VBt3Exit',
+                       LOC_TRANS:'VBt1Ask',
+                       LOC_TRANS:'VBt2Enter',
+                       LOC_TRANS:'VBt4Coming',
+                       PROCESS:'proc_VB';
+
+// Nombre d'arcs = 16
+
+link 'commVBl1' is COMM_ARC
+  where(none)
+  relate LOC_TRANS:'VBt2Enter' to COMM_PLACE:'cp2';
+
+link 'commVBl2' is COMM_ARC
+  where(attribute VALUE => 2)
+  relate LOC_TRANS:'VBt1Ask' to COMM_PLACE:'cp1';
+
+link 'VBl1' is ARC
+  where(none)
+  relate LOC_TRANS:'VBt3Exit' to STT_PLACE:'VBp3Out';
+
+link 'VBl2' is ARC
+  where(none)
+  relate STT_PLACE:'VBp1Near' to LOC_TRANS:'VBt2Enter';
+
+link 'VBl3' is ARC
+  where(none)
+  relate STT_PLACE:'VBp2InBridge' to LOC_TRANS:'VBt3Exit';
+
+link 'commVBl3' is COMM_ARC
+  where(none)
+  relate COMM_PLACE:'cp1' to LOC_TRANS:'VBt2Enter';
+
+link 'commVBl4' is COMM_ARC
+  where(none)
+  relate COMM_PLACE:'cp2' to LOC_TRANS:'VBt2Enter';
+
+link 'commVBl5' is COMM_ARC
+  where(none)
+  relate LOC_TRANS:'VBt3Exit' to COMM_PLACE:'cp1';
+
+link 'VBl4' is ARC
+  where(none)
+  relate LOC_TRANS:'VBt2Enter' to STT_PLACE:'VBp2InBridge';
+
+link 'commVBl6' is COMM_ARC
+  where(attribute VALUE => 2)
+  relate COMM_PLACE:'cp1' to LOC_TRANS:'VBt1Ask';
+
+link 'commVBl7' is COMM_ARC
+  where(none)
+  relate COMM_PLACE:'cp3' to LOC_TRANS:'VBt1Ask';
+
+link 'commVBl8' is COMM_ARC
+  where(none)
+  relate LOC_TRANS:'VBt1Ask' to COMM_PLACE:'cp2';
+
+link 'VBl5' is ARC
+  where(none)
+  relate STT_PLACE:'VBp1Near' to LOC_TRANS:'VBt1Ask';
+
+link 'VBl6' is ARC
+  where(none)
+  relate LOC_TRANS:'VBt4Coming' to STT_PLACE:'VBp1Near';
+
+link 'VBl7' is ARC
+  where(none)
+  relate LOC_TRANS:'VBt1Ask' to STT_PLACE:'VBp1Near';
+
+link 'VBl8' is ARC
+  where(none)
+  relate STT_PLACE:'VBp3Out' to LOC_TRANS:'VBt4Coming';
+
+// Processus VA
+
+node 'proc_VA' is PROCESS
+  where (attribute NAME => 'processus_VA',
+    attribute INSTANCES => sy_node (INSTANCE_LIST:
+      sy_node (ONE_INSTANCE:
+      sy_leaf ('VA_1Near')),
+      sy_node (ONE_INSTANCE:
+      sy_leaf ('VA_1Near')),
+      sy_node (ONE_INSTANCE:
+      sy_leaf ('VA_1Near'))));
+
+node 'VAp3Out' is STT_PLACE
+  where (attribute NAME => 'VA_3Out');
+
+node 'VAp2InBridge' is STT_PLACE
+  where (attribute NAME => 'VA_2InBridge');
+
+node 'VAp1Near' is STT_PLACE
+  where (attribute NAME => 'VA_1Near');
+
+node 'VAt2Enter' is LOC_TRANS
+  where (attribute NAME => 'VA_T2Enter');
+
+node 'VAt1Ask' is LOC_TRANS
+  where (attribute NAME => 'VA_T1Ask');
+
+node 'VAt3Exit' is LOC_TRANS
+  where (attribute NAME => 'VA_T3Exit');
+
+node 'VAt4Coming' is LOC_TRANS
+  where (attribute NAME => 'VA_T4Coming');
+
+link 'VAbl1' is BELONG
+  where(none)
+  relate together STT_PLACE:'VAp3Out',
+                       STT_PLACE:'VAp2InBridge',
+                       STT_PLACE:'VAp1Near',
+                       LOC_TRANS:'VAt2Enter',
+                       LOC_TRANS:'VAt1Ask',
+                       LOC_TRANS:'VAt3Exit',
+                       LOC_TRANS:'VAt4Coming',
+                       PROCESS:'proc_VA';
+
+// Nombre d'arcs = 16
+
+link 'commVAl1' is COMM_ARC
+  where(attribute VALUE => 2)
+  relate COMM_PLACE:'cp1' to LOC_TRANS:'VAt1Ask';
+
+link 'commVAl2' is COMM_ARC
+  where(none)
+  relate COMM_PLACE:'cp1' to LOC_TRANS:'VAt2Enter';
+
+link 'commVAl3' is COMM_ARC
+  where(none)
+  relate LOC_TRANS:'VAt2Enter' to COMM_PLACE:'cp3';
+
+link 'commVAl4' is COMM_ARC
+  where(none)
+  relate LOC_TRANS:'VAt3Exit' to COMM_PLACE:'cp1';
+
+link 'commVAl5' is COMM_ARC
+  where(attribute VALUE => 2)
+  relate LOC_TRANS:'VAt1Ask' to COMM_PLACE:'cp1';
+
+link 'commVAl6' is COMM_ARC
+  where(none)
+  relate COMM_PLACE:'cp3' to LOC_TRANS:'VAt2Enter';
+
+link 'VAl1' is ARC
+  where(none)
+  relate LOC_TRANS:'VAt2Enter' to STT_PLACE:'VAp2InBridge';
+
+link 'VAl2' is ARC
+  where(none)
+  relate LOC_TRANS:'VAt3Exit' to STT_PLACE:'VAp3Out';
+
+link 'VAl3' is ARC
+  where(none)
+  relate STT_PLACE:'VAp1Near' to LOC_TRANS:'VAt2Enter';
+
+link 'VAl4' is ARC
+  where(none)
+  relate STT_PLACE:'VAp2InBridge' to LOC_TRANS:'VAt3Exit';
+
+link 'VAl5' is ARC
+  where(none)
+  relate STT_PLACE:'VAp1Near' to LOC_TRANS:'VAt1Ask';
+
+link 'commVAl7' is COMM_ARC
+  where(none)
+  relate COMM_PLACE:'cp2' to LOC_TRANS:'VAt1Ask';
+
+link 'commVAl8' is COMM_ARC
+  where(none)
+  relate LOC_TRANS:'VAt1Ask' to COMM_PLACE:'cp3';
+
+link 'VAl6' is ARC
+  where(none)
+  relate LOC_TRANS:'VAt4Coming' to STT_PLACE:'VAp1Near';
+
+link 'VAl7' is ARC
+  where(none)
+  relate STT_PLACE:'VAp3Out' to LOC_TRANS:'VAt4Coming';
+
+link 'VAl8' is ARC
+  where(none)
+  relate LOC_TRANS:'VAt1Ask' to STT_PLACE:'VAp1Near';
+
